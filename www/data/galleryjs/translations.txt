@@ -1,0 +1,13 @@
+en	de	it
+New	Neu	Nuovo
+Random tapping	Zufälliges Tippen
+best score	bestes Resultat
+median	Median
+mean	Mittelwert
+worst	schlechtestes R.
+most frequent	häufigstes Res.
+different scores	unterschiedliche Resultate
+You	Du	Tu
+games	Spiele
+EEE	100\nTests
+Eval-\nuate\n1000	1000\nTests

@@ -1,0 +1,21 @@
+percentage >90, best = result: perfect, normally you are better and only seldomly the program is as good as you (in ..%)
+
+
+result = 0, best of compi = 0: perfect, but it was quite (10-20) / very(>20) easy | and it was difficult (random < 10%)
+
+r > 70, best>0: not bad but you could do it better (e.g. compi: )
+
+r > 50-70, best>0: very(<55%) knapp and you could do it better (e.g. compi: )
+
+compi 0, you > 0: it was solvable and you didn?t!
+
+different scores < 30: not a lot of possibilies
+
+0: after x >0: finally! else schon wieder
+
+r<20: very bad: did you play or did you take a wrong decision at the beginning? comipi: even solvable!
+
+difference you-min: a diff of .. is quite big / nur unwesentlich besser (just ..)
+
+best = you: we found no better solution - and we achieved (only a few times | quite often) the same result
+

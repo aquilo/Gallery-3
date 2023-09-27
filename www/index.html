@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+  <title>Gallery 3</title>
+
+  <meta charset="utf-8">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="msapplication-tap-highlight" content="no">
+  <meta name="viewport" content="initial-scale=1, width=device-width, viewport-fit=cover">
+  <meta name="color-scheme" content="light dark">
+
+  <link rel="stylesheet" href="css/st.css">
+  <link rel="stylesheet" href="css/st2.css">
+
+  <!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"> -->
+  <link rel="stylesheet" href="csslib/bootstrap.min.css">
+
+  <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"> -->
+  <link rel="stylesheet" href="csslib/all.min.css">
+
+  <!-- <link rel="stylesheet" href="css/bootstrap-icons.css"> -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <!-- <link rel="stylesheet" href="csslib/bootstrap-icons.css"> -->
+
+
+  <!-- https://mode.fh-joanneum.at/cola/p5.js-cordova-demo-app/-/blob/main/www/js/sketch.js -->
+
+  <script src="libs/jsstore.js"></script>
+  <script src="libs/jsstore.worker.js"></script>
+  <script src="js/newstatisticsdb.js"></script>
+  <script src="js/prefs.js"></script>
+  <script src="js/Statistics.js"></script>
+  <script src="js/Button.js"></script>
+  <script src="js/MoveStack.js"></script>
+  <script src="js/CardPile.js"></script>
+  <script src="js/SpecialCardPiles.js"></script>
+  <script src="js/Card.js"></script>
+  <script src="js/Movers.js"></script>
+  <script src="js/graphparams.js"></script>
+  <script src="js/My.js"></script>
+
+  <!-- <script src="libs/jquery.js" defer></script> -->
+
+</head>
+
+<body>
+  <!-- Content -->
+  <div class="container mt-5">
+
+    <section id="section1">
+      <center>
+        <div class="app"></div>
+      </center>
+    </section>
+
+    <section id="section2" style="display: none;">
+            <div class="restricted-div">
+      <div id="statisticstext"></div>
+      </div>
+    </section>
+
+    <section id="section3" style="display: none;">
+      <div class="restricted-div">
+        <h1>Summary</h1>
+        <p>The object of this <strong>solitaire game</strong> is to build a complete <strong>face-card
+            gallery</strong> of Jacks, Queens, and Kings.<br>You build sequences of cards on the
+          Foundation rows by suit (<strong>building rules</strong>: top row <strong>2-5-8-Jack</strong>;
+          middle <strong>3-6-9-Queen</strong>; bottom <strong>4-7-10-King</strong>) using the cards of the
+          Tableau and the still incorrect cards of the Foundation. Deal cards from the Stock to the
+          Tableau as needed. At the end of the game, let the computer play out the same starting situation
+          a few times.</p>
+        <h1>Details</h1>
+        <h2>Layout</h2>
+        <center><img src="img/screen.png" alt="game" width="214" height="248"></center><br>
+        <h3>Foundation</h3>
+        <p>24 piles: 3 rows with 8 columns.</p>
+        <p>Empty spots can be filled with the <strong>base cards "2", "3", and "4"</strong>, as above.
+          <strong>Building rule</strong>: Add cards <strong>by suit, in increasing rank, by a difference
+            of 3.</strong></p>
+        <p><strong>Cards at their correct position have an altered appearance</strong> (no number, plus a
+          narrow frame).</p>
+        <h3>Tableau</h3>
+        <p>8 piles are fed by the cards played from the Stock. Only completely visible cards are available
+          for play.</p>
+        <h3>Stock</h3>
+        <p>The Stock initially consists of two decks (104 cards). As the game begins, the first 24 cards
+          are played to the Foundation. Each time you click Stock, 8 cards move into play, one to each of
+          the Tableau piles.</p>
+        <p><strong>Ace Pile</strong>: Aces are automatically removed to the Aces pile and are not a part
+          of play.</p>
+        <h2>Setup and Play</h2>
+        <p>The game begins by dealing 24 cards, face up, to the Foundation and 8 cards to the Tableau.
+          Some of the cards on the Foundation may now already be at their final position ("2", "3", "4"),
+          and aces go directly to the ace pile. Just <strong>tap on a card</strong> to play it (it finds
+          its correct position automatically).</p>
+        <h3>You can now</h3>
+        <ul class="b">
+          <li>Move "2", "3", "4" cards to empty spaces in the Foundation area</li>
+          <li>Move cards of the same suit and of a 3 point higher rank onto already correct cards of the
+            Foundation</li>
+          <li>Undo your moves (but only back to the latest operation on the Stock)</li>
+          <li>Deal another 8 cards from the Stock to the Tableau.</li>
+        </ul>
+        <h3>You cannot</h3>
+        <ul>
+          <li>Place a card onto an incorrect card of the Foundation (even if it would be in the correct
+            row)</li>
+          <li>Move cards of the Tableau to another column of the Tableau</li>
+          <li>Move groups of cards</li>
+          <li>Undo an operation on the Stock.</li>
+        </ul>
+        <h3>Winning situation</h3>
+        <p>You build a complete gallery of all face cards, removing all cards from the Tableau (score: 0)
+        </p>
+        <center><img src="img/gallery_success.png" alt="Winning situation"></center>The
+        appearing photos are all from <a href="#"
+          onclick="window.open(encodeURI('http://www.myswitzerland.com/en/blenio-valley-valle-di-blenio.html#phonegap=external'), '_system')">Blenio
+          Valley</a>, Ticino, Switzerland<p></p>
+        <p><strong>Or</strong>, you make a better score than the computer (see the "Statistics" tab). For
+          your personal evaluation use whatever measure you like (better than the minimum or better than
+          the median or the mean).</p>
+        <p>After the evaluation you start a <strong>New</strong> game or you <strong>Redo</strong> the
+          same starting game.</p>
+        <h2>Hints</h2>
+        <ul>
+          <li>You do not have to play all cards which are movable.</li>
+          <li>Look for the position of the twin card (the card with the same suit and rank). This can help
+            you avoid (final) jamming situations.</li>
+          <li>Focus on the optimal sequence of moves.</li>
+          <li>Try to resolve "jammed situations": In the Tableau, a card may cover another card which
+            needs to be played on the Foundation first. This creates a jam, which you can resolve using
+            the twin of the trapped card, when it comes into play.</li>
+        </ul>
+        <h2>CAP: "computer-aided play"</h2>
+        <ul>
+          <li>Yellow shaded cards are movable. Concentrate your efforts on making good decisions instead
+            of searching around for movable cards. </li>
+          <li>"<span style="color: #00f;">Jammed </span>situations" are marked by a blue bar.</li>
+          <li>In many situations there is no reason not to play a movable card: in these cases CAP does
+            such evident, unproblematic moves automatically. Some obvious cases: <ul>
+              <li>the twin card is already in its correct place</li>
+              <li>you have two Foundation piles to play a card to</li>
+              <li>the twin card is below your card on the Tableau pile</li>
+              <li>etc.</li>
+            </ul>
+          </li>
+        </ul>
+        <ul>
+          <li>If there is no movable card, the Stock is marked by a blue point. Click on Stock to get 8
+            more cards.</li>
+          <li>With the exception of actions on the Stock you can <strong>undo</strong> one or more moves.
+          </li>
+          <li>With a click on <strong>Auto play</strong> you can switch <strong>on/off</strong> this
+            feature.</li>
+        </ul>
+        <h2>Evaluations</h2>
+        <p><img src="img/eval.png" alt="eval" align="left" style="padding: 12px 8px 6px 3px">During the
+          evaluation process each single result of the
+          random process gets a small square. <span style="color: #00f;font-weight:bold;">Blue</span>:
+          your result is better - <span style="color: #999;font-weight:bold;">white</span>: drawn - <span
+            style="color: #f00;font-weight:bold;">red</span>: computer is better - <span
+            style="color: #090;font-weight:bold">green</span>: solved game (result 0); if your result was
+          also 0: <span style="color: #cc0;font-weight:bold">yellow</span>.</p>
+        <h3>Evaluation Indicators</h3>
+        <p>(at bottom right corner of the statistics graph) <br><strong>Left</strong>: Was the game
+          solvable? Yes: square / no: circle; <br>Was your result better than the minimum? Blue, otherwise
+          red.<br><strong>Right</strong>: Upper part: color comparison to the mean. Below: "result"</p>
+        <h3>Thanks</h3>
+        <p>Thanks to Karen Morris for editing the texts. The nostalgic card faces are still the ones by
+          Mike Casteel. The new ones are <a href="#"
+            onclick="window.open(encodeURI('http://code.google.com/p/vectorized-playing-cards/#phonegap=external'), '_system')">Vectorized
+            Playing Cards 1.3</a>, Copyright 2011 - Chris Aguilar, Licensed under <a href="#"
+            onclick="window.open(encodeURI('http://www.gnu.org/copyleft/lesser.html#phonegap=external'), '_system')">LGPL
+            3</a></p>
+      </div>
+    </section>
+
+
+    <section id="section4" style="display: none;">
+      <div class="restricted-div rules">
+
+        <div><img src="img/mittelholzer_strip.png" width="100%"></div>
+        <div class="rules">
+          <center>
+            <h1>Gallery Solitaire</h1>Version 3.0, © 2023, Adrian Herzog<br><br>
+            <table border="0">
+              <tbody>
+                <tr>
+                  <td align="center" width="31">
+                    <a href="#" onclick="window.open(encodeURI('https://gallery.mapresso.com'), '_system')">
+                      https://gallery.mapresso.com
+                    </a>
+                    <a href="#" onclick="window.open(encodeURI('https://gallery.mapresso.com'), '_system')">
+                      <img src="resources/icons/29.png" width="29" "height=" 29" align="middle">
+                    </a>
+                    <a href="#" onclick="window.open(encodeURI('https://twitter.com/gallerysol1'), '_system')">
+                      <img src="data/img/Twitter_Social_Icon_Circle_Color.png" width="29" "height=" 29" align="middle">
+                    </a>
+                    <a href="#"
+                      onclick="window.open(encodeURI('https://www.facebook.com/Gallery-Solitaire-113763543718658'), '_system')">
+                      <img src="data/img/f_logo_RGB-Blue_58.png" width="29" "height=" 29" align="middle">
+                    </a>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </center>
+        </div>
+
+        <br>
+        <h2>Preferences</h2>
+        <h3>Animation Speed</h3>
+
+        <!-- <label for="customRange1" class="form-label">Animation Speed</label><br> -->
+        <input type="range" class="form-range" id="speedrange" min="-1000" max="-1">
+        <br>Moving speed of cards (slow → fast)
+ <br> <br>
+        <h3>Computer Aided Playing</h3>
+        <br>
+
+        <div class="form-check form-switch">
+          <input class="form-check-input" type="checkbox" role="switch" checked id="showMoveable"
+            style="transform: scale(1.6); margin: 0 20px 5px -20px">
+          <label class="form-check-label" for="flexSwitchCheckChecked">Show moveable cards</label>
+        </div>
+        <br>
+
+        <div class="form-check form-switch">
+          <input class="form-check-input" type="checkbox" role="switch" checked id="doAutoMoves"
+            style="transform: scale(1.6); margin: 0 20px 5px -20px">
+          <label class="form-check-label" for="flexSwitchCheckChecked">Do auto moves</label>
+        </div>
+ <br>
+        <div class="form-check form-switch">
+          <input class="form-check-input" type="checkbox" role="switch" id="showAutoMoveReason"
+            style="transform: scale(1.6); margin: 0 20px 5px -20px">
+          <label class="form-check-label" for="flexSwitchCheckDefault">Show auto move reason</label>
+          <br><br>
+            <h3>Auto move reasons</h3><br>
+
+            <p><i>Twin</i> = card of same suit and rank</p>
+
+            <ul>
+              <li><i>T ok</i>: Twin is already ok.</li>
+              <li><i>2 poss</i>: There are two possibilities for this card.</li>
+              <li><i>F clean</i>: Foundation row is completely clean.</li>
+              <li><i>just 1</i>: At the end and just one card movable.</li>
+              <li><i>T row</i>: Twin is on the same foundation row.</li>
+              <li><i>Tbelow</i>: Twin lies under this card.</li>
+              <li><i>T botm</i>: Twin (image) lies directly at the bottom.</li>
+              <li><i>TuBase</i>: Twin lies directly under its own base.</li>
+            </ul>
+        </div>
+
+        <br>
+        <h2>Statistics</h2>
+
+
+        <p><button type="button" class="btn btn-primary" id="exportButton">Export Statistics</button><br>
+          Include your game results in an email
+          (in CSV format) for further evaluation.</p>
+
+        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#resetStats">
+          Reset Statistcs
+        </button><br>
+        Delete yout statistics records and start at zero.
+
+        <div class="modal fade" id="resetStats" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+          aria-labelledby="resetStatsLabel" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h1 class="modal-title fs-5" id="resetStatsLabel">Modal title</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                You will lose all your statistics data. This cannot be undone. Continue?
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-danger" id="resetButton">Yes, Reset</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+
+    </section>
+  </div>
+  </div>
+
+
+
+  <!-- Footer Navigation -->
+  <center>
+    <nav class="navbar fixed-bottom navbar-light bg-light center">
+      <div class="container center">
+        <ul class="nav justify-content-center">
+          <li class="nav-item">
+            <a class="nav-link" href="#" onclick="showSection('section1')"><i class="bi-heart-fill"></i><br><span
+                class="bold-text">Play</span></a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#" onclick="showSection('section2')"><i
+                class="bi-bar-chart-line"></i><br><span>Statistics</span></a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#" onclick="showSection('section3')"><i
+                class="bi-book"></i><br><span>Rules</span></a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#" onclick="showSection('section4')"><i
+                class="bi-gear"></i><br><span>Options</span></a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+  </center>
+
+
+  <!-- <script src="https://kit.fontawesome.com/a076d05399.js"></script> -->
+  <!-- Bootstrap JS link (replace with the actual link) -->
+
+  <!-- Include Bootstrap JS (jQuery and Popper.js are required) -->
+
+  <!-- <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script> -->
+  <script src="libs/jquery-3.5.1.slim.min.js"></script>
+
+  <!-- <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script> -->
+  <script src="libs/popper.min.js"></script>
+
+  <!-- <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script> -->
+  <script src="libs/bootstrap.min.js"></script>
+
+  <!-- <script src="https://kit.fontawesome.com/a076d05399.js"></script> -->
+
+  <script>
+    function showSection(sectionId) {
+      // Hide all sections
+      document.querySelectorAll("section").forEach((section) => {
+        section.style.display = "none";
+      });
+
+      // Show the selected section
+      document.getElementById(sectionId).style.display = "block";
+      document.getElementById("defaultCanvas0").style.display = sectionId == "section1" ? "block" : "none";
+    }
+  </script>
+
+  <script>
+    $(document).ready(function () {
+      $('.nav-item').click(function () {
+        // Remove the active class from all items
+        $('.nav-item').removeClass('active');
+
+        // Add the active class to the clicked item
+        $(this).addClass('active');
+
+        // Remove the bold-text class from all <span> elements
+        $('.nav-item a span').removeClass('bold-text');
+        $('.nav-item i').each(function () {
+          var iconClass = $(this).attr('class');
+          if (iconClass && iconClass.endsWith('-fill')) {
+            $(this).attr('class', iconClass.substring(0, iconClass.lastIndexOf('-fill')));
+          }
+        });
+        // Add "-fill" to the <i> element inside the clicked item
+        $(this).find('i').each(function () {
+          var iconClass = $(this).attr('class');
+          $(this).attr('class', iconClass + '-fill');
+        });
+
+        // Add the bold-text class to the <span> element inside the clicked item
+        $(this).find('a span').addClass('bold-text');
+      });
+
+      console.log("switches");
+
+      const switchshowMoveable = document.getElementById("showMoveable");
+      switchshowMoveable.addEventListener("change", function () {
+        global_show = switchshowMoveable.checked ? 1 : 0;
+        mustDraw = true;
+        allDraw();
+      });
+
+      const switchdoAutoMoves = document.getElementById("doAutoMoves");
+      switchdoAutoMoves.addEventListener("change", function () {
+        global_auto = switchshowAutoMoveReason.checked ? 1 : 0;
+        mustDraw = true;
+        allDraw();
+      });
+
+      const switchshowAutoMoveReason = document.getElementById("showAutoMoveReason");
+      switchshowAutoMoveReason.addEventListener("change", function () {
+        global_sayAuto = switchshowAutoMoveReason.checked ? 1 : 0;
+        mustDraw = true;
+        switchdoAutoMoves.disabled = switchshowAutoMoveReason.checked ? true : false;
+      });
+
+      const exportButton = document.getElementById("exportButton");
+      exportButton.addEventListener("click", function () {
+        exportStatisticsAsCsv();
+      });
+
+      const resetButton = document.getElementById("resetButton");
+      resetButton.addEventListener("click", function () {
+        resetStatistics();
+        doStatTable()
+        $('#resetStats').modal('hide');
+
+      });
+
+    function handleRangeInput(rangeElement) {
+        const output = document.getElementById("output");
+        rangeElement.addEventListener("input", function() {
+          old_global_mtime = global_mtime;
+          global_mtime = -rangeElement.value;
+        });
+    }
+
+    const speedrange = document.getElementById("speedrange");
+    speedrange.value = -global_mtime;
+    handleRangeInput(speedrange);
+
+    });
+
+    // Wait for the document to be ready
+    // Initialize the Bootstrap Switch plugin
+  </script>
+
+  <script src="cordova.js"></script>
+  <script src="js/start.js" defer></script>
+
+</body>
+
+</html>
