@@ -1,10 +1,8 @@
 // import java.util.Date;
 // galleryjs -------------------------------------------------------------
 
-/* @pjs font="resources/data/helveticaneueultralight.ttf"; preload="resources/data/img/allcards.gif,resources/data/img/newcards.png,resources/data/img/newcards2013.png,resources/data/img/numbersandcolors.png,resources/data/img/numbersandcolors.png,resources/data/photos/adula.png,resources/data/photos/mittelholzer.png,resources/data/photos/mittelholzer2.png,resources/data/photos/clariden.png,resources/data/photos/gelb.png,resources/data/photos/img_0611b.png,resources/data/photos/img_0812b.png,resources/data/photos/img_1021b.png,resources/data/photos/img_1029b.png,resources/data/photos/img_1049b.png,resources/data/photos/img_1058b.png,resources/data/photos/img_1080b.png,resources/data/photos/img_1119b.png,resources/data/photos/img_1125b.png,resources/data/photos/img_1144b.png,resources/data/photos/img_1536b.png,resources/data/photos/img_1747b.png,resources/data/photos/img_1972b.png,resources/data/photos/img_2070b.png,resources/data/photos/img_2225b.png,resources/data/photos/img_2856b.png,resources/data/photos/img_2867b.png,resources/data/photos/pratod.png,resources/data/photos/terri.png,resources/data/photos/terribw.png,resources/data/photos/toedi.png,resources/data/photos/uomo.png,resources/data/photos/grafik.png,resources/data/photos/cassimoi.png"; 
- */
+// @pjs font="resources/data/helveticaneueultralight.ttf"; 
 
-// 
 // Todo: OkChecks gleich beim Zug abhaken
 // evaluation quasi parallel?
 // auswertung bis die anzahl unterschiedlicher resultate lange nicht mehr ändert
@@ -14,12 +12,10 @@
 // rechts aussen: tableau von klick auf stack mitbetroffen
 // schnell und häufiges new: unklare situation
 
-// let global_helplevel;
 // Constants, defaults
 
 // --------------------------------------------------------------
 // top left of Foundation, Tableau, Aces, Stock
-
 let jsstoreCon;
 
 let version = "Version 3.0"; // a
@@ -108,7 +104,7 @@ let cards = new Array(104);
 let randbuffer = new Array();
 
 let nEvals0 = 0;
-let nEvalsEnd0;
+let nEvalsEnd0 = 0;
 
 let nrEval = 0;
 let evaluating = false;
@@ -134,14 +130,14 @@ let translationStrings;
 let dbLoaded = false;
 let caption;
 
-  let shortTxt = [
-        "", "T ok", "2 poss", "F clean", "just 1", "T botm",
-        "T row", "Tbelow", "T botm", "TuBase", "Tjammed"
-    ];
+let shortTxt = [
+  "", "T ok", "2 poss", "F clean", "just 1", "T botm",
+  "T row", "Tbelow", "T botm", "TuBase", "Tjammed"
+];
 
-    let longTxt = [
-        "", "Twin is already ok.", "There are two possibilities for this card.", "Foundation row is completely clean.", "At the end and just one card movable.", "Twin lies directly at the bottom (F).", "Twin is on the same foundation row.", "Twin lies under this card.", "Twin lies directly at the bottom (T).", "Twin lies directly under its base.", "Twin lies directly under its own base."
-    ];
+let longTxt = [
+  "", "Twin is already ok.", "There are two possibilities for this card.", "Foundation row is completely clean.", "At the end and just one card movable.", "Twin lies directly at the bottom (F).", "Twin is on the same foundation row.", "Twin lies under this card.", "Twin lies directly at the bottom (T).", "Twin lies directly under its base.", "Twin lies directly under its own base."
+];
 
 function preload() {
   My.print("*************** preload");
@@ -150,11 +146,13 @@ function preload() {
   dataPathPhotos = "data/photos/";
   newCards = loadImage(dataPathImg + "newcards2013.png");
   numbcol = loadImage(dataPathImg + "numbersandcolors.png");
-  translationStrings = loadStrings(dataPath + "translations.txt");
+  // translationStrings = loadStrings(dataPath + "translations.txt");
   myFont = loadFont("data/Roboto-Light.ttf");
 }
 
 function setup() {
+
+  
   My.print("*************** setup");
   getAllPrefs();
 
@@ -252,7 +250,6 @@ function setup() {
 
   newGame();
   My.print("processing end setup: " + millis() / 1000.0);
-  //   zeitAuswertungen();
   smooth();
 
   jsstoreCon = new JsStore.Connection();
@@ -263,7 +260,7 @@ function setup() {
 
 function drawE() {
   btnUndo.draw(false);
-  fill(25);
+  fill(255);
   rect(XRES - 20, YRES - 20, 40, 40)
   statistics.drawEvaluationLegend(resPlayer, YRES - ifact * 30);
   textFont(myFont, F14);
@@ -367,7 +364,6 @@ function draw() {
     }
   }
   allDraw();
-  // if (reduce) Ext.getDom("sketch").style = " -webkit-transform: scale3d(0.5, 1.5, 0) translate3d(200px, 110px, 0);";
 }
 
 function evalGame(alphanow) {
@@ -414,7 +410,7 @@ function tryToMove(alfa) {
     serie32[i] = k;
     allPiles[k].doMovableCheck();
     if (allPiles[k].movable) {
-      //      My.print(k, allPiles[k].kind, allPiles[k].ziel.kind);
+      // My.print(k, allPiles[k].kind, allPiles[k].ziel.kind);
       doEvalMove2(allPiles[k], allPiles[k].ziel);
       return true;
     }
@@ -491,7 +487,6 @@ function allAutoMovableChecks() {
 
 function somethingMovable() {
   for (let i = 2; i < 34; i++) {
-    //My.print(i, allPiles[i].movable);
     if (allPiles[i].movable) {
       return true;
     }
@@ -508,7 +503,6 @@ function allJamChecks() {
 function drawProgress(part, all) {
   if (part < 10) drawE();
   if (part < 0) {
-    //My.print(statistics.mean + " " + resPlayer);
     noStroke();
     fill(statistics.getResColor(statistics.mean, resPlayer));
     rect(0, YPROGRESS - 0.5 * ifact, width, DYPROGRESS + 0.5 * ifact);
@@ -517,14 +511,11 @@ function drawProgress(part, all) {
     textC("Tap to continue.", width / 2, YRES - ifact * 46);
     fill(255, 200, 12);
     noStroke();
-    //   rect(0, YPROGRESS + DYPROGRESS + 3, width, 0.6 * DYPROGRESS);
-    //  statistics.setResPlayer(resPlayer);
     let nowImage;
     resImage = get(0, 0, width, width);
     nowImage = get(0, 0, width, width);
 
     ifx = 10;
-    // ify = round(ifx / 1.618);
     ify = ifx;
     nowImage.resize(width / ifx, width / ify);
     let ylastgames = width + 230;
@@ -535,7 +526,6 @@ function drawProgress(part, all) {
     stroke(255);
     line(width / ifx, ylastgames, width / ifx, ylastgames + width / ify);
     lastGames = get(0, ylastgames, width, width / ify);
-    //image(lastGames, 0, ylastgames);
     lastGames.loadPixels();
     doSaveResultImage(lastGames);
     // 
@@ -543,12 +533,9 @@ function drawProgress(part, all) {
     let p = float(part) / float(all);
     if (p < drawNext) return;
     drawNext += 0.01;
-    // if (drawNext >= 0.95) drawNext = 1.0;
     fill(255);
     noStroke();
     rect(0, YPROGRESS, width, DYPROGRESS);
-    //    fill(128); 
-    //    rect(0, YPROGRESS + 8 * ifact, p * width, 4 * ifact);
     fill(0, 122, 255);
     fill(122);
     rect(0, YPROGRESS + 16 * ifact, p * width, 4 * ifact);
@@ -563,7 +550,6 @@ function drawProgress(part, all) {
 function allDraw() {
   if (mustDraw) {
     osp = true;
-    //CHECK    offScreen.beginDraw();
     offScreen.background(248);
     offScreen.fill(255);
     offScreen.stroke(255);
@@ -583,7 +569,6 @@ function allDraw() {
     let ylastgames = width + 230;
     offScreen.image(lastGames, 0, ylastgames);
 
-    //CHECK        offScreen.endDraw();
     mustDraw = false;
     osp = false;
   }
@@ -591,7 +576,6 @@ function allDraw() {
   if (!evaluated) {
     image(offScreen, 0, 0);
   } else {
-    // HERE
     stroke(255);
     fill(255);
     rect(0, ifact * 350, width, ifact * 80);
@@ -605,7 +589,6 @@ function allDraw() {
 
   if (humanPlayer)
     btnUndo.draw(moveStack.nMoves > 0 && res != 0);
-  //btnAuto.draw3(true, !global_noHelp);
 
   if (humanPlayer) {
     let nact = moverCollection.draw();
@@ -613,7 +596,6 @@ function allDraw() {
       mustDraw = true;
     }
   } else {
-    // copy(0, 0, 320, 320, 144, 430, 96, 96);
     drawHisto(XSTAT, YHISTO - ifact * 2);
     drawStatistics(XSTAT, YSTAT - ifact * 10);
     fill(statistics.getResColor(statistics.mean, resPlayer));
@@ -758,7 +740,6 @@ function noMovables() {
 }
 
 function mouseClicked() {
-  // dirty = true;
   loop();
   let x = mouseX;
   let y = mouseY;
@@ -784,6 +765,9 @@ function mouseClicked() {
     nrbox = 0;
     btnNew.draw(false);
     btnRedo.draw(false);
+
+    statistics.drawEvaluationLegend(resPlayer, YRES - ifact * 30);
+
     if (resPlayer > 0 || (resPlayer == 0 && evaluated)) {
       fill(0);
       stroke(0);
@@ -791,13 +775,10 @@ function mouseClicked() {
     }
     statistics.setResPlayer(resPlayer);
     drawNext = 0.0;
-    if (global_evaluations == 250) {
-      dx1res = ifact * 20;
-      dy1res = ifact * 20;
-    } else {
-      dx1res = ifact * 10;
-      dy1res = ifact * 10;
-    }
+
+    dx1res = ifact * 10;
+    dy1res = ifact * 10;
+
     nEvaluationsEnd += global_evaluations;
     nEvalsEnd0 += global_evaluations;
     if (y1res < 20 || global_evaluations == 1000) {

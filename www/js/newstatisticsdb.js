@@ -391,11 +391,26 @@ function updateStats(results) {
     ].join('');
     // My.print(statText);
 
+    stab = [];
+    for (let i = 1; i < global_autostat.length; i++) {
+        stab.push(
+            {
+                "short": shortTxt[i],
+                "long": longTxt[i],
+                "n": global_autostat[i],
+            }
+        );
+    }
+    function compareByN(a, b) {
+        return b.n - a.n;
+    }
+    stab.sort(compareByN);
+
     let totalauto = global_autostat.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
 
-    rrr = '<h3>Auto move reasons</h3><table class="table table-sm statsummary" border="0.0px" style="font-size: 11px">';
-    for (let i = 1; i < global_autostat.length; i++) {
-        rrr += "<tr><td class='text-start'>" + shortTxt[i] + "</td><td class='text-start'>" + longTxt[i] + "</td><td>" + percent(global_autostat[i], totalauto, 2) + " %</td></tr>";
+    rrr = '<h3>Auto move reasons</h3><p><i>T, Twin</i> = card of same suit and rank<br>' + totalauto + ' auto moves.</p><table class="table table-sm statsummary" border="0.0px" style="font-size: 11px">';
+    for (let i = 0; i < stab.length; i++) {
+        rrr += "<tr><td class='text-start'>" + stab[i].short + "</td><td class='text-start'>" + stab[i].long + "</td><td>" + percent(stab[i].n, totalauto, 2) + " %</td></tr>";
     }
     rrr += "</table></div>";
     statText += rrr;

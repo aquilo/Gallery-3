@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
 
@@ -50,14 +50,14 @@
   <div class="container mt-5">
 
     <section id="section1">
-      <center>
-        <div class="app"></div>
-      </center>
+      <div id="p5_loading" class="loadingclass"><img src="img/mittelholzer_strip.png"
+          alt="Historical aerial photo of the Adula"></div>
+      <div class="app"></div>
     </section>
 
     <section id="section2" style="display: none;">
-            <div class="restricted-div">
-      <div id="statisticstext"></div>
+      <div class="restricted-div">
+        <div id="statisticstext"></div>
       </div>
     </section>
 
@@ -73,7 +73,7 @@
           a few times.</p>
         <h1>Details</h1>
         <h2>Layout</h2>
-        <center><img src="img/screen.png" alt="game" width="214" height="248"></center><br>
+        <div style="text-align: center"><img src="img/screen.png" alt="game" width="214" height="248"></div><br>
         <h3>Foundation</h3>
         <p>24 piles: 3 rows with 8 columns.</p>
         <p>Empty spots can be filled with the <strong>base cards "2", "3", and "4"</strong>, as above.
@@ -114,7 +114,7 @@
         <h3>Winning situation</h3>
         <p>You build a complete gallery of all face cards, removing all cards from the Tableau (score: 0)
         </p>
-        <center><img src="img/gallery_success.png" alt="Winning situation"></center>The
+        <div style="text-align: center"><img src="img/gallery_success.png" alt="Winning situation"></div>The
         appearing photos are all from <a href="#"
           onclick="window.open(encodeURI('http://www.myswitzerland.com/en/blenio-valley-valle-di-blenio.html#phonegap=external'), '_system')">Blenio
           Valley</a>, Ticino, Switzerland<p></p>
@@ -156,7 +156,7 @@
             feature.</li>
         </ul>
         <h2>Evaluations</h2>
-        <p><img src="img/eval.png" alt="eval" align="left" style="padding: 12px 8px 6px 3px">During the
+        <p><img src="img/eval.png" alt="eval" style="padding: 12px 8px 6px 3px">During the
           evaluation process each single result of the
           random process gets a small square. <span style="color: #00f;font-weight:bold;">Blue</span>:
           your result is better - <span style="color: #999;font-weight:bold;">white</span>: drawn - <span
@@ -181,67 +181,68 @@
     <section id="section4" style="display: none;">
       <div class="restricted-div rules">
 
-        <div><img src="img/mittelholzer_strip.png" width="100%"></div>
+        <div><img src="img/mittelholzer_strip.png" width="640" alt=""></div>
         <div class="rules">
-          <center>
-            <h1>Gallery Solitaire</h1>Version 3.0, © 2023, Adrian Herzog<br><br>
-            <table border="0">
+          <div style="text-align: left; margin-top: 23px;">
+            <h1>Gallery Solitaire</h1>
+            <p>Version 3.0, &copy; 2023, Adrian Herzog<br></p>
+            <table style="border:2px">
               <tbody>
                 <tr>
-                  <td align="center" width="31">
+                  <td style="text-align: left;">
                     <a href="#" onclick="window.open(encodeURI('https://gallery.mapresso.com'), '_system')">
                       https://gallery.mapresso.com
-                    </a>
-                    <a href="#" onclick="window.open(encodeURI('https://gallery.mapresso.com'), '_system')">
-                      <img src="resources/icons/29.png" width="29" "height=" 29" align="middle">
-                    </a>
-                    <a href="#" onclick="window.open(encodeURI('https://twitter.com/gallerysol1'), '_system')">
-                      <img src="data/img/Twitter_Social_Icon_Circle_Color.png" width="29" "height=" 29" align="middle">
-                    </a>
-                    <a href="#"
-                      onclick="window.open(encodeURI('https://www.facebook.com/Gallery-Solitaire-113763543718658'), '_system')">
-                      <img src="data/img/f_logo_RGB-Blue_58.png" width="29" "height=" 29" align="middle">
-                    </a>
+                    </a><br><br>
+                    <p>
+                      <a href="#" onclick="window.open(encodeURI('https://gallery.mapresso.com'), '_system')">
+                        <img src="resources/icons/29.png" width="29" height="29" alt="Gallery Icon">
+                      </a>
+                      <a href="#" onclick="window.open(encodeURI('https://twitter.com/gallerysol1'), '_system')">
+                        <img src="data/img/Twitter_Social_Icon_Circle_Color.png" width="29" height="29"
+                          alt="Twitter Icon">
+                      </a>
+                      <a href="#"
+                        onclick="window.open(encodeURI('https://www.facebook.com/Gallery-Solitaire-113763543718658'), '_system')">
+                        <img src="data/img/f_logo_RGB-Blue_58.png" width="29" height="29" alt="Facebook Icon">
+                      </a></p>
                   </td>
                 </tr>
               </tbody>
             </table>
-          </center>
-        </div>
+            <br>
+          </div>
+          <hr>
+          <h2>Preferences</h2>
+          <h3>Animation Speed</h3>
 
-        <br>
-        <h2>Preferences</h2>
-        <h3>Animation Speed</h3>
+          <!-- <label for="customRange1" class="form-label">Animation Speed</label><br> -->
+          <input type="range" class="form-range" id="speedrange" min="-1000" max="-1">
+          <br>Moving speed of cards (slow → fast)
+          <br> <br>
+          <h3>Computer Aided Playing</h3>
+          <br>
 
-        <!-- <label for="customRange1" class="form-label">Animation Speed</label><br> -->
-        <input type="range" class="form-range" id="speedrange" min="-1000" max="-1">
-        <br>Moving speed of cards (slow → fast)
- <br> <br>
-        <h3>Computer Aided Playing</h3>
-        <br>
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" role="switch" checked id="showMoveable"
+              style="transform: scale(1.6); margin: 0 20px 5px -20px">
+            <label class="form-check-label" for="flexSwitchCheckChecked">Show moveable cards</label>
+          </div>
+          <br>
 
-        <div class="form-check form-switch">
-          <input class="form-check-input" type="checkbox" role="switch" checked id="showMoveable"
-            style="transform: scale(1.6); margin: 0 20px 5px -20px">
-          <label class="form-check-label" for="flexSwitchCheckChecked">Show moveable cards</label>
-        </div>
-        <br>
-
-        <div class="form-check form-switch">
-          <input class="form-check-input" type="checkbox" role="switch" checked id="doAutoMoves"
-            style="transform: scale(1.6); margin: 0 20px 5px -20px">
-          <label class="form-check-label" for="flexSwitchCheckChecked">Do auto moves</label>
-        </div>
- <br>
-        <div class="form-check form-switch">
-          <input class="form-check-input" type="checkbox" role="switch" id="showAutoMoveReason"
-            style="transform: scale(1.6); margin: 0 20px 5px -20px">
-          <label class="form-check-label" for="flexSwitchCheckDefault">Show auto move reason</label>
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" role="switch" checked id="doAutoMoves"
+              style="transform: scale(1.6); margin: 0 20px 5px -20px">
+            <label class="form-check-label" for="flexSwitchCheckChecked">Do auto moves</label>
+          </div>
+          <br>
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" role="switch" id="showAutoMoveReason"
+              style="transform: scale(1.6); margin: 0 20px 5px -20px">
+            <label class="form-check-label" for="flexSwitchCheckDefault">Show auto move reason</label>
+          </div>
           <br><br>
-            <h3>Auto move reasons</h3><br>
-
+            <h3>Auto move reasons</h3>
             <p><i>Twin</i> = card of same suit and rank</p>
-
             <ul>
               <li><i>T ok</i>: Twin is already ok.</li>
               <li><i>2 poss</i>: There are two possibilities for this card.</li>
@@ -252,9 +253,9 @@
               <li><i>T botm</i>: Twin (image) lies directly at the bottom.</li>
               <li><i>TuBase</i>: Twin lies directly under its own base.</li>
             </ul>
-        </div>
 
-        <br>
+<br>
+        <hr>
         <h2>Statistics</h2>
 
 
@@ -285,16 +286,17 @@
             </div>
           </div>
         </div>
+        </div>
 
+      </div>
 
     </section>
-  </div>
   </div>
 
 
 
   <!-- Footer Navigation -->
-  <center>
+  <div style="text-align: center">
     <nav class="navbar fixed-bottom navbar-light bg-light center">
       <div class="container center">
         <ul class="nav justify-content-center">
@@ -317,7 +319,7 @@
         </ul>
       </div>
     </nav>
-  </center>
+  </div>
 
 
   <!-- <script src="https://kit.fontawesome.com/a076d05399.js"></script> -->
@@ -412,17 +414,17 @@
 
       });
 
-    function handleRangeInput(rangeElement) {
+      function handleRangeInput(rangeElement) {
         const output = document.getElementById("output");
-        rangeElement.addEventListener("input", function() {
+        rangeElement.addEventListener("input", function () {
           old_global_mtime = global_mtime;
           global_mtime = -rangeElement.value;
         });
-    }
+      }
 
-    const speedrange = document.getElementById("speedrange");
-    speedrange.value = -global_mtime;
-    handleRangeInput(speedrange);
+      const speedrange = document.getElementById("speedrange");
+      speedrange.value = -global_mtime;
+      handleRangeInput(speedrange);
 
     });
 

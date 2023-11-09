@@ -154,10 +154,10 @@ class CardPile {
       let nMovable = 0;
       for (let i = 1; i < 34; i++) {
         if (allPiles[i].movable) {
-          this.nMovable++;
+          nMovable++;
           m = i;
         }
-        if (this.nMovable > 1)
+        if (nMovable > 1)
           return false;
       }
       if (nMovable == 1) {

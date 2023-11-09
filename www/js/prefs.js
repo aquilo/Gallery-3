@@ -68,7 +68,7 @@ function doSaveResultImage(img) {
     set1Pref("resimg", base64);
 }
 
-var global_helplevel = 999;
+var global_helplevel = 0;
 var stat_n = 0;
 var stat_player = -1.0;
 var stat_mean = -1.0;

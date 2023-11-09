@@ -37,13 +37,10 @@ class Statistics {
   }
 
   statisticsgraphinit() {
-    if (global_evaluations == 250) {
-      dx1res = ifact * 20;
-      dy1res = ifact * 20;
-    } else {
-      dx1res = ifact * 10;
-      dy1res = ifact * 10;
-    }
+
+    dx1res = ifact * 10;
+    dy1res = ifact * 10;
+
     x1res = -dx1res;
     y1res = 0;
     for (let i = 0; i < global_evaluations; i++) {
@@ -79,7 +76,7 @@ class Statistics {
   }
 
   drawEvaluationLegendOne(i, myres, iy, evnot) {
-    //     if (histo[i] > 1) return;
+    if (this.histo[i] > 1) return; //CHECK
     if (i != 1 && i != 95) {
       let ix, c, dx, dy;
       if (this.histo[i] > 0) {
@@ -97,13 +94,10 @@ class Statistics {
           c = color(255);
         }
       } else {
-        // My.print(this.histo[i]);
-
         if (evnot) {
           return;
         }
         c = this.histo[i] == 0 && i == myres ? color(55) : color(220);
-        // My.print(c);
       }
       noStroke();
       dy = ifact * 9;
@@ -128,7 +122,6 @@ class Statistics {
   }
 
   drawEvaluationLegend(myres, iy) {
-    console.log("drawEvaluationLegend");
     let c;
     let all;
     let jx, dx, dy, drawNext;
@@ -146,60 +139,25 @@ class Statistics {
   }
 
   draw1Result(now, myres) {
-    /*
-    x1res += dx1res;
-    if (x1res >= width) {
-      x1res = 0;
-      y1res += dy1res;
-      if (y1res >= ifact * 310) {
-        y1res = 0;
-      }
-    }
-    */
     x1res = this.boxx[nrbox];
     y1res = this.boxy[nrbox];
     stroke(0);
     this.setResColor(now, myres);
     rect(x1res, y1res, dx1res, dy1res);
     nrbox++;
-
     this.drawEvaluationLegendOne(now, myres, YRES - ifact * 30, true);
-
-    //IDEA plot of a small fingerprint of this game
-
-    /*
-         x2res += dx2res;
-         if (x2res >= x2res0 + ifact * 31) {
-         x2res = x2res0;
-         y2res += dy2res;
-         if (y2res >= y2res0 + ifact * 31) {
-         y2res = y2res0;
-         }
-         }
-         //  stroke(getResColor(float(now), myres));
-         //  print(x2res + " " + y2res);
-         noStroke();
-         rect(x2res, y2res, dx2res, dy2res);
-         stroke(0);
-         //  point(x2res, y2res)
-        */
-
   }
 
   getResColor(now, myres) {
     if (now == myres) {
       if (now == 0) {
-        //        return color(255, 255, 50);
         return color(200);
       } else {
         return color(255);
       }
     } else if (now == 0) {
-      return color(175, 0, 0); //TODO: color
-      //     return color(255, 127, 255); //TODO: color
-      //     return color(255, 100, 220); //TODO: color
+      return color(175, 0, 0);
     }
-
     let amt = min(1.0, max(-1.0, ((now - myres) / 40.0)));
     if (amt > 0) {
       return color(lerpColor(winfrom, winto, amt));
@@ -210,27 +168,6 @@ class Statistics {
 
   setResColor(now, myres) {
     fill(this.getResColor(now, myres));
-    return;
-    /*
-     if (now == myres) {
-      if (now == 0) {
-        fill(255, 255, 150);
-      } else {
-        fill(255);
-      }
-      return;
-    } else if (now == 0) {
-      fill(50, 255, 0); //TODO: color
-      return;
-    }
-
-    float amt = min(1.0, max(-1.0, ((now - myres) / 40.0)));
-    if (amt > 0) {
-      fill(lerpColor(winfrom, winto, amt));
-    } else {
-      fill(lerpColor(lostfrom, lostto, -amt));
-    }
-    */
   }
 
   emptyStat() {
@@ -367,20 +304,6 @@ function drawHisto(x0, y0) {
     rect(xx + (i * ifact * 2) * 10 - ifact, y + ifact * 4, ifact * 20, dy - ifact * 9);
   }
 
-  /*
-  stroke(100, 100);
-  int nsum = 0;
-  int yold = ybasis;
-  fhisto = (float) statistics.n / (float) (dy0 - 10);
-  for (let i = 0; i < 97; i++) {
-    nsum += statistics.histo[i];
-    int xnow = xx + i * ifact * 2;
-    ynow = 2 + ybasis
-        - ifact * Math.max((int) (nsum / fhisto), 1);
-     line(xnow - ifact * 2, yold, xnow, ynow);
-    yold = ynow;
-  }
-*/
   stroke(255);
   let ynow;
   let ffhisto = float(statistics.n) / float((dy0 - 10));
@@ -430,21 +353,7 @@ function drawHisto(x0, y0) {
       rect(xnow, ybasis, ifact, ynow - ybasis);
     }
   }
-  /*
-  stroke(55);
-  int nsum = 0;
-  int yold = ybasis;
-  fhisto = (float) statistics.n / (float) (dy0 - 10);
-  stroke(0, 127);
-  for (let i = 0; i < 97; i++) {
-    nsum += statistics.histo[i];
-    int xnow = xx + i * ifact * 2;
-    ynow = ybasis
-        - ifact * Math.max((int) (nsum / fhisto), 1);
-     line(xnow - ifact * 2, yold, xnow, ynow);
-    yold = ynow;
-  }
-  */
+ 
   stroke(0);
   noFill();
   line(xx, ybasis + ifact * 2, xx + ifact * 192, ybasis + ifact * 2);
@@ -484,8 +393,6 @@ function drawResult(x, y) {
   noStroke();
   fill(127);
   rect(x, y, 2 * (statistics.less + statistics.equal), dy);
-
-  //  fill(255, 128, 128);
   fill(statistics.getResColor(30.0, 40));
   rect(x, y, statistics.less * 2, dy);
   stroke(0);
@@ -579,15 +486,14 @@ function drawStatistics(x0, y0) {
   fill(statistics.getResColor(this.resultf, 50.0));
   rect(xm - ifact * 14, y - ifact * 7, ifact * 14, ifact * 7);
 
-  //print(global_statistics.n + " " + global_statistics0.n);
-  //print("***" + HEIGHT0);
-  if (HEIGHT0 > 96000) {
-    let evaluationText = getEvaluationText();
-    print(evaluationText);
-    My.msg(evaluationText);
-  }
+  // if (HEIGHT0 > 96000) {
+  //   let evaluationText = getEvaluationText();
+  //   print(evaluationText);
+  //   My.msg(evaluationText);
+  // }
 }
 
+/*
 function getEvaluationText() {
   // String txt = resPlayer + " pts. / " + statistics.this.str_result + "%:  Your result is";
   let txt = "";
@@ -673,7 +579,7 @@ function getEvaluationText() {
   }
   return txt;
 }
-
+ */
 function setStatisticsColor(res, indicator) {
   if (res == indicator) {
     fill(0);
