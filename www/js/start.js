@@ -9,15 +9,15 @@ console.log("addEventListener")
  * @param {*} url 
  */
 function dynamicallyLoadScript(url) {
-    My.print("*** dynamicallyLoadScript " + url);
     const script = document.createElement('script');
     script.src = url;
     document.head.appendChild(script);
+    My.print("*** dynamicallyLoadScript " + url);
 }
 
 function onDeviceReady() {
     // Cordova is now initialized. Have fun!
-
+    dynamicallyLoadScript('libs/p5.min.js');
     My.print('*** DeviceReady: Running cordova-' + cordova.platformId + '@' + cordova.version);
 
     // add eventlistener when orientation changes, to resize p5-canvas
@@ -29,7 +29,7 @@ function onDeviceReady() {
     document.addEventListener('menubutton', onMenuKeyDown, false);
     
     // load p5.js library
-    dynamicallyLoadScript('libs/p5.min.js');
+
     // load galleryjs.js, where you can find p5-code
     dynamicallyLoadScript('js/galleryjs.js');
 }

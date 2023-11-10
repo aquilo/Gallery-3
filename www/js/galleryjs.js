@@ -136,7 +136,7 @@ let shortTxt = [
 ];
 
 let longTxt = [
-  "", "Twin is already ok.", "There are two possibilities for this card.", "Foundation row is completely clean.", "At the end and just one card movable.", "Twin lies directly at the bottom (F).", "Twin is on the same foundation row.", "Twin lies under this card.", "Twin lies directly at the bottom (T).", "Twin lies directly under its base.", "Twin lies directly under its own base."
+  "", "Twin is already ok.", "There are two possibilities for this card.", "The foundation row is completely clean.", "At the end and only one card can be moved.", "Twin is directly at the bottom (F).", "Twin is on the same foundation row.", "Twin is below this card.", "Twin is directly at the bottom (T).", "Twin lies directly under its base.", "Twin lies directly under its own base."
 ];
 
 function preload() {
