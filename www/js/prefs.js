@@ -75,7 +75,7 @@ var stat_mean = -1.0;
 var global_steps = 16;
 var global_mtime = 400;
 var global_sayAuto = 0;
-var screenwidth = 500;
+var screenwidthNew = 500;
 var global_evaluations = 1000;
 var global_resimg;
 var global_auto = 1;

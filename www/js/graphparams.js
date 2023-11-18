@@ -1,17 +1,18 @@
 function detectDevice() {
-  let widthDraw = 640;
-  reduce = (widthDraw == 640);
+  console.log("window: " + windowWidth + " / " + windowHeight);
+  let widthNewDraw = 640;
+  reduce = (widthNewDraw == 640);
   //TEST
   ifact = reduce ? 2 : 1;
   if (debug) {
-    print("screen: " + screen.width + " / " + screen.height);
-    print("widthDraw: " + widthDraw);
+    print("screen: " + screen.widthNew + " / " + screen.height);
+    print("widthNewDraw: " + widthNewDraw);
     print("reduce: " + reduce);
     print("ifact: " + ifact);
   }
-  if (screen.width == 375) {
+  if (screen.widthNew == 375) {
     device = "iPhone6";
-  } else if (screen.width == 414) {
+  } else if (screen.widthNew == 414) {
     device = "iPhone6s";
   } else {
     device = "iPhone";
@@ -27,9 +28,18 @@ function setGraphParams() {
   } else {
     HEIGHT0 = ifact * 480;
   }
+  if (windowWidth < 640) {}
+  scaleFactor = min(1.0, windowWidth / 640.0);
+  scaleFactor = min(scaleFactor, windowHeight / 1006.0);
+  console.log("Window: " + windowWidth + " / " + windowHeight);
+
   offScreen = createGraphics(WIDTH0, HEIGHT0); // iphone5: 640 * 1136
+  console.log("Offscreen-Canvas: " + WIDTH0 + " / " + HEIGHT0);
+  console.log("scaleFactor: " + scaleFactor);
+
   F9 = ifact * 9;
   F10 = ifact * 10;
+  F11 = ifact * 11;
   F12 = ifact * 12;
   F14 = ifact * 14;
   F16 = ifact * 16;
@@ -38,7 +48,7 @@ function setGraphParams() {
 
   XSF = reduce ? 7 : 5;
   YSF = XSF;
-  DXSF = CARDWIDTH + (reduce ? 7 : 2);
+  DXSF = CARDwidthNew + (reduce ? 7 : 2);
   DYSF = CARDHEIGHT + (reduce ? 7 : 4);
 
   XRIGHT = WIDTH0 - ifact * (reduce ? 7 : 3);
@@ -56,7 +66,7 @@ function setGraphParams() {
   }
   DXSA = 0;
   DYSA = 0;
-  XSS = XRIGHT - ifact * 4 - CARDWIDTH;
+  XSS = XRIGHT - ifact * 4 - CARDwidthNew;
   YSS = YSA;
   DXSS = 3;
   DYSS = 0;
@@ -65,18 +75,18 @@ function setGraphParams() {
   HBN = ifact * 20;
   WBU = WBN;
   HBU = HBN;
-  WBE = CARDWIDTH;
+  WBE = CARDwidthNew;
   HBE = CARDHEIGHT;
   WBF = ifact * 75;
   HBF = ifact * 20;
 
-  XBN = CARDWIDTH * 2;
+  XBN = CARDwidthNew * 2;
   YBN = YSS + CARDHEIGHT - HBN; //YBN = YSS + CARDHEIGHT / 2 - 2;
   XBU = XBN;
   YBU = YSS;
   XBE = XSS;
   YBE = YSS;
-  XBF = XSS - round(2.5 * CARDWIDTH);
+  XBF = XSS - round(2.5 * CARDwidthNew);
   YBF = YSS;
 
   XRES = XSS - 29;
@@ -86,7 +96,7 @@ function setGraphParams() {
   XSTAT = ifact * 60;
   YSTAT = ifact * 150;
 
-  XRES = (XBE + XBF + CARDWIDTH) / 2;
+  XRES = (XBE + XBF + CARDwidthNew) / 2;
   YRES = YSS + CARDHEIGHT / 2;
   XHISTO = XSTAT;
   YHISTO = YSTAT - ifact * 114;
@@ -131,10 +141,8 @@ function setGraphParams() {
   DXMSG = ifact * (320 - 2 * 20);
 }
 
-
 function setCards() {
-
-  CARDWIDTH = 72;
+  CARDwidthNew = 72;
   CARDHEIGHT = 100;
 
   cardImages = initialize3DArray(3, 4, 13, "");

@@ -20,29 +20,12 @@
   <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"> -->
   <link rel="stylesheet" href="csslib/all.min.css">
 
-  <!-- <link rel="stylesheet" href="css/bootstrap-icons.css"> -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-  <!-- <link rel="stylesheet" href="csslib/bootstrap-icons.css"> -->
-
+  <!--  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">-->
+  <link rel="stylesheet" href="csslib/bootstrap-icons.css">
 
   <!-- https://mode.fh-joanneum.at/cola/p5.js-cordova-demo-app/-/blob/main/www/js/sketch.js -->
 
-  <script src="libs/jsstore.js"></script>
-  <script src="libs/jsstore.worker.js"></script>
-  <script src="js/newstatisticsdb.js"></script>
-  <script src="js/prefs.js"></script>
-  <script src="js/Statistics.js"></script>
-  <script src="js/Button.js"></script>
-  <script src="js/MoveStack.js"></script>
-  <script src="js/CardPile.js"></script>
-  <script src="js/SpecialCardPiles.js"></script>
-  <script src="js/Card.js"></script>
-  <script src="js/Movers.js"></script>
-  <script src="js/graphparams.js"></script>
-  <script src="js/My.js"></script>
-
-  <!-- <script src="libs/jquery.js" defer></script> -->
-
+  <script src="libs/p5.min.js"></script>
 </head>
 
 <body>
@@ -50,9 +33,11 @@
   <div class="container mt-5">
 
     <section id="section1">
-      <div id="p5_loading" class="loadingclass"><img src="img/mittelholzer_strip.png"
-          alt="Historical aerial photo of the Adula"></div>
-      <div class="app"></div>
+      <div id="p5_loading" class="loadingclass">
+        <!-- <img src="img/mittelholzer_strip.png"
+          alt="Historical aerial photo of the Adula">
+        </div> -->
+        <div class="app"></div>
     </section>
 
     <section id="section2" style="display: none;">
@@ -177,7 +162,6 @@
       </div>
     </section>
 
-
     <section id="section4" style="display: none;">
       <div class="restricted-div rules">
 
@@ -218,7 +202,7 @@
           <!-- <label for="customRange1" class="form-label">Animation Speed</label><br> -->
           <input type="range" class="form-range" id="speedrange" min="-1000" max="-1">
           <br>Speed at which cards move (slow → fast)
-          <br> <br>
+          <br><br>
           <h3>Computer Aided Playing</h3>
           <br>
 
@@ -235,51 +219,49 @@
             <label class="form-check-label" for="flexSwitchCheckChecked">Make auto moves</label>
           </div>
           <br>
+
           <div class="form-check form-switch">
             <input class="form-check-input" type="checkbox" role="switch" id="showAutoMoveReason"
               style="transform: scale(1.6); margin: 0 20px 5px -20px">
-            <label class="form-check-label" for="flexSwitchCheckDefault">Show auto-move reason. For the reasons for the auto moves, see the statistics tab.</label>
+            <label class="form-check-label" for="flexSwitchCheckDefault">Show auto-move reason. For the reasons for the
+              auto moves, see the statistics tab.</label>
           </div>
-<br>
-        <hr>
-        <h2>Statistics</h2>
+          <br>
 
+          <hr>
+          <h2>Statistics</h2>
 
-        <p><button type="button" class="btn btn-primary" id="exportButton">Export Statistics</button><br>
-          Include your game results in an email
-          (in CSV format) for further analysis.</p>
+          <p><button type="button" class="btn btn-primary" id="exportButton">Export Statistics</button><br>
+            Include your game results in an email
+            (in CSV format) for further analysis.</p>
 
-        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#resetStats">
-          Reset Statistcs
-        </button><br>
-        Clear your statistics and start from zero.
+          <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#resetStats">
+            Reset Statistcs
+          </button><br>
+          Clear your statistics and start from zero.
 
-        <div class="modal fade" id="resetStats" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
-          aria-labelledby="resetStatsLabel" aria-hidden="true">
-          <div class="modal-dialog">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h1 class="modal-title fs-5" id="resetStatsLabel">Modal title</h1>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-              </div>
-              <div class="modal-body">
-                You will lose all your statistics data. This cannot be undone. Continue?
-              </div>
-              <div class="modal-footer">
-                <button type="button" class="btn btn-danger" id="resetButton">Yes, Reset</button>
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <div class="modal fade" id="resetStats" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+            aria-labelledby="resetStatsLabel" aria-hidden="true">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h1 class="modal-title fs-5" id="resetStatsLabel">Modal title</h1>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                  You will lose all your statistics data. This cannot be undone. Continue?
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-danger" id="resetButton">Yes, Reset</button>
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                </div>
               </div>
             </div>
           </div>
         </div>
-        </div>
-
       </div>
-
     </section>
   </div>
-
-
 
   <!-- Footer Navigation -->
   <div style="text-align: center">
@@ -287,48 +269,63 @@
       <div class="container center">
         <ul class="nav justify-content-center">
           <li class="nav-item">
-            <a class="nav-link" href="#" onclick="showSection('section1')"><i class="bi-heart-fill"></i><br><span
-                class="bold-text">Play</span></a>
+            <a class="nav-link" href="#" onclick="showSection('section1')">
+              <i class="bi-heart-fill"></i><br>
+              <span class="bold-text">Play</span></a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="#" onclick="showSection('section2')"><i
-                class="bi-bar-chart-line"></i><br><span>Statistics</span></a>
+            <a class="nav-link" href="#" onclick="showSection('section2')">
+              <i class="bi-bar-chart-line"></i><br>
+              <span>Statistics</span></a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="#" onclick="showSection('section3')"><i
-                class="bi-book"></i><br><span>Rules</span></a>
+            <a class="nav-link" href="#" onclick="showSection('section3')">
+              <i class="bi-book"></i><br>
+              <span>Rules</span></a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="#" onclick="showSection('section4')"><i
-                class="bi-gear"></i><br><span>Options</span></a>
+            <a class="nav-link" href="#" onclick="showSection('section4')">
+              <i class="bi-gear-fill"></i><br>
+              <span>Options</span></a>
           </li>
         </ul>
       </div>
     </nav>
   </div>
 
-
   <!-- <script src="https://kit.fontawesome.com/a076d05399.js"></script> -->
-  <!-- Bootstrap JS link (replace with the actual link) -->
 
   <!-- Include Bootstrap JS (jQuery and Popper.js are required) -->
-
-  <!-- <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script> -->
+  <!-- <sc
+    ript src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script> -->
   <script src="libs/jquery-3.5.1.slim.min.js"></script>
 
   <!-- <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script> -->
   <script src="libs/popper.min.js"></script>
 
   <!-- <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script> -->
-  <script src="libs/bootstrap.min.js"></script>
+  <script src="libs/bootstrap/js/bootstrap.min.js"></script>
 
   <!-- <script src="https://kit.fontawesome.com/a076d05399.js"></script> -->
 
   <script src="cordova.js"></script>
 
   <!-- <script src="js/start.js" defer></script> -->
-  <script src="js/start.js" defer></script>
+  <script src="js/start.js"></script>
+  <script src="libs/jsstore.js"></script>
+  <script src="libs/jsstore.worker.js"></script>
+  <script src="js/newstatisticsdb.js"></script>
+  <script src="js/prefs.js"></script>
+  <script src="js/Statistics.js"></script>
+  <script src="js/Button.js"></script>
+  <script src="js/MoveStack.js"></script>
+  <script src="js/CardPile.js"></script>
+  <script src="js/SpecialCardPiles.js"></script>
+  <script src="js/Card.js"></script>
+  <script src="js/Movers.js"></script>
+  <script src="js/graphparams.js"></script>
+  <script src="js/My.js"></script>
+  <script src="js/galleryjs.js"></script>
 
 </body>
-
 </html>

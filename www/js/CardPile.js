@@ -1,4 +1,3 @@
-
 // CardPile -------------------------------------------------------------
 
 class CardPile {
@@ -19,7 +18,7 @@ class CardPile {
     this.x = x;
     this.y = y;
     this.id = id;
-    this.xc = x + CARDWIDTH / 2;
+    this.xc = x + CARDwidthNew / 2;
     this.yc = y + CARDHEIGHT / 2;
     this.cards = new Array(nMax);
     this.clear();
@@ -45,14 +44,14 @@ class CardPile {
   toString() {
     if (!this.empty()) {
       if (this.ok) {
-        return(this.kind + " stack with " + cards.length + " places, occupied: +" + this.nCards 
-          + ", top: " + this.peek().toString());
+        return (this.kind + " stack with " + cards.length + " places, occupied: +" + this.nCards +
+          ", top: " + this.peek().toString());
       } else {
-        return(this.kind + " stack with " + cards.length + " places, occupied:  " + this.nCards 
-          + ", top: " + this.peek().toString());
+        return (this.kind + " stack with " + cards.length + " places, occupied:  " + this.nCards +
+          ", top: " + this.peek().toString());
       }
     } else {
-      return(this.kind + " stack with " + cards.length + " places, empty");
+      return (this.kind + " stack with " + cards.length + " places, empty");
     }
   }
 
@@ -112,15 +111,15 @@ class CardPile {
     return false;
   }
 
-  checkTwinBelow(topCard) { 
+  checkTwinBelow(topCard) {
     return false;
   }
 
-  checkTwinSameRow(topCard) { 
+  checkTwinSameRow(topCard) {
     return false;
   }
 
-  checkTwinAtBottom(topCard) { 
+  checkTwinAtBottom(topCard) {
     return false;
   }
 
@@ -135,15 +134,16 @@ class CardPile {
     if (this.ziel.reserved) return false;
     let topCard = this.peek();
     if (topCard.isAce()) return true;
-    if (this.checkTwinBelow(topCard)) return true;
-    if (this.checkJust1()) return true;
-    if (this.checkRowClean(topCard)) return true;
+
     if (this.checkTwinOk(topCard)) return true;
     if (this.check2Possibilities(topCard)) return true;
+    if (this.checkRowClean(topCard)) return true;
+    if (this.checkJust1()) return true;
+    if (this.checkTwinBelow(topCard)) return true;
     if (this.checkTwinSameRow(topCard)) return true;
-    if (this.checkTwinAtBottom(topCard)) return true;
     if (this.checkTwinUnderBase(topCard)) return true;
     if (this.checkTwinIsJammed(topCard)) return true;
+    if (this.checkTwinAtBottom(topCard)) return true;
     return false;
   }
 
@@ -168,13 +168,13 @@ class CardPile {
     return false;
   }
 
-  checkRowClean(topCard) { 
+  checkRowClean(topCard) {
     info("checkRowClean");
     if (topCard.rank < 5) {
       let suitRow = topCard.rank % 3;
       for (let i = 0; i < 8; i++) {
-        if (!foundationPile[suitRow][i].empty()
-          && !foundationPile[suitRow][i].ok) {
+        if (!foundationPile[suitRow][i].empty() &&
+          !foundationPile[suitRow][i].ok) {
           return false;
         }
       }
@@ -189,8 +189,8 @@ class CardPile {
     if (topCard.rank > 4) {
       let suitRow = topCard.rank % 3;
       for (let i = 0; i < 8; i++)
-        if (foundationPile[suitRow][i].ok 
-          && foundationPile[suitRow][i].containsTwin(topCard)) {
+        if (foundationPile[suitRow][i].ok &&
+          foundationPile[suitRow][i].containsTwin(topCard)) {
           sayAutoReason(this.id, 1, "twin already OK ", topCard.toString());
           return true;
         }
@@ -204,7 +204,7 @@ class CardPile {
     return false;
   }
 
-  check2Possibilities(topCard) { 
+  check2Possibilities(topCard) {
     info("check2Possibilities");
     if (topCard.rank < 5) {
       return false;
@@ -226,7 +226,7 @@ class CardPile {
     return false;
   }
 
-  checkTwinUnderBase(topCard) { 
+  checkTwinUnderBase(topCard) {
     if (topCard.rank > 4) {
       for (let i = 0; i < 8; i++)
         if (!tableau[i].empty()) {
@@ -246,7 +246,7 @@ class CardPile {
     return false;
   }
 
-  checkTwinIsJammed(topCard) { 
+  checkTwinIsJammed(topCard) {
     if (topCard.rank > 4) {
       for (let i = 0; i < 8; i++)
         if (!tableau[i].empty()) {
@@ -268,7 +268,7 @@ class CardPile {
     return false;
   }
 
-  containsTwin(topCard) { 
+  containsTwin(topCard) {
     for (let j = 0; j < this.nCards; j++) {
       if (topCard.isTwin(this.elementAt(j))) {
         return true;
@@ -287,12 +287,12 @@ class CardPile {
     //  curve(x1, y1, x1+20, y1, x2, y2-40, x2, y2);
     pushMatrix();
     translate(x2, y2);
-    let a = atan2(x1-x2, y2-y1);
+    let a = atan2(x1 - x2, y2 - y1);
     rotate(a);
     line(0, 0, -3, -9);
     line(0, 0, 3, -9);
     popMatrix();
-  } 
+  }
 
   drawArrow() {
     if (!this.empty() && this.movable && this.ziel.id > 1) {
@@ -313,23 +313,23 @@ class CardPile {
         x2 += d2;
       }
       if (y2 > y1) {
-        y1 += d1; 
+        y1 += d1;
         y2 -= d2;
       } else if (y2 < y1) {
-        y1 -= d1; 
+        y1 -= d1;
         y2 += d2;
       }
-      arrow(x1, y1, x2, y2);   
+      arrow(x1, y1, x2, y2);
       strokeWeight(1);
     }
   }
 
   includes(xx, yy) {
     //console.log(this.kind, xx, yy, this.x, this.y);
-    return (xx >= this.x 
-      && yy >= this.y 
-      && xx < (this.x + CARDWIDTH) 
-      && yy < (this.y + CARDHEIGHT));
+    return (xx >= this.x &&
+      yy >= this.y &&
+      xx < (this.x + CARDwidthNew) &&
+      yy < (this.y + CARDHEIGHT));
   }
 
   push(c) {
@@ -380,10 +380,10 @@ class CardPile {
     return 0;
   }
 
-  getTopX () { 
+  getTopX() {
     return this.x;
   }
-  getTopY () { 
+  getTopY() {
     return this.y;
   }
 }

@@ -45,7 +45,7 @@ class Statistics {
     y1res = 0;
     for (let i = 0; i < global_evaluations; i++) {
       x1res += dx1res;
-      if (x1res >= width) {
+      if (x1res >= 640) {
         x1res = 0;
         y1res += dy1res;
         if (y1res >= ifact * 310) {

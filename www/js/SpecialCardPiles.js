@@ -120,7 +120,7 @@ class TableauPile extends CardPile {
   includes(xx, yy) {
     return (xx >= this.x
       && yy >= this.y
-      && xx < (this.x + CARDWIDTH)
+      && xx < (this.x + CARDwidthNew)
       && yy < (this.y + 3 * CARDHEIGHT));
   }
 
@@ -217,7 +217,7 @@ class StockPile extends CardPile {
       } else {
         os.mystroke(180);
         os.myfill(180);
-        os.myrect(0, YPROGRESS + 16 * ifact, width, 4 * ifact);
+        os.myrect(0, YPROGRESS + 16 * ifact, widthNew, 4 * ifact);
       }
       return;
     }

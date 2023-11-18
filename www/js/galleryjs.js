@@ -24,11 +24,12 @@ let mymsg;
 let XSF, YSF, XST, YST, XSA, YSA, XSS, YSS;
 let DXSF, DYSF, DXST, DYST, DXSA, DYSA, DXSS, DYSS;
 let FACT;
-let CARDWIDTH, CARDHEIGHT;
+let CARDwidthNew, CARDHEIGHT;
 
 let XRIGHT;
-let WIDTH0 = window.innerWidth - 5;
+let WIDTH0 = window.innerwidthNew - 5;
 let HEIGHT0 = window.innerHeight - 5;
+let scaleFactor = 1;
 let XSTAT, YSTAT, XHISTO, YHISTO, XGRAPH, XRES, YRES;
 let XBN, YBN, XBU, YBU, XBE, YBE, XBF, YBF;
 let WBN, HBN, WBU, HBU, WBE, HBE, WBF, HBF;
@@ -42,7 +43,7 @@ let nEvaluationsEnd = 0;
 let NEVALUATIONSTEP = 10;
 let BLUECIRCLERADIUS;
 let nrbox;
-let F9, F10, F12, F14, F16, F18, F24;
+let F9, F10, F11, F12, F14, F16, F18, F24;
 let alfa = 0.99;
 let debug = true;
 let LANG = "en";
@@ -109,6 +110,9 @@ let nEvalsEnd0 = 0;
 let nrEval = 0;
 let evaluating = false;
 let evaluated = false;
+let evaltime = 0;
+
+let rescanvas = "";
 
 let ifact;
 
@@ -124,11 +128,12 @@ let drawNext = 0.0;
 let dataPath = "";
 let dataPathImg = "";
 let dataPathPhotos = "";
-let actualWidth;
+let actualwidthNew;
 let deviceFactor;
 let translationStrings;
 let dbLoaded = false;
 let caption;
+let cnv;
 
 let shortTxt = [
   "", "T ok", "2 poss", "F clean", "just 1", "T botm",
@@ -147,12 +152,11 @@ function preload() {
   newCards = loadImage(dataPathImg + "newcards2013.png");
   numbcol = loadImage(dataPathImg + "numbersandcolors.png");
   // translationStrings = loadStrings(dataPath + "translations.txt");
-  myFont = loadFont("data/Roboto-Light.ttf");
+  myFont = loadFont("data/Roboto-Regular.ttf");
 }
 
 function setup() {
-
-  
+  // pixelDensity(2);
   My.print("*************** setup");
   getAllPrefs();
 
@@ -162,14 +166,21 @@ function setup() {
   detectDevice();
   os = new Os();
 
+  widthNew = WIDTH0;
+
   //TODO openTranslations(translationStrings);
 
-  createCanvas(WIDTH0, HEIGHT0);
+  cnv = createCanvas(scaleFactor * WIDTH0, scaleFactor * HEIGHT0);
+  console.log("Canvas: " + WIDTH0 + " / " + HEIGHT0);
+  var x = max(0, (windowWidth - widthNew) / 2);
+  cnv.position(x, 0);
 
-  //TODO  actualWidth = min(screen.width, 480);
+  background(255, 0, 200);
 
-  actualWidth = min(screen.width, 640);
-  deviceFactor = actualWidth / 320.0;
+  //TODO  actualwidthNew = min(screen.widthNew, 480);
+
+  actualwidthNew = min(screen.widthNew, 640);
+  deviceFactor = actualwidthNew / 320.0;
 
   statistics = new Statistics();
   moveStack = new MoveStack(104);
@@ -189,7 +200,8 @@ function setup() {
   foundationPile = initialize2DArray(3, 8, "");
   allPiles[0] = stockPile = new StockPile(XSS, YSS, 0, 104);
   //  allPiles[1] = acePile = new AcePile(-40, YSA, 1, 8);
-  allPiles[1] = acePile = new AcePile(XSS + 60, YSF + DYSF, 1, 8);
+  // allPiles[1] = acePile = new AcePile(XSS + 60, YSF + DYSF, 1, 8);
+  allPiles[1] = acePile = new AcePile(XSF + 3.5 * DXSF, -50, 1, 8);
   let j = 2;
   for (let i = 0; i < 8; i++)
     allPiles[j++] = foundationPile[2][i] =
@@ -245,6 +257,9 @@ function setup() {
   } else {
     lastGames = loadImage(global_resimg);
   }
+  rescanvas = createGraphics(640, 64);
+  rescanvas.image(lastGames, 0, 0);
+
 
   statistics.statisticsgraphinit();
 
@@ -283,13 +298,15 @@ function doEvaluation(n, alfa) {
 }
 
 function draw() {
+  scale(scaleFactor);
   if (evaluating) {
     doEvaluation(NEVALUATIONSTEP, alfa);
     nrEval += NEVALUATIONSTEP;
     nEvals0 += NEVALUATIONSTEP;
     drawProgress(nEvals0, nEvalsEnd0);
     if (nrEval >= nEvaluationsEnd) {
-      My.print((millis() - timerstart) / 1000.0 + " sec");
+      evaltime = My.round2String((millis() - timerstart) / 1000.0, 3) + " sec";
+      My.print(evaltime);
       statistics.doStatistics();
       statistics.saveResultat(alfa, gameStart);
       drawProgress(-1, nEvalsEnd0);
@@ -505,27 +522,34 @@ function drawProgress(part, all) {
   if (part < 0) {
     noStroke();
     fill(statistics.getResColor(statistics.mean, resPlayer));
-    rect(0, YPROGRESS - 0.5 * ifact, width, DYPROGRESS + 0.5 * ifact);
+    rect(0, YPROGRESS - 0.5 * ifact, widthNew, DYPROGRESS + 0.5 * ifact);
     fill(0);
     textFont(myFont, F12);
-    textC("Tap to continue.", width / 2, YRES - ifact * 46);
-    fill(255, 200, 12);
+    textC("Tap to continue.", widthNew / 2, YRES - ifact * 46);
+    textFont(myFont, F9);
+    text(evaltime, ifact * 3, YRES - ifact * 40);
     noStroke();
     let nowImage;
-    resImage = get(0, 0, width, width);
-    nowImage = get(0, 0, width, width);
+    resImage = get(0, 0, scaleFactor * widthNew, scaleFactor * widthNew);
+    nowImage = get(0, 0, scaleFactor * widthNew, scaleFactor * widthNew);
 
     ifx = 10;
     ify = ifx;
-    nowImage.resize(width / ifx, width / ify);
-    let ylastgames = width + 230;
+    nowImage.resize(widthNew / ifx, widthNew / ify);
+    let ylastgames = widthNew + 230;
     if (nEvaluationsEnd <= global_evaluations) {
-      image(lastGames, width / ifx, ylastgames);
+      image(lastGames, widthNew / ifx, ylastgames);
+      rescanvas.image(lastGames, widthNew / ifx, 0);
     }
+
     image(nowImage, 0, ylastgames);
+    rescanvas.image(nowImage, 0, 0);
+
     stroke(255);
-    line(width / ifx, ylastgames, width / ifx, ylastgames + width / ify);
-    lastGames = get(0, ylastgames, width, width / ify);
+    line(widthNew / ifx, ylastgames, widthNew / ifx, ylastgames + widthNew / ify);
+    // lastGames = get(0, ylastgames, widthNew, widthNew / ify);
+    // lastGames.loadPixels();
+    lastGames = rescanvas.get(0, 0, widthNew, widthNew / ifx);
     lastGames.loadPixels();
     doSaveResultImage(lastGames);
     // 
@@ -535,14 +559,14 @@ function drawProgress(part, all) {
     drawNext += 0.01;
     fill(255);
     noStroke();
-    rect(0, YPROGRESS, width, DYPROGRESS);
+    rect(0, YPROGRESS, widthNew, DYPROGRESS);
     fill(0, 122, 255);
     fill(122);
-    rect(0, YPROGRESS + 16 * ifact, p * width, 4 * ifact);
+    rect(0, YPROGRESS + 16 * ifact, p * widthNew, 4 * ifact);
   }
   stroke(0);
-  line(0, YPROGRESS - ifact, width, YPROGRESS - ifact);
-  line(0, YPROGRESS + DYPROGRESS, width, YPROGRESS + DYPROGRESS);
+  line(0, YPROGRESS - ifact, widthNew, YPROGRESS - ifact);
+  line(0, YPROGRESS + DYPROGRESS, widthNew, YPROGRESS + DYPROGRESS);
 }
 
 // DRAWING
@@ -553,9 +577,9 @@ function allDraw() {
     offScreen.background(248);
     offScreen.fill(255);
     offScreen.stroke(255);
-    offScreen.rect(0, ifact * 331, width, 670);
+    offScreen.rect(0, ifact * 331, widthNew, 670);
     offScreen.stroke(224);
-    offScreen.line(0, ifact * 331, width, ifact * 331);
+    offScreen.line(0, ifact * 331, widthNew, ifact * 331);
     offScreen.stroke(0);
 
     if (!allPiles[2]) {
@@ -566,7 +590,7 @@ function allDraw() {
     for (let i = 0; i < 34; i++) {
       allPiles[i].draw();
     }
-    let ylastgames = width + 230;
+    let ylastgames = widthNew + 230;
     offScreen.image(lastGames, 0, ylastgames);
 
     mustDraw = false;
@@ -574,12 +598,16 @@ function allDraw() {
   }
 
   if (!evaluated) {
+    let ss = 1;
+    scale(ss);
     image(offScreen, 0, 0);
+    scale(1.0 / ss);
   } else {
     stroke(255);
     fill(255);
-    rect(0, ifact * 350, width, ifact * 80);
+    rect(0, ifact * 350, widthNew, ifact * 80);
   }
+
 
   if (global_helplevel == 9 || global_helplevel == 10) {
     for (let i = 0; i < 34; i++) {
@@ -634,7 +662,7 @@ function allDraw() {
   if (noMovables() && !cardMoving() && humanPlayer && res != 0) {
     os.mynoStroke();
     os.myfill2(0, 40);
-    os.myrect(0, 0, width, ifact * 331);
+    os.myrect(0, 0, widthNew, ifact * 331);
   }
 }
 
@@ -745,12 +773,9 @@ function mouseClicked() {
   let y = mouseY;
   //TODO y -= deltay;
   if (reduce) {
-    x *= 2;
-    y *= 2;
+    x /= scaleFactor;
+    y /= scaleFactor;
   }
-  x = round(x / deviceFactor);
-  y = round(y / deviceFactor);
-
   for (let i = 0; i < 34; i++) {
     if (allPiles[i].includes(x, y)) {
       allPiles[i].doClick();
@@ -771,7 +796,7 @@ function mouseClicked() {
     if (resPlayer > 0 || (resPlayer == 0 && evaluated)) {
       fill(0);
       stroke(0);
-      rect(0, 0, width, width + 1);
+      rect(0, 0, widthNew, widthNew + 1);
     }
     statistics.setResPlayer(resPlayer);
     drawNext = 0.0;
@@ -838,7 +863,7 @@ function sayAutoReason(id, type, what, card) {
   global_autostat[type]++;
   if (global_sayAuto != 1) return;
   os.myfill4(255, 255, 0, 200);
-  os.myrect(allPiles[id].getTopX(), allPiles[id].yc - 13, CARDWIDTH, 26);
+  os.myrect(allPiles[id].getTopX(), allPiles[id].yc - 13, CARDwidthNew, 26);
   os.mystroke(0);
   os.myfill(0);
   os.mytextFont(myFont, F10);

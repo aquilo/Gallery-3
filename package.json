@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "bootstrap": "^3.4.1"
+  },
+  "devDependencies": {
+    "cordova-browser": "^7.0.0"
+  }
+}
