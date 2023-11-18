@@ -71,6 +71,7 @@ let offScreen;
 let lastGamesScreen;
 let imgNow;
 let windrawloop;
+let canvasPositionX = 0;
 
 let allPiles = new Array(34);
 let foundationPile = new Array();
@@ -145,7 +146,7 @@ let longTxt = [
 ];
 
 function preload() {
-  My.print("*************** preload");
+  My.print("*** p5js: preload at " + new Date().toISOString());
   dataPath = "data/";
   dataPathImg = "data/img/";
   dataPathPhotos = "data/photos/";
@@ -153,35 +154,46 @@ function preload() {
   numbcol = loadImage(dataPathImg + "numbersandcolors.png");
   // translationStrings = loadStrings(dataPath + "translations.txt");
   myFont = loadFont("data/Roboto-Regular.ttf");
+  My.print("/preload: " + My.round2String(millis() / 1000.0, 3) + " sec");
+}
+
+function windowResized() {
+  canvasInit();
+  resizeCanvas(scaleFactor * WIDTH0, scaleFactor * HEIGHT0);
+  console.log("Canvas: " + round(scaleFactor * WIDTH0) + " / " + round(scaleFactor * HEIGHT0));
+  cnv.position(canvasPositionX, 0);
+  allDraw();
+}
+
+function canvasInit() {
+  detectDevice();
+  widthNew = WIDTH0;
+  canvasPositionX = max(0, (windowWidth - widthNew) / 2);
+  actualwidthNew = min(screen.widthNew, 640);
+  deviceFactor = actualwidthNew / 320.0;
+
 }
 
 function setup() {
   // pixelDensity(2);
-  My.print("*************** setup");
+  My.print("setup: " + My.round2String(millis() / 1000.0, 3) + " sec");
   getAllPrefs();
-
-  background(248);
-  My.print("" + new Date());
-  My.print("processing setup: " + millis());
-  detectDevice();
-  os = new Os();
-
-  widthNew = WIDTH0;
-
   //TODO openTranslations(translationStrings);
 
-  cnv = createCanvas(scaleFactor * WIDTH0, scaleFactor * HEIGHT0);
-  console.log("Canvas: " + WIDTH0 + " / " + HEIGHT0);
-  var x = max(0, (windowWidth - widthNew) / 2);
-  cnv.position(x, 0);
 
+  background(248);
+  os = new Os();
+
+  canvasInit();
+  cnv = createCanvas(scaleFactor * WIDTH0, scaleFactor * HEIGHT0);
+  console.log("Canvas: " + round(scaleFactor * WIDTH0) + " / " + round(scaleFactor * HEIGHT0));
+
+  cnv.position(canvasPositionX, 0);
   background(255, 0, 200);
 
   //TODO  actualwidthNew = min(screen.widthNew, 480);
 
-  actualwidthNew = min(screen.widthNew, 640);
-  deviceFactor = actualwidthNew / 320.0;
-
+  // -------
   statistics = new Statistics();
   moveStack = new MoveStack(104);
 
@@ -264,13 +276,14 @@ function setup() {
   statistics.statisticsgraphinit();
 
   newGame();
-  My.print("processing end setup: " + millis() / 1000.0);
+  My.print("processing end setup: " + My.round2String(millis() / 1000.0, 3) + " sec");
   smooth();
 
   jsstoreCon = new JsStore.Connection();
   doStatTable();
   initDb();
   loop();
+  My.print("/setup: " + My.round2String(millis() / 1000.0, 3) + " sec");
 }
 
 function drawE() {
@@ -415,7 +428,6 @@ function finishGame() {
 
   redraw();
   loop();
-
 }
 
 function tryToMove(alfa) {

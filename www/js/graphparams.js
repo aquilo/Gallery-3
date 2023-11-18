@@ -5,7 +5,7 @@ function detectDevice() {
   //TEST
   ifact = reduce ? 2 : 1;
   if (debug) {
-    print("screen: " + screen.widthNew + " / " + screen.height);
+    print("screen: " + screen.width + " / " + screen.height);
     print("widthNewDraw: " + widthNewDraw);
     print("reduce: " + reduce);
     print("ifact: " + ifact);
