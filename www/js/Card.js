@@ -57,10 +57,11 @@ class Card {
   }
 
   drawMovable(x, y) {
+
     if (global_show === 0) return;
     os.mynoStroke();
     os.myfill4(255, 127, 0, 80);
-    os.myrect(x, y, CARDWIDTH, CARDHEIGHT);
+    os.myrect(x, y, CARDwidthNew, CARDHEIGHT);
   }
 
   drawAutoMovable(x, y) {
@@ -68,7 +69,7 @@ class Card {
     if (global_sayAuto != 1) return;
     os.mynoStroke();
     os.myfill4(0, 255, 100, 80);
-    os.myrect(x, y, CARDWIDTH, CARDHEIGHT);
+    os.myrect(x, y, CARDwidthNew, CARDHEIGHT);
   }
 
   draw(x, y, ok, movable, autoMovable) {
@@ -81,6 +82,7 @@ class Card {
       if (autoMovable) {
         if (global_sayAuto != 1) this.drawMovable(x, y);
         this.drawAutoMovable(x, y);
+
         return;
       }
       if (movable) {
@@ -89,7 +91,7 @@ class Card {
     }
     if (this.jammer && (global_show == 1)) {
       os.myfill3(0, 200, 0);
-//      os.myfill3(0, 200, 0);
+      //      os.myfill3(0, 200, 0);
       os.mynoStroke();
       os.myrect(x + 38, y + 5, 30, 7);
     }
