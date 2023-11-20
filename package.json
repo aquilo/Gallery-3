@@ -3,6 +3,12 @@
     "bootstrap": "^3.4.1"
   },
   "devDependencies": {
-    "cordova-browser": "^7.0.0"
+    "cordova-browser": "^7.0.0",
+    "cordova-ios": "^7.0.1"
+  },
+  "cordova": {
+    "platforms": [
+      "ios"
+    ]
   }
 }
