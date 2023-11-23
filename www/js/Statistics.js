@@ -464,6 +464,7 @@ function drawStatistics(x0, y0) {
   text("" + statistics.scores + " " + getTranslation(LANG, "different scores"), x, y += ifact * 16);
 
   stroke(0);
+  /*
   if (statistics.minimum == 0 || resPlayer == 0) {
     if (resPlayer == 0) {
       fill(0, 0, 200);
@@ -485,7 +486,7 @@ function drawStatistics(x0, y0) {
 
   fill(statistics.getResColor(this.resultf, 50.0));
   rect(xm - ifact * 14, y - ifact * 7, ifact * 14, ifact * 7);
-
+*/
   // if (HEIGHT0 > 96000) {
   //   let evaluationText = getEvaluationText();
   //   print(evaluationText);
