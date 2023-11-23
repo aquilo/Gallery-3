@@ -1,8 +1,11 @@
 {
   "dependencies": {
+    "@capacitor/core": "^5.5.1",
+    "@capacitor/ios": "^5.5.1",
     "bootstrap": "^3.4.1"
   },
   "devDependencies": {
+    "@capacitor/cli": "^5.5.1",
     "cordova-browser": "^7.0.0",
     "cordova-ios": "^7.0.1"
   },

@@ -317,14 +317,6 @@ function querySuccess(tx, results) {
     }
 }
 
-/* 
- function onDeviceReady() {
- var db = window.openDatabase("Database", "1.0", "Cordova STAT", 200000);
- db.transaction(populateDB, errorCB, successCB)
- }
- */
-
-
 function setStepsPref() {
     //  console.log('steps: ' + global_steps);
     window.localStorage.setItem('steps', global_steps);

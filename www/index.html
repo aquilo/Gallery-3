@@ -12,20 +12,19 @@
   <meta name="color-scheme" content="light dark">
 
   <link rel="stylesheet" href="css/st.css">
-  <link rel="stylesheet" href="css/st2.css">
 
   <!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"> -->
-  <link rel="stylesheet" href="csslib/bootstrap.min.css">
+  <link rel="stylesheet" href="libs/bootstrap/css/bootstrap.min.css">
 
   <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"> -->
-  <link rel="stylesheet" href="csslib/all.min.css">
+  <link rel="stylesheet" href="libs/css/all.min.css">
 
   <!--  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">-->
-  <link rel="stylesheet" href="csslib/bootstrap-icons.css">
+  <link rel="stylesheet" href="libs/css/bootstrap-icons.css">
 
   <!-- https://mode.fh-joanneum.at/cola/p5.js-cordova-demo-app/-/blob/main/www/js/sketch.js -->
 
-  <script src="libs/p5.min.js"></script>
+  <script src="libs/js/p5.min.js"></script>
 </head>
 
 <body>
@@ -33,11 +32,12 @@
   <div class="container mt-5">
 
     <section id="section1">
+
       <div id="p5_loading" class="loadingclass">
-        <!-- <img src="img/mittelholzer_strip.png"
-          alt="Historical aerial photo of the Adula">
-        </div> -->
-        <div class="app"></div>
+        <!-- <img src="data/img/mittelholzer_strip.png"
+          alt="Historical aerial photo of the Adula">  -->
+      </div>
+      <div class="app"></div>
     </section>
 
     <section id="section2" style="display: none;">
@@ -58,7 +58,7 @@
           a few times.</p>
         <h1>Details</h1>
         <h2>Layout</h2>
-        <div style="text-align: center"><img src="img/screen.png" alt="game" width="214" height="248"></div><br>
+        <div style="text-align: center"><img src="data/img/screen.png" alt="game" width="400"></div><br>
         <h3>Foundation</h3>
         <p>24 piles: 3 rows with 8 columns.</p>
         <p>Empty spots can be filled with the <strong>base cards "2", "3", and "4"</strong>, as above.
@@ -99,7 +99,7 @@
         <h3>Winning situation</h3>
         <p>You build a complete gallery of all face cards, removing all cards from the Tableau (score: 0)
         </p>
-        <div style="text-align: center"><img src="img/gallery_success.png" alt="Winning situation"></div>The
+        <div style="text-align: center"><img src="data/img/gallery_success.png" alt="Winning situation"></div>The
         appearing photos are all from <a href="#"
           onclick="window.open(encodeURI('http://www.myswitzerland.com/en/blenio-valley-valle-di-blenio.html#phonegap=external'), '_system')">Blenio
           Valley</a>, Ticino, Switzerland<p></p>
@@ -141,62 +141,51 @@
             feature.</li>
         </ul>
         <h2>Evaluations</h2>
-        <p><img src="img/eval.png" alt="eval" style="padding: 12px 8px 6px 3px">During the
-          evaluation process each single result of the
-          random process gets a small square. <span style="color: #00f;font-weight:bold;">Blue</span>:
+         <div class="row">
+    <div class="col-md-auto"><img src="data/img/eval.png" alt="eval" style="padding: 12px 8px 6px 3px"></div>
+    <div class="col col-lg-"><p>During the
+          evaluation process (simulation of <b>1'000 games</b>)
+          each individual result of the
+          random process is given a small square. It's color depends on the result: <span style="color: #0f0ffb;font-weight:bold;">blue</span>:
           your result is better - <span style="color: #999;font-weight:bold;">white</span>: drawn - <span
-            style="color: #f00;font-weight:bold;">red</span>: computer is better - <span
-            style="color: #090;font-weight:bold">green</span>: solved game (result 0); if your result was
-          also 0: <span style="color: #cc0;font-weight:bold">yellow</span>.</p>
-        <h3>Evaluation Indicators</h3>
+            style="color: #ff1010;font-weight:bold;">red</span>: computer is better - <span
+            style="color: #af0000;font-weight:bold">dark red</span>: solved game (result 0); if your result was
+          also 0: <span style="color: #c8c8c8;font-weight:bold">light gray</span>.</p>
+    </div>
+  </div>
+           <h3>Evaluation Indicators</h3>
         <p>(at bottom right corner of the statistics graph) <br><strong>Left</strong>: Was the game
           solvable? Yes: square / no: circle; <br>Was your result better than the minimum? Blue, otherwise
           red.<br><strong>Right</strong>: Upper part: color comparison to the mean. Below: "result"</p>
-        <h3>Thanks</h3>
-        <p>Thanks to Karen Morris for editing the texts. The nostalgic card faces are still the ones by
-          Mike Casteel. The new ones are <a href="#"
-            onclick="window.open(encodeURI('http://code.google.com/p/vectorized-playing-cards/#phonegap=external'), '_system')">Vectorized
-            Playing Cards 1.3</a>, Copyright 2011 - Chris Aguilar, Licensed under <a href="#"
-            onclick="window.open(encodeURI('http://www.gnu.org/copyleft/lesser.html#phonegap=external'), '_system')">LGPL
-            3</a></p>
+        <h2>Thanks</h2>
+        <p>Thanks to Karen Morris for editing the texts. <br>
+          <a href="#"
+            onclick="window.open(encodeURI('https://totalnonsense.com/open-source-vector-playing-cards/#phonegap=external'), '_system')">Vectorized
+            Playing Cards 1.3</a>, Copyright 2011, 2021 - Chris Aguilar - conjurenation at gmail dot com
+          Licensed under: LGPL 3.0 - <a href="#"
+            onclick="window.open(encodeURI('https://www.gnu.org/licenses/lgpl-3.0.html#phonegap=external'), '_system')">https://www.gnu.org/licenses/lgpl-3.0.html</a>
+        </p>
+        <p><br><br><br><br></p>
       </div>
     </section>
 
     <section id="section4" style="display: none;">
       <div class="restricted-div rules">
 
-        <div><img src="img/mittelholzer_strip.png" width="640" alt=""></div>
+        <div><img src="data/img/mittelholzer_strip.png" class="img-fluid"></div>
         <div class="rules">
           <div style="text-align: left; margin-top: 23px;">
             <h1>Gallery Solitaire</h1>
-            <p>Version 3.0, &copy; 2023, Adrian Herzog<br></p>
-            <table style="border:2px">
-              <tbody>
-                <tr>
-                  <td style="text-align: left;">
-                    <a href="#" onclick="window.open(encodeURI('https://gallery.mapresso.com'), '_system')">
-                      https://gallery.mapresso.com
-                    </a><br><br>
-                    <p>
-                      <a href="#" onclick="window.open(encodeURI('https://gallery.mapresso.com'), '_system')">
-                        <img src="resources/icons/29.png" width="29" height="29" alt="Gallery Icon">
-                      </a>
-                      <a href="#" onclick="window.open(encodeURI('https://twitter.com/gallerysol1'), '_system')">
-                        <img src="data/img/Twitter_Social_Icon_Circle_Color.png" width="29" height="29"
-                          alt="Twitter Icon">
-                      </a>
-                      <a href="#"
-                        onclick="window.open(encodeURI('https://www.facebook.com/Gallery-Solitaire-113763543718658'), '_system')">
-                        <img src="data/img/f_logo_RGB-Blue_58.png" width="29" height="29" alt="Facebook Icon">
-                      </a></p>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-            <br>
+            <p>Version 3.0, &copy; 2023, Adrian Herzog<br>
+              <a href="#" onclick="window.open(encodeURI('https://gallery.mapresso.com'), '_system')">
+                https://gallery.mapresso.com
+              </a>
+              <br>
+            </p>
           </div>
           <hr>
           <h2>Game Settings</h2>
+          <br>
           <h3>Animation Speed</h3>
 
           <!-- <label for="customRange1" class="form-label">Animation Speed</label><br> -->
@@ -223,13 +212,14 @@
           <div class="form-check form-switch">
             <input class="form-check-input" type="checkbox" role="switch" id="showAutoMoveReason"
               style="transform: scale(1.6); margin: 0 20px 5px -20px">
-            <label class="form-check-label" for="flexSwitchCheckDefault">Show auto-move reason. For the reasons for the
-              auto moves, see the statistics tab.</label>
+            <label class="form-check-label" for="flexSwitchCheckDefault">View the reason for auto moves. For more
+              details about the auto moves, see the Statistics tab.</label>
           </div>
           <br>
 
           <hr>
           <h2>Statistics</h2>
+          <br>
 
           <p><button type="button" class="btn btn-primary" id="exportButton">Export Statistics</button><br>
             Include your game results in an email
@@ -238,7 +228,7 @@
           <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#resetStats">
             Reset Statistcs
           </button><br>
-          Clear your statistics and start from zero.
+          Clear your statistics and start over.
 
           <div class="modal fade" id="resetStats" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
             aria-labelledby="resetStatsLabel" aria-hidden="true">
@@ -266,7 +256,7 @@
   <!-- Footer Navigation -->
   <div style="text-align: center">
     <nav class="navbar fixed-bottom navbar-light bg-light center">
-      <div class="container center">
+      <div class="container justify-content-center">
         <ul class="nav justify-content-center">
           <li class="nav-item">
             <a class="nav-link" href="#" onclick="showSection('section1')">
@@ -298,26 +288,25 @@
   <!-- Include Bootstrap JS (jQuery and Popper.js are required) -->
   <!-- <sc
     ript src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script> -->
-  <script src="libs/jquery-3.5.1.slim.min.js"></script>
+  <script src="libs/js/jquery-3.5.1.slim.min.js"></script>
 
   <!-- <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script> -->
-  <script src="libs/popper.min.js"></script>
+  <script src="libs/js/popper.min.js"></script>
 
   <!-- <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script> -->
   <script src="libs/bootstrap/js/bootstrap.min.js"></script>
 
   <!-- <script src="https://kit.fontawesome.com/a076d05399.js"></script> -->
 
-  <script src="cordova.js"></script>
+  <!-- <script src="cordova.js"></script> -->
   <script>
-    document.addEventListener('deviceready', onDeviceReady, false);
-
+    // document.addEventListener('deviceready', onDeviceReady, false);
   </script>
 
   <!-- <script src="js/start.js" defer></script> -->
   <script src="js/start.js"></script>
-  <script src="libs/jsstore.js"></script>
-  <script src="libs/jsstore.worker.js"></script>
+  <script src="libs/js/jsstore.js"></script>
+  <script src="libs/js/jsstore.worker.js"></script>
   <script src="js/newstatisticsdb.js"></script>
   <script src="js/prefs.js"></script>
   <script src="js/Statistics.js"></script>
@@ -329,7 +318,8 @@
   <script src="js/Movers.js"></script>
   <script src="js/graphparams.js"></script>
   <script src="js/My.js"></script>
-  <!-- <script src="js/galleryjs.js"></script> -->
+  <script src="js/galleryjs.js"></script>
 
 </body>
+
 </html>

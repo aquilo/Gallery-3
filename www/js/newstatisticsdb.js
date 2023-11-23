@@ -367,8 +367,8 @@ function updateStats(results) {
         '</p><strong>Best Result</strong>: In only <b>' + percent(r.n - r.hcbetter, r.n, 2) + '%</b> (<i>' + good_best + '%</i>) ',
         'you achieved the best possible result.</p>',
 
-        '</p><strong>Perfect Games</strong>: You are at least as good as the computer in <b>' + round_number(r.avg_more + r.avg_equal, 2) + '%</b> (<i>'
-         + good_be + '%</i>) ',
+        '</p><strong>Perfect Games</strong>: You are at least as good as the computer in <b>' + round_number(r.avg_more + r.avg_equal, 2) + '%</b> (<i>' +
+        good_be + '%</i>) ',
         'of the games (compared to the computer your result was better result in <strong>' + round_number(r.avg_more, 1) + '%</strong>, equal in <strong>' + round_number(r.avg_equal, 1) + '%</strong>, and worse in <strong>' + round_number(r.avg_less, 1) + '%</strong>.</p>',
         '<hr>',
         '<strong>Mean result</strong>: <b>' + round_number(r.avg_result, 2) + '%</b> (<i>' + good_meanres + '%</i>)<br/>',
@@ -393,14 +393,13 @@ function updateStats(results) {
 
     stab = [];
     for (let i = 1; i < global_autostat.length; i++) {
-        stab.push(
-            {
-                "short": shortTxt[i],
-                "long": longTxt[i],
-                "n": global_autostat[i],
-            }
-        );
+        stab.push({
+            "short": shortTxt[i],
+            "long": longTxt[i],
+            "n": global_autostat[i],
+        });
     }
+
     function compareByN(a, b) {
         return b.n - a.n;
     }
@@ -410,7 +409,7 @@ function updateStats(results) {
 
     rrr = '<h3>Auto move reasons</h3><p><i>T, Twin</i> = card of same suit and rank<br>' + totalauto + ' auto moves.</p><table class="table table-sm statsummary" border="0.0px" style="font-size: 11px">';
     for (let i = 0; i < stab.length; i++) {
-        rrr += "<tr><td class='text-start'>" + stab[i].short + "</td><td class='text-start'>" + stab[i].long + "</td><td>" + percent(stab[i].n, totalauto, 2) + " %</td></tr>";
+        rrr += "<tr><td class='text-start'>" + stab[i].short + "</td><td class='text-start'>" + stab[i].long + "</td><td>" + percent(stab[i].n, totalauto, 2) + "&nbsp;%</td></tr>";
     }
     rrr += "</table></div>";
     statText += rrr;
@@ -449,14 +448,17 @@ async function exportStatisticsAsCsv() {
     }
     global_csv = csvData;
 
-    cordova.plugins.email.open({
+    // cordova.plugins.email.open({
+    //     subject: 'GallerySolitaire Data, ' + new Date(),
+    //     body: global_csv,
+    //     isHtml: true
+    // })
 
-        subject: 'GallerySolitaire Data, ' + new Date(),
-        body: global_csv,
-        isHtml: true
-
-
-    })
+    const recipient = '';
+    const subject = 'GallerySolitaire Data, ' + new Date();
+    const body = global_csv;
+    const mailtoLink = `mailto:${recipient}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.location.href = mailtoLink;
 }
 
 async function resetStatistics() {

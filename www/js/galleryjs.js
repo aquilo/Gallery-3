@@ -188,7 +188,7 @@ function setup() {
   cnv = createCanvas(scaleFactor * WIDTH0, scaleFactor * HEIGHT0);
   console.log("Canvas: " + round(scaleFactor * WIDTH0) + " / " + round(scaleFactor * HEIGHT0));
 
-  cnv.position(canvasPositionX, 0);
+  cnv.position(canvasPositionX, 60);
   background(255, 0, 200);
 
   //TODO  actualwidthNew = min(screen.widthNew, 480);
@@ -265,7 +265,7 @@ function setup() {
     randbuffer[i] = -1;
   }
   if (global_resimg == '---' || global_resimg == 0 || global_resimg == "0") {
-    lastGames = loadImage(dataPathPhotos + "emptyLastGames.png");
+    lastGames = loadImage(dataPathImg + "emptyLastGames.png");
   } else {
     lastGames = loadImage(global_resimg);
   }

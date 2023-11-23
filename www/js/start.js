@@ -30,7 +30,7 @@ function onDeviceReady() {
     // load p5.js library
 
     // load galleryjs.js, where you can find p5-code
-    dynamicallyLoadScript('js/galleryjs.js');
+    // dynamicallyLoadScript('js/galleryjs.js');
 }
 
 function onOrientationChange() {
@@ -141,6 +141,3 @@ $(document).ready(function () {
     handleRangeInput(speedrange);
 
 });
-
-// Wait for the document to be ready
-// Initialize the Bootstrap Switch plugin
