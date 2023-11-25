@@ -90,18 +90,18 @@ html, body {
  }
 h1 {
     font-weight: bold !important;
-    font-size: 18px !important;
-    margin-bottom: 4px !important;
+    font-size: 24px !important;
+    margin-bottom: 6px !important;
 }
 h2 {
     font-weight: bold !important;
-    font-size: 16px !important;
-    margin-bottom: 4px !important;
+    font-size: 18px !important;
+    margin-bottom: 6px !important;
 }
 h3 {
     font-weight: bold !important;
     font-size: 14px !important;
-    margin-bottom: 4px !important;
+    margin-bottom: 6px !important;
 }
 
 .rules ul li {
@@ -257,4 +257,13 @@ table.statsummary td, th {
 
 .bd-mode-toggle {
   z-index: 1500;
+}
+
+@supports(padding: max(0px)) {
+    .post {
+        padding-left: max(0px, env(safe-area-inset-left));
+        padding-right: max(0px, env(safe-area-inset-right));
+        padding-top: max(0px, env(safe-area-inset-top));
+        padding-bottom: max(0px, env(safe-area-inset-bottom));
+    }
 }

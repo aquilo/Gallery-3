@@ -5,6 +5,18 @@
 // };
 
 let statText;
+let statistcsTable;
+
+let good_be = 81.7;
+let good_mean = 21.6;
+let good_zeros = 15.2;
+let good_solvsolv = 46.7;
+let good_best = 25.4;
+let good_meanres = 78.7;
+let good_bettermean = 85.7;
+let good_solvable = 31.7;
+let game_time = "1'55\"";
+
 // let jsstoreCon = new JsStore.Connection();
 
 
@@ -178,6 +190,7 @@ async function doStatTable() {
 
         stattable.push(res_all);
         updateStats(stattable);
+        statistcsTable = stattable;
         return stattable;
     } catch (ex) {
         console.log("ERROR: ", ex.message)
@@ -269,7 +282,7 @@ function updateStats(results) {
     var s;
     global_statistics = r;
     var nn = r.n;
-    var rrr = '<h2>Your Results</h2><h3>Summary Table</h3><div class="rules">For comparison: <i>empirical results</i>.<br><br><table class="table table-sm statsummary" border="0.0px" style="font-size: 12px">';
+    var rrr = '<h1>Your Results</h1><h2>Summary Table</h2><div class="rules">For comparison: <i>empirical results</i>.<br><br><table class="table table-sm statsummary" border="0.0px" style="font-size: 12px">';
     aaa = results;
     var k = -1;
     do {
@@ -277,35 +290,24 @@ function updateStats(results) {
     } while (results[k].n !== nn);
     len = k + 1;
 
-    good_be = 81.7;
-    good_mean = 21.6;
-    good_zeros = 15.2;
-    good_solvsolv = 46.7;
-    good_best = 25.4;
-    good_meanres = 78.7;
-    good_bettermean = 85.7;
-    good_solvable = 31.7;
-    game_time = "1'55\"";
-
     function compareres(val, goodval, cls1, cls2) {
         cls = (val > goodval) ? cls1 : cls2;
         return '<td class="' + cls + '">' + round_number(val, 2) + '</td>';
     }
 
-    rrr += '<tr><th># of games (last &#8230;)</th>';
+    rrr += '<tr><td>Last &#8230; games:</td>';
     for (var i = 0; i < len; i++) {
         rrr += '<td>' + results[i].n + '</td>';
     }
     rrr += '<td class="valcompare">good</td></tr>';
 
-    rrr += '<tr><th>Mean score</th>';
+    rrr += '<tr><td style="text-align: left">Mean score</td>';
     for (var i = 0; i < len; i++) {
         rrr += compareres(results[i].avg_player, good_mean, 'valworse', 'valbetter');
     }
     rrr += '<td class="valcompare">' + good_mean + '</td></tr>';
 
-
-    rrr += '<tr><th>Games with score 0</th>';
+    rrr += '<tr><td style="text-align: left">Games with score 0</td>';
     for (var i = 0; i < len; i++) {
         s = results[i];
         rrr += compareres(percent(s.hzeros, s.n, 2), good_zeros, 'valbetter', 'valworse');
@@ -346,13 +348,16 @@ function updateStats(results) {
     }
     rrr += '<td class="valcompare">' + good_bettermean + '</td><td>%<td></tr>';
 
+
+
+
     rrr += '</table>';
 
     statText = [
 
         rrr, '<br>',
 
-        '<h3>The Indicators</h3>',
+        '<h2>The Indicators</h2>',
         '<strong>Number of games</strong>: <b>' + r.n + '</b>',
         '<br/>Mean score: <b>' + round_number(r.avg_player, 2) + '</b>',
         '&nbsp;&nbsp;(<i>' + good_mean + '%</i>; computer: ' + round_number(r.avg_mean, 2) + ')<br><br>',
@@ -379,11 +384,11 @@ function updateStats(results) {
         '<br>Your score was better than computer\'s mean out of many attempts.</p>',
         '<p>Games better than computer\'s best: <strong>' + percent(r.hminwins, r.n, 2) + ' %</strong>.',
         '<br/>This depends on the number of attempts. With very many attempts the program ',
-        'will sometime play the same game as you did - or even a better one.</p>',
+        'will sometime play the same game as you did - or even a better one.</p><br>',
 
 
-        '<h3>Other indicator</h3>',
-        '<br>Usual duration of a game: <i>' + game_time + '</i> (includes evaluation).<br>',
+        '<h3>Other indicators</h3>',
+        'Usual duration of a game: <i>' + game_time + '</i> (includes evaluation).<br>',
         'Auto moves: <b>' + percent(r.sum_nauto, r.sum_nmoves, 1) + ' %</b>. ',
 
         '<br/><br>'

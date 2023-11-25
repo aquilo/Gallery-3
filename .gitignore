@@ -79,4 +79,21 @@ capacitor-cordova-ios-plugins
 # Generated Config files
 App/App/capacitor.config.json
 App/App/config.xml
+ios/App
 
+ios/App/*
+*.xcworkspacedata
+ios/App/App.xcworkspace/contents.xcworkspacedata
+ios/App/Gallery3.xcodeproj/project.pbxproj
+ios/App/Gallery3.xcodeproj/project.xcworkspace/contents.xcworkspacedata
+ios/App/Gallery3.xcworkspace/contents.xcworkspacedata
+ios/App/Podfile
+ios/App/Podfile.lock
+ios/App/App.xcworkspace/contents.xcworkspacedata
+ios/App/Gallery3.xcodeproj/project.pbxproj
+ios/App/Gallery3.xcodeproj/project.xcworkspace/contents.xcworkspacedata
+ios/App/Gallery3.xcworkspace/contents.xcworkspacedata
+ios/App/Podfile
+ios/App/Podfile.lock
+*.xcworkspacedata
+*.lock

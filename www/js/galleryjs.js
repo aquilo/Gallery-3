@@ -16,6 +16,7 @@
 
 // --------------------------------------------------------------
 // top left of Foundation, Tableau, Aces, Stock
+let isApp = false;
 let jsstoreCon;
 
 let version = "Version 3.0"; // a
@@ -72,6 +73,7 @@ let lastGamesScreen;
 let imgNow;
 let windrawloop;
 let canvasPositionX = 0;
+let canvasPositionY = 0;
 
 let allPiles = new Array(34);
 let foundationPile = new Array();
@@ -161,7 +163,7 @@ function windowResized() {
   canvasInit();
   resizeCanvas(scaleFactor * WIDTH0, scaleFactor * HEIGHT0);
   console.log("Canvas: " + round(scaleFactor * WIDTH0) + " / " + round(scaleFactor * HEIGHT0));
-  cnv.position(canvasPositionX, 0);
+  cnv.position(canvasPositionX, canvasPositionY);
   allDraw();
 }
 
@@ -169,9 +171,11 @@ function canvasInit() {
   detectDevice();
   widthNew = WIDTH0;
   canvasPositionX = max(0, (windowWidth - widthNew) / 2);
+  if (isApp) {
+    canvasPositionY = 60;
+  }
   actualwidthNew = min(screen.widthNew, 640);
   deviceFactor = actualwidthNew / 320.0;
-
 }
 
 function setup() {
@@ -188,7 +192,7 @@ function setup() {
   cnv = createCanvas(scaleFactor * WIDTH0, scaleFactor * HEIGHT0);
   console.log("Canvas: " + round(scaleFactor * WIDTH0) + " / " + round(scaleFactor * HEIGHT0));
 
-  cnv.position(canvasPositionX, 60);
+  cnv.position(canvasPositionX, canvasPositionY);
   background(255, 0, 200);
 
   //TODO  actualwidthNew = min(screen.widthNew, 480);

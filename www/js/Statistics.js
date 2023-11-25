@@ -353,7 +353,7 @@ function drawHisto(x0, y0) {
       rect(xnow, ybasis, ifact, ynow - ybasis);
     }
   }
- 
+
   stroke(0);
   noFill();
   line(xx, ybasis + ifact * 2, xx + ifact * 192, ybasis + ifact * 2);
@@ -464,6 +464,9 @@ function drawStatistics(x0, y0) {
   text("" + statistics.scores + " " + getTranslation(LANG, "different scores"), x, y += ifact * 16);
 
   stroke(0);
+
+  doStatTableMiniGraph(yyou + 60);
+
   /*
   if (statistics.minimum == 0 || resPlayer == 0) {
     if (resPlayer == 0) {
@@ -589,5 +592,50 @@ function setStatisticsColor(res, indicator) {
   } else {
     fill(69, 117, 180);
 
+  }
+}
+
+function doStatTableMiniGraph(yr) {
+  var results = statistcsTable;
+  var len = results.length;
+  var r = results[len - 1];
+  global_statistics = r;
+  var nn = r.n;
+  aaa = results;
+  var k = -1;
+  do {
+    k = k + 1;
+  } while (results[k].n !== nn);
+  len = k + 1;
+
+  function compareRect(x, y, val, goodval) {
+    let col = (val < goodval) ? "red" : "green";
+    fill(col);
+    rect(x, y, 10, 10);
+  }
+
+  let yy0 = 565;
+  let dxx = 14;
+  let dyy = 12;
+  let xx0 = 490 - (len - 1) * dxx;
+
+  for (var i = 0; i < len; i++) {
+    let s = results[i];
+    let yy = yy0;
+    let xx = xx0 + i * dxx;
+    compareRect(xx, yy, good_mean, results[i].avg_player);
+    yy += dyy;
+    compareRect(xx, yy, percent(s.hzeros, s.n, 2), good_zeros);
+    yy += dyy;
+    compareRect(xx, yy, percent(s.hzeros, s.hsolvable, 2), good_solvsolv);
+    yy += dyy;
+    compareRect(xx, yy, percent(s.n - s.hcbetter, s.n, 2), good_best);
+    yy += dyy;
+    compareRect(xx, yy, results[i].avg_more + results[i].avg_equal, good_be);
+    yy += dyy;
+    compareRect(xx, yy, s.avg_result, good_meanres);
+    yy += dyy;
+    compareRect(xx, yy, percent(s.hwins, s.n, 2), good_bettermean);
+    yy += dyy;
   }
 }
