@@ -609,8 +609,9 @@ function doStatTableMiniGraph(yr) {
   len = k + 1;
 
   function compareRect(x, y, val, goodval) {
-    let col = (val < goodval) ? "red" : "green";
+    let col = (val < goodval) ? "#FF1010" : "#0F0FFB";
     fill(col);
+    stroke(col);
     rect(x, y, 10, 10);
   }
 
