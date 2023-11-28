@@ -254,6 +254,20 @@ class Os {
     else
       fill(g);
   }
+    
+  myline(g) {
+    if (osp)
+      offScreen.line(g);
+    else
+      line(g);
+  }
+  
+  mystroke(g) {
+    if (osp)
+      offScreen.stroke(g);
+    else
+      stroke(g);
+  }
   mystroke(g) {
     if (osp)
       offScreen.stroke(g);

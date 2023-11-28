@@ -212,12 +212,14 @@ class StockPile extends CardPile {
         os.mystroke3(255, 255, 0);
         os.myfill3(255, 255, 0);
         if (humanPlayer) {
+          textFont(myFont, F11);
           text("The End", XSA + 4, this.y + 20);
         } 
       } else {
+        // Balken als Indikator für last cards
         os.mystroke(180);
         os.myfill(180);
-        os.myrect(0, YPROGRESS + 16 * ifact, widthNew, 4 * ifact);
+        os.myrect(0, widthNew, widthNew, 5 * ifact);
       }
       return;
     }
@@ -262,7 +264,6 @@ class StockPile extends CardPile {
       yo += dys;
     }
   }
-
 }
 
 // this.e -------------------------------------------------------------

@@ -177,9 +177,15 @@ table.statsummary td, th {
 
 /* was st2.css */
 
-.bold-text {
-  font-weight: 550;
+.navblue {
+  color: #0A58CA;
+  font-size: 13px;
 }
+.navgray {
+  color: #a0a0a0;
+  font-size: 13px;
+}
+
 
 #invisible-section {
   display: none;
@@ -266,4 +272,16 @@ table.statsummary td, th {
         padding-top: max(0px, env(safe-area-inset-top));
         padding-bottom: max(0px, env(safe-area-inset-bottom));
     }
+}
+
+.menuicon-col {
+    font-size: 18px;
+}
+.menuicon {
+    font-size: 18px;
+    color: #a0a0a0;
+}
+
+.bordertop {
+    border-top: 1px solid #e7e7e7;
 }

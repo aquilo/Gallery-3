@@ -41,7 +41,7 @@ class Button {
 
    draw(active) {
     this.active = active;
-    textFont(myFont, F18);  
+    textFont(myFont, F13);  
     if (!active) {
       fill(color(255));
       stroke(color(255));

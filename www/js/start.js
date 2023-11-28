@@ -67,30 +67,34 @@ function showSection(sectionId) {
 $(document).ready(function () {
 
     $('.nav-item').click(function () {
-        // Remove the active class from all items
         $('.nav-item').removeClass('active');
-
-        // Add the active class to the clicked item
         $(this).addClass('active');
 
-        // Remove the bold-text class from all <span> elements
-        $('.nav-item a span').removeClass('bold-text');
+        // Icons
+        $('.nav-item i').removeClass('navblue navgray');
         $('.nav-item i').each(function () {
             var iconClass = $(this).attr('class');
             if (iconClass && iconClass.endsWith('-fill')) {
                 $(this).attr('class', iconClass.substring(0, iconClass.lastIndexOf('-fill')));
             }
         });
-        // Add "-fill" to the <i> element inside the clicked item
+        $('.nav-item i').addClass('navgray');
+
         $(this).find('i').each(function () {
+            $(this).removeClass('navgray');
             var iconClass = $(this).attr('class');
             $(this).attr('class', iconClass + '-fill');
+            $(this).addClass('navblue');
         });
+        $(this).addClass('navblue');
 
-        // Add the bold-text class to the <span> element inside the clicked item
-        $(this).find('a span').addClass('bold-text');
-
+        // Text
+        $('.nav-item a span').removeClass('navblue navgray').addClass('navgray');
+        $(this).find('span').each(function () {
+            $(this).removeClass('navgray').addClass('navblue');
+        });
     });
+
 
     console.log("*** switches and other interactive elements");
 

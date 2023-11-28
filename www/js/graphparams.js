@@ -25,10 +25,10 @@ function setGraphParams() {
   WIDTH0 = ifact * 320;
   if (ifact == 2) {
     HEIGHT0 = ifact * 620;
+    HEIGHT0 = ifact * 430;
   } else {
     HEIGHT0 = ifact * 480;
   }
-  if (windowWidth < 640) {}
   scaleFactor = min(1.0, windowWidth / 640.0);
   scaleFactor = min(scaleFactor, windowHeight / 1006.0);
   console.log("Window: " + windowWidth + " / " + windowHeight);
@@ -41,6 +41,7 @@ function setGraphParams() {
   F10 = ifact * 10;
   F11 = ifact * 11;
   F12 = ifact * 12;
+  F13 = ifact * 13;
   F14 = ifact * 14;
   F16 = ifact * 16;
   F18 = ifact * 18;

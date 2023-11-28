@@ -28,6 +28,7 @@ let FACT;
 let CARDwidthNew, CARDHEIGHT;
 
 let XRIGHT;
+let YBASE = 640;
 let WIDTH0 = window.innerwidthNew - 5;
 let HEIGHT0 = window.innerHeight - 5;
 let scaleFactor = 1;
@@ -43,8 +44,9 @@ let NEVALUATIONS = 1000;
 let nEvaluationsEnd = 0;
 let NEVALUATIONSTEP = 10;
 let BLUECIRCLERADIUS;
+let YLASTGAMES = 820;
 let nrbox;
-let F9, F10, F11, F12, F14, F16, F18, F24;
+let F9, F10, F11, F12, F13, F14, F16, F18, F24;
 let alfa = 0.99;
 let debug = true;
 let LANG = "en";
@@ -124,6 +126,7 @@ let x2res, y2res, dx2res, dy2res, x2res0, y2res0;
 
 
 let myFont;
+let myFontRegular;
 let serie = new Array(32);
 let serie32 = new Array(32);
 let os;
@@ -155,7 +158,8 @@ function preload() {
   newCards = loadImage(dataPathImg + "newcards2013.png");
   numbcol = loadImage(dataPathImg + "numbersandcolors.png");
   // translationStrings = loadStrings(dataPath + "translations.txt");
-  myFont = loadFont("data/Roboto-Regular.ttf");
+  myFont = loadFont("data/Roboto-Light.ttf");
+  myFontRegular = loadFont("data/Roboto-Regular.ttf");
   My.print("/preload: " + My.round2String(millis() / 1000.0, 3) + " sec");
 }
 
@@ -214,10 +218,8 @@ function setup() {
   }
 
   foundationPile = initialize2DArray(3, 8, "");
-  allPiles[0] = stockPile = new StockPile(XSS, YSS, 0, 104);
-  //  allPiles[1] = acePile = new AcePile(-40, YSA, 1, 8);
-  // allPiles[1] = acePile = new AcePile(XSS + 60, YSF + DYSF, 1, 8);
-  allPiles[1] = acePile = new AcePile(XSF + 3.5 * DXSF, -50, 1, 8);
+  allPiles[0] = stockPile = new StockPile(XSS, YSS - 30, 0, 104);
+  allPiles[1] = acePile = new AcePile(XSF + 3.5 * DXSF, -500, 1, 8);
   let j = 2;
   for (let i = 0; i < 8; i++)
     allPiles[j++] = foundationPile[2][i] =
@@ -233,11 +235,12 @@ function setup() {
     new TableauPile(XST + DXSF * i, YST, j - 1, 10);
 
   let ybtns = YBN + 60;
-  btnEvaluate = new Button(getTranslation(LANG, "Evaluate"), XBN + ifact * 132, ybtns, WBF, HBF, 1);
-
-  btnNew = new Button(getTranslation(LANG, "New"), XBN - ifact * 60, ybtns, WBN, HBN, 1);
-  btnUndo = new Button(getTranslation(LANG, "Undo"), XBN + ifact * 80, YRES - 20, WBU, HBU, 1);
-  btnRedo = new Button(getTranslation(LANG, "Redo"), XBN + ifact * 60, ybtns, WBU, HBU, 1);
+  let menustart = 10;
+  ybtns -= 40;
+  btnNew = new Button(getTranslation(LANG, "New"), menustart, ybtns, WBN, HBN, 1);
+  btnRedo = new Button(getTranslation(LANG, "Redo"), menustart + ifact * 45, ybtns, WBU, HBU, 1);
+  btnUndo = new Button(getTranslation(LANG, "Undo"), menustart + ifact * 90, ybtns, WBU, HBU, 1);
+  btnEvaluate = new Button(getTranslation(LANG, "Evaluate"), 245, YRES - 22, WBF, HBF, 1);
 
   for (let i = 2; i < 34; i++) {
     serie[i - 2] = i;
@@ -273,9 +276,8 @@ function setup() {
   } else {
     lastGames = loadImage(global_resimg);
   }
-  rescanvas = createGraphics(640, 64);
+  rescanvas = createGraphics(640, 32);
   rescanvas.image(lastGames, 0, 0);
-
 
   statistics.statisticsgraphinit();
 
@@ -308,8 +310,8 @@ function doEvaluation(n, alfa) {
   evaluating = true;
   stroke(0);
   for (let i = 0; i < n; i++) {
-    btnNew.draw(false);
-    btnRedo.draw(false);
+    //btnNew.draw(false);
+    //btnRedo.draw(false);
     statistics.add(evalGame(alfa));
   }
 }
@@ -369,6 +371,8 @@ function draw() {
     noTint();
     return;
   }
+  drawGrid();
+
   if (!dirty) noLoop();
   if (!dirty) return;
 
@@ -389,6 +393,7 @@ function draw() {
 
   dirty = cardMoving();
   if (dirty) loop();
+  drawGrid();
 
   for (let i = 0; i < 34; i++) {
     if (allPiles[i].autoMovable) {
@@ -398,7 +403,21 @@ function draw() {
     }
   }
   allDraw();
+  drawGrid();
 }
+
+function drawGrid() {
+  return;
+  // stroke(120);
+  // for (let i = 0; i < 80; i++) {
+  //   line(0, 20 * i, 640, 20 * i);
+
+  //   for (let j = 0; j < 64; j++) {
+  //     line(20 * j, 0, 20 * j, 1000);
+  //   }
+  // }
+}
+
 
 function evalGame(alphanow) {
   initLayout();
@@ -540,7 +559,7 @@ function drawProgress(part, all) {
     fill(statistics.getResColor(statistics.mean, resPlayer));
     rect(0, YPROGRESS - 0.5 * ifact, widthNew, DYPROGRESS + 0.5 * ifact);
     fill(0);
-    textFont(myFont, F12);
+    textFont(myFont, F10);
     textC("Tap to continue.", widthNew / 2, YRES - ifact * 46);
     textFont(myFont, F9);
     text(evaltime, ifact * 3, YRES - ifact * 40);
@@ -549,26 +568,24 @@ function drawProgress(part, all) {
     resImage = get(0, 0, scaleFactor * widthNew, scaleFactor * widthNew);
     nowImage = get(0, 0, scaleFactor * widthNew, scaleFactor * widthNew);
 
-    ifx = 10;
+    ifx = 20;
     ify = ifx;
     nowImage.resize(widthNew / ifx, widthNew / ify);
-    let ylastgames = widthNew + 230;
     if (nEvaluationsEnd <= global_evaluations) {
-      image(lastGames, widthNew / ifx, ylastgames);
+      image(lastGames, widthNew / ifx, YLASTGAMES);
       rescanvas.image(lastGames, widthNew / ifx, 0);
     }
 
-    image(nowImage, 0, ylastgames);
+    image(nowImage, 0, YLASTGAMES);
     rescanvas.image(nowImage, 0, 0);
 
     stroke(255);
-    line(widthNew / ifx, ylastgames, widthNew / ifx, ylastgames + widthNew / ify);
+    line(widthNew / ifx, YLASTGAMES, widthNew / ifx, YLASTGAMES + widthNew / ify);
     // lastGames = get(0, ylastgames, widthNew, widthNew / ify);
     // lastGames.loadPixels();
     lastGames = rescanvas.get(0, 0, widthNew, widthNew / ifx);
     lastGames.loadPixels();
     doSaveResultImage(lastGames);
-    // 
   } else {
     let p = float(part) / float(all);
     if (p < drawNext) return;
@@ -593,9 +610,9 @@ function allDraw() {
     offScreen.background(248);
     offScreen.fill(255);
     offScreen.stroke(255);
-    offScreen.rect(0, ifact * 331, widthNew, 670);
+    offScreen.rect(0, ifact * 320, widthNew, 670);
     offScreen.stroke(224);
-    offScreen.line(0, ifact * 331, widthNew, ifact * 331);
+    offScreen.line(0, ifact * 320, widthNew, ifact * 320);
     offScreen.stroke(0);
 
     if (!allPiles[2]) {
@@ -606,8 +623,7 @@ function allDraw() {
     for (let i = 0; i < 34; i++) {
       allPiles[i].draw();
     }
-    let ylastgames = widthNew + 230;
-    offScreen.image(lastGames, 0, ylastgames);
+    offScreen.image(lastGames, 0, YLASTGAMES);
 
     mustDraw = false;
     osp = false;
@@ -644,6 +660,7 @@ function allDraw() {
     drawStatistics(XSTAT, YSTAT - ifact * 10);
     fill(statistics.getResColor(statistics.mean, resPlayer));
     drawResult(XSTAT, YSTAT - ifact * 21);
+    image(lastGames, 0, YLASTGAMES);
   }
   btnNew.draw((!gameFinished && stockPile.nCards > 32) || evaluated);
   btnRedo.draw(evaluated);
@@ -661,13 +678,13 @@ function allDraw() {
       textC("Evaluating", XRES - ifact * 95, YRES - ifact * 12);
     }
     if (!evaluated && res != 0) {
-      textFont(myFont, F12);
-      textC("The End. Now the evaluation:", XRES - ifact * 95, YRES - ifact * 46);
+      textFont(myFont, F9);
+      text("The End. Now the evaluation:", 10, YRES + 9);
     }
   }
   if (humanPlayer) {
-    textFont(myFont, F18);
-    textC(res + "", XRES, YRES);
+    textFont(myFontRegular, F18);
+    textC(res + "", 320, YRES - 52);
     textFont(myFont, F12);
   }
 
@@ -678,8 +695,13 @@ function allDraw() {
   if (noMovables() && !cardMoving() && humanPlayer && res != 0) {
     os.mynoStroke();
     os.myfill2(0, 40);
-    os.myrect(0, 0, widthNew, ifact * 331);
+    os.myrect(0, 0, widthNew, ifact * 320);
+    os.mystroke(12);
+    os.myline(0, ifact * 320, widthNew, ifact * 320);
   }
+  // image(lastGames, 0, YLASTGAMES);
+  // console.log("image");
+
 }
 
 function numberOfMovables() {
@@ -787,7 +809,7 @@ function mouseClicked() {
   loop();
   let x = mouseX;
   let y = mouseY;
-  //TODO y -= deltay;
+
   if (reduce) {
     x /= scaleFactor;
     y /= scaleFactor;
@@ -806,6 +828,10 @@ function mouseClicked() {
     nrbox = 0;
     btnNew.draw(false);
     btnRedo.draw(false);
+    btnUndo.draw(false);
+    fill(255);
+    rect(5, YRES - 20, 250, 30);
+    rect(300, YRES - 70, 40, 40);
 
     statistics.drawEvaluationLegend(resPlayer, YRES - ifact * 30);
 
@@ -849,7 +875,6 @@ function keyPressed() {
       My.print(allPiles[i].toString());
     }
   }
-
   if (key == 'f' || key == 'f') {
     finishGame();
     humanPlayer = true;
