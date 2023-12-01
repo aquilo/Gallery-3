@@ -16,7 +16,7 @@
 
 // --------------------------------------------------------------
 // top left of Foundation, Tableau, Aces, Stock
-let isApp = false;
+let isApp = true;
 let jsstoreCon;
 
 let version = "Version 3.0"; // a
@@ -158,8 +158,10 @@ function preload() {
   newCards = loadImage(dataPathImg + "newcards2013.png");
   numbcol = loadImage(dataPathImg + "numbersandcolors.png");
   // translationStrings = loadStrings(dataPath + "translations.txt");
-  myFont = loadFont("data/Roboto-Light.ttf");
-  myFontRegular = loadFont("data/Roboto-Regular.ttf");
+  myFont = loadFont("data/sf-pro-text-light.ttf");
+  myFontRegular = loadFont("data/sf-pro-text-regular.ttf");
+  //  myFont = loadFont("data/Roboto-Light.ttf");
+  // myFontRegular = loadFont("data/Roboto-Regular.ttf");
   My.print("/preload: " + My.round2String(millis() / 1000.0, 3) + " sec");
 }
 

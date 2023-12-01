@@ -174,7 +174,7 @@ async function doStatTable() {
         stats = await getIndicators(999999);
         res_all = calcIndicators(stats);
 
-        let nn = 20;
+        let nn = 100;
         if (res_all.n > nn) {
             stats = await getIndicators(nn);
             res = calcIndicators(stats);

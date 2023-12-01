@@ -4,8 +4,14 @@
    width: 100%;
    text-align:center;
 }
+@font-face {
+    font-family: 'SF Pro Regular';
+    src: url('/data/sf-pro-regular.ttf') format('truetype');
+    /* You can specify different formats like woff, woff2, etc. for better browser compatibility */
+}
+
 html, body {
-    font-family: "-apple-system" !important;
+    font-family: 'SF Pro Regular', "-apple-system" !important;
     font-weight: normal;
    font-size: 14px;
 
