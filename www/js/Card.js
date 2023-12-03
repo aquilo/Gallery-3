@@ -5,7 +5,7 @@ class Card {
   // var suit, rank, id;
   // var jammer, jammed;
 
-  static suitStr = ["Spade", "Hearts", "Club", "Diamond"];
+  static suitStr = ["Club", "Hearts", "Spade", "Diamond"];
   static rankStr = ["-", "Ace", "2", "3", "4", "5", "6",
     "7", "8", "9", "10", "Jack", "Queen", "King"
   ];
@@ -20,6 +20,7 @@ class Card {
     this.img = img;
     this.imgOk = imgOk;
     this.imgCovered = imgCovered;
+    this.jamFinal = false;
 
   }
   toString() {
@@ -42,36 +43,6 @@ class Card {
     os.myimage(this.img, x, y);
   }
 
-  drawHidden(x, y) {
-    os.myimage(this.imgCovered, x, y);
-    os.mystroke(180);
-    if (this.jammed && (global_show == 1)) {
-      os.myfill3(180, 180, 180);
-      os.myrect(x + 34, y + 2, 36, 12);
-    }
-    if (this.jammer && (global_show == 1)) {
-      os.myfill3(0, 200, 0);
-      os.mynoStroke();
-      os.myrect(x + 38, y + 5, 30, 7);
-    }
-  }
-
-  drawMovable(x, y) {
-
-    if (global_show === 0) return;
-    os.mynoStroke();
-    os.myfill4(255, 127, 0, 80);
-    os.myrect(x, y, CARDwidthNew, CARDHEIGHT);
-  }
-
-  drawAutoMovable(x, y) {
-    if (global_show === 0) return;
-    if (global_sayAuto != 1) return;
-    os.mynoStroke();
-    os.myfill4(0, 255, 100, 80);
-    os.myrect(x, y, CARDwidthNew, CARDHEIGHT);
-  }
-
   draw(x, y, ok, movable, autoMovable) {
     if (ok) {
       this.jammer = this.jammed = false;
@@ -90,10 +61,51 @@ class Card {
       }
     }
     if (this.jammer && (global_show == 1)) {
+      if (this.jamFinal) {
+        os.myfill3(220, 220, 220);
+        os.mynoStroke();
+        os.myrect(x + 34, y + 2, 37, 16);
+      }
       os.myfill3(0, 200, 0);
-      //      os.myfill3(0, 200, 0);
       os.mynoStroke();
-      os.myrect(x + 38, y + 5, 30, 7);
+      os.myrect(x + 38, y + 5, 26, 5);
+
     }
   }
+
+  drawHidden(x, y) {
+    os.myimage(this.imgCovered, x, y);
+    os.mystroke(180);
+    if (this.jamFinal) {
+      os.myfill3(220, 220, 220);
+      os.mynoStroke();
+      os.myrect(x + 34, y + 2, 37, 16);
+    }
+    if (this.jammed && (global_show == 1)) {
+      os.myfill3(0, 200, 0);
+      os.mynoStroke();
+      os.myrect(x + 43, y + 5, 16, 5);
+    }
+    if (this.jammer && (global_show == 1)) {
+      os.myfill3(0, 180, 0);
+      os.mynoStroke();
+      os.myrect(x + 38, y + 5, 26, 5);
+    }
+  }
+
+  drawMovable(x, y) {
+    if (global_show === 0) return;
+    os.mynoStroke();
+    os.myfill4(255, 127, 0, 80);
+    os.myrect(x, y, CARDwidthNew, CARDHEIGHT);
+  }
+
+  drawAutoMovable(x, y) {
+    if (global_show === 0) return;
+    if (global_sayAuto != 1) return;
+    os.mynoStroke();
+    os.myfill4(0, 255, 100, 80);
+    os.myrect(x, y, CARDwidthNew, CARDHEIGHT);
+  }
+
 }

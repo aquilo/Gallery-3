@@ -199,9 +199,8 @@ function setup() {
   console.log("Canvas: " + round(scaleFactor * WIDTH0) + " / " + round(scaleFactor * HEIGHT0));
 
   cnv.position(canvasPositionX, canvasPositionY);
-  background(255, 0, 200);
-
-  //TODO  actualwidthNew = min(screen.widthNew, 480);
+  // background(255, 0, 200);
+  background(255);
 
   // -------
   statistics = new Statistics();
@@ -381,9 +380,10 @@ function draw() {
   allDraw();
   doAllAceMoves();
   allOkChecks();
+  setCardsOK();
   allMovableChecks();
   allAutoMovableChecks();
-  allJamChecks();
+  if (humanPlayer) allJamChecks();
 
   res = getResult();
 
@@ -516,6 +516,44 @@ function allOkChecks() {
   for (let i = 2; i < 34; i++) {
     if (!allPiles[i].ok)
       allPiles[i].doOkCheck();
+  }
+}
+
+function setCardsOK() {
+  // console.log("setCardsOK");
+  for (let i = 2; i < 26; i++) {
+    if (allPiles[i].ok) {
+      for (let j = 0; j < allPiles[i].nCards; j++) {
+        if (!allPiles[i].cards[j].ok) {
+          allPiles[i].cards[j].ok = true;
+          console.log(i + " " + j + " " + allPiles[i].cards[j] + " now ok");
+        }
+
+      }
+    }
+  }
+}
+
+function fillBelowJam(i) {
+  // console.log("fillBelowJam");
+  let someJam = false;
+  for (let j = allPiles[i].nCards - 1; j >= 0; j--) {
+    if (allPiles[i].cards[j].jamFinal || someJam) {
+      someJam = true;
+      if (!allPiles[i].cards[j].jamFinal) {
+        allPiles[i].cards[j].jamFinal = true;
+        if (!someJam) {
+          console.log(i + " " + j + " " + allPiles[i].cards[j] + " also dead");
+        }
+      }
+    }
+  }
+}
+
+function fillAllBelowJam() {
+  // console.log("fillAllBelowJam");
+  for (let i = 26; i < 34; i++) {
+    fillBelowJam(i);
   }
 }
 
@@ -763,6 +801,7 @@ function initLayout() {
   for (let i = 0; i < 104; i++) {
     cards[i].jammer = false;
     cards[i].jammed = false;
+    cards[i].jamFinal = false;
     stockPile.push(cards[i]);
   }
   moveStock2Foundation(2);
