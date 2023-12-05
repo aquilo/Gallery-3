@@ -164,6 +164,7 @@ class TableauPile extends CardPile {
         return count + (card.jamFinal === true ? 1 : 0);
       }, 0);
       if (countJamFinalTrueBefore == 0) return;
+      console.log("checkfinal " + countJamFinalTrueBefore);
       // console.log(countJamFinalTrueBefore);
       const jamFCards = cards.filter(card => card.jamFinal === true);
       // console.log(jamFCards);

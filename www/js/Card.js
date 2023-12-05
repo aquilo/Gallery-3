@@ -69,8 +69,12 @@ class Card {
       os.myfill3(0, 200, 0);
       os.mynoStroke();
       os.myrect(x + 38, y + 5, 26, 5);
-
     }
+        if (this.jamFinal) {
+          os.myfill3(220, 220, 220);
+          os.mynoStroke();
+          os.myrect(x + 34, y + 2, 37, 16);
+        }
   }
 
   drawHidden(x, y) {
