@@ -164,6 +164,8 @@ async function getIndicators(limit) {
         },
         limit: limit
     });
+    console.log("statistics, last " + stats.length);
+    if (stats.length < 101) console.log(stats);
     return stats;
 }
 

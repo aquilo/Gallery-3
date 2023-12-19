@@ -146,8 +146,9 @@ class TableauPile extends CardPile {
           belowCard.jammed = true;
           this.setElementAt(belowCard, j);
           aboveCard.jammer = true;
-          if (this.jamCheckTwinOk(aboveCard)) {
-            aboveCard.jamFinal = true;
+          if (!aboveCard.jamFinal && this.jamCheckTwinOk(aboveCard)) {
+            console.log(aboveCard + " is directly dead (doJamCheck)");
+            this.checkCoverer(aboveCard);
           }
           this.setElementAt(aboveCard, k);
           fillBelowJam(this.id);
@@ -164,35 +165,49 @@ class TableauPile extends CardPile {
         return count + (card.jamFinal === true ? 1 : 0);
       }, 0);
       if (countJamFinalTrueBefore == 0) return;
-      console.log("checkfinal " + countJamFinalTrueBefore);
+      // console.log("checkfinal start " + countJamFinalTrueBefore);
       // console.log(countJamFinalTrueBefore);
-      const jamFCards = cards.filter(card => card.jamFinal === true);
+      const jamFCards = cards.filter(card => card.jamFinal === true && !card.jamChecked);
       // console.log(jamFCards);
       for (let i = 0; i < jamFCards.length; i++) {
         const c = jamFCards[i];
-        const filteredCards = cards.filter(card => card.suit === c.suit && (card.rank === c.rank + 3 || card.rank === c.rank + 6 || card.rank === c.rank + 9));
-        // console.log(filteredCards);
-        const countOKs = filteredCards.reduce((count, card) => {
-          return count + (card.ok === true || card.jamFinal == true ? 1 : 0);
-        }, 0);
-
-        // console.log(countOKs);
-        if (countOKs == 1) {
-          filteredCards.forEach(card => {
-            if (!card.ok && !card.jamFinal) {
-              console.log(card + " is dead")
-              card.jamFinal = true;
-            }
-          });
-        }
+        //console.log("checkfinal (" + i + " )" + c);
+        this.checkCoverer(c);
       }
       fillAllBelowJam();
       const countJamFinalTrueAfter = cards.reduce((count, card) => {
         return count + (card.jamFinal === true ? 1 : 0);
       }, 0);
-            
+
+      //console.log("checkfinal end " + countJamFinalTrueAfter);
       newFound = countJamFinalTrueBefore != countJamFinalTrueAfter;
     }
+  }
+
+  checkCoverer(c) {
+    if (c.jamChecked) return;
+    c.jamFinal = true;
+    if (c.rank > 10) return;
+
+    console.log("checking " + c);
+    let twin = cards.filter(card => card.suit === c.suit && card.rank === c.rank && card.id != c.id);
+
+//    if (twin[0].ok) return;
+    const filteredCards = cards.filter(card => card.suit === c.suit && card.rank === c.rank + 3);
+    console.log(filteredCards);
+    const countOKs = filteredCards.reduce((count, card) => {
+      return count + (card.ok === true || card.jamFinal == true ? 1 : 0);
+    }, 0);
+    //console.log("checkfinal " + countOKs + " (delta " + delta);
+    if (countOKs == 1) {
+      filteredCards.forEach(card => {
+        if (!card.ok && !card.jamFinal) {
+          console.log(card + " is dead (checkCoverer)")
+          this.checkCoverer(card);
+        }
+      });
+    }
+    c.jamChecked = true;
   }
 
   checkTwinBelow(topCard) {

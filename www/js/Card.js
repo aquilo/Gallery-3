@@ -59,28 +59,30 @@ class Card {
       if (movable) {
         this.drawMovable(x, y);
       }
+            if (this.jamFinal && (global_show == 1)) {
+              os.myfill3(220, 220, 220);
+              os.mynoStroke();
+              os.myrect(x + 34, y + 2, 37, 14);
+            }
     }
     if (this.jammer && (global_show == 1)) {
       if (this.jamFinal) {
         os.myfill3(220, 220, 220);
         os.mynoStroke();
-        os.myrect(x + 34, y + 2, 37, 16);
+        os.myrect(x + 34, y + 2, 37, 14);
       }
       os.myfill3(0, 200, 0);
       os.mynoStroke();
-      os.myrect(x + 38, y + 5, 26, 5);
+      os.myrect(x + 38, y + 5, 26, 6);
+
     }
-        if (this.jamFinal) {
-          os.myfill3(220, 220, 220);
-          os.mynoStroke();
-          os.myrect(x + 34, y + 2, 37, 16);
-        }
+
   }
 
   drawHidden(x, y) {
     os.myimage(this.imgCovered, x, y);
     os.mystroke(180);
-    if (this.jamFinal) {
+    if (this.jamFinal && (global_show == 1)) {
       os.myfill3(220, 220, 220);
       os.mynoStroke();
       os.myrect(x + 34, y + 2, 37, 16);
@@ -93,7 +95,7 @@ class Card {
     if (this.jammer && (global_show == 1)) {
       os.myfill3(0, 180, 0);
       os.mynoStroke();
-      os.myrect(x + 38, y + 5, 26, 5);
+      os.myrect(x + 38, y + 5, 26, 6);
     }
   }
 

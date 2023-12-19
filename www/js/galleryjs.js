@@ -147,7 +147,7 @@ let shortTxt = [
 ];
 
 let longTxt = [
-  "", "Twin is already ok.", "There are two possibilities for this card.", "The foundation row is completely clean.", "At the end and only one card can be moved.", "Twin is directly at the bottom (F).", "Twin is on the same foundation row.", "Twin is below this card.", "Twin is directly at the bottom (T).", "Twin lies directly under its base.", "Twin lies directly under its own base."
+  "", "Twin is already ok.", "There are two possibilities for this card.", "The foundation row is completely clean.", "At the end and only one card can be moved.", "Twin is at the bottom of the tableau (this card on foundation).", "Twin is on the same foundation row.", "Twin is under this card.", "Twin is at the bottom of the tableau (this card on tableau).", "Twin is directly under its own base.", "Twin is directly under its own base."
 ];
 
 function preload() {
@@ -291,6 +291,18 @@ function setup() {
   initDb();
   loop();
   My.print("/setup: " + My.round2String(millis() / 1000.0, 3) + " sec");
+
+  const myWorker = new Worker('./js/worker.js');
+
+  // Define what happens when the worker sends a message back
+  myWorker.onmessage = function (e) {
+    console.log('Result from background task:', e.data);
+  };
+
+  // Start the background task by sending a message to the worker
+  const inputData = 10000000; // For example, sending a large number for the task
+  myWorker.postMessage({gallerytest: 1000});
+
 }
 
 function drawE() {
@@ -526,7 +538,7 @@ function setCardsOK() {
       for (let j = 0; j < allPiles[i].nCards; j++) {
         if (!allPiles[i].cards[j].ok) {
           allPiles[i].cards[j].ok = true;
-          console.log(i + " " + j + " " + allPiles[i].cards[j] + " now ok");
+          // console.log(i + " " + j + " " + allPiles[i].cards[j] + " now ok");
         }
 
       }
@@ -535,26 +547,32 @@ function setCardsOK() {
 }
 
 function fillBelowJam(i) {
-  // console.log("fillBelowJam");
+  // console.log("fillBelowJam " + i);
+  let newFilled = false;
   let someJam = false;
   for (let j = allPiles[i].nCards - 1; j >= 0; j--) {
     if (allPiles[i].cards[j].jamFinal || someJam) {
       someJam = true;
       if (!allPiles[i].cards[j].jamFinal) {
-        allPiles[i].cards[j].jamFinal = true;
+        //console.log(i + " " + j + " " + allPiles[i].cards[j] + " also dead (fillBelowJam)");
+        allPiles[i].checkCoverer(allPiles[i].cards[j]);
+        newFilled = true;
         if (!someJam) {
-          console.log(i + " " + j + " " + allPiles[i].cards[j] + " also dead");
+          // console.log(i + " " + j + " " + allPiles[i].cards[j] + " also dead");
         }
       }
     }
   }
+  return newFilled;
 }
 
 function fillAllBelowJam() {
-  // console.log("fillAllBelowJam");
+  //console.log("fillAllBelowJam");
+  let newFilled = false;
   for (let i = 26; i < 34; i++) {
-    fillBelowJam(i);
+    newFilled = newFilled || fillBelowJam(i);
   }
+  //console.log("fillAllBelowJam " + newFilled);
 }
 
 function doAllAceMoves() {
@@ -971,6 +989,9 @@ function shuffleDeck() {
   for (let i = 103; i >= 0; i--) {
     let j = int(random(i));
     let card = cards[j];
+    card.ok = false;
+    card.jamFinal = false;
+    card.jamChecked = false;
     cards[j] = cards[i];
     cards[i] = card;
   }
