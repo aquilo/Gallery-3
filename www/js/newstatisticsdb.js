@@ -376,7 +376,7 @@ function updateStats(results) {
 
         '</p><strong>Perfect Games</strong>: You are at least as good as the computer in <b>' + round_number(r.avg_more + r.avg_equal, 2) + '%</b> (<i>' +
         good_be + '%</i>) ',
-        'of the games (compared to the computer your result was better result in <strong>' + round_number(r.avg_more, 1) + '%</strong>, equal in <strong>' + round_number(r.avg_equal, 1) + '%</strong>, and worse in <strong>' + round_number(r.avg_less, 1) + '%</strong>.</p>',
+        'of the games. Compared to the computer your result was better result in <strong>' + round_number(r.avg_more, 1) + '%</strong>, equal in <strong>' + round_number(r.avg_equal, 1) + '%</strong>, and worse in <strong>' + round_number(r.avg_less, 1) + '%</strong>.</p>',
         '<hr>',
         '<strong>Mean result</strong>: <b>' + round_number(r.avg_result, 2) + '%</b> (<i>' + good_meanres + '%</i>)<br/>',
         'The result of a single game is the percentage of computer\'s scores worse than your\'s (mean: <strong>' + round_number(r.avg_more, 2) + '</strong>) plus half of the drawn attempts (mean: <strong>' + round_number(r.avg_equal, 2) + ' / 2</strong>). You see this number after a evaluation in the center of ',
