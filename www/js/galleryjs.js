@@ -612,8 +612,8 @@ function drawProgress(part, all) {
     fill(statistics.getResColor(statistics.mean, resPlayer));
     rect(0, YPROGRESS - 0.5 * ifact, widthNew, DYPROGRESS + 0.5 * ifact);
     fill(0);
-    textFont(myFont, F10);
-    textC("Tap to continue.", widthNew / 2, YRES - ifact * 46);
+    textFont(myFont, F12);
+    textC("Tap to continue.", widthNew / 2, YRES - ifact * 48);
     textFont(myFont, F9);
     text(evaltime, ifact * 3, YRES - ifact * 40);
     noStroke();
@@ -732,7 +732,9 @@ function allDraw() {
     }
     if (!evaluated && res != 0) {
       textFont(myFont, F9);
-      text("The End. Now the evaluation:", 10, YRES + 9);
+      fill(0);
+      stroke(0);
+      text("The End. Now the evaluation:", 10, YRES + 12);
     }
   }
   if (humanPlayer) {
@@ -884,7 +886,7 @@ function mouseClicked() {
     btnRedo.draw(false);
     btnUndo.draw(false);
     fill(255);
-    rect(5, YRES - 20, 250, 30);
+    rect(5, YRES - 16, 250, 30);
     rect(300, YRES - 70, 40, 40);
 
     statistics.drawEvaluationLegend(resPlayer, YRES - ifact * 30);

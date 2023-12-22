@@ -383,7 +383,7 @@ function drawResult(x, y) {
   if (statistics.maximum < 0) return;
   let dx = ifact * 200;
   let dy = ifact * 17;
-  let yc = y + dy / 2;
+  let yc = y + dy / 2 - 4;
   stroke(0);
 
   fill(statistics.getResColor(30.0, 20));
@@ -412,7 +412,7 @@ function drawStatistics(x0, y0) {
   textFont(myFont, F12);
   let x = x0;
   let y = y0;
-  let xr = x + ifact * 120;
+  let xr = x + ifact * 112;
   let xm = x + ifact * 193;
   let dy = ifact * 125;
   fill(255);
@@ -433,11 +433,14 @@ function drawStatistics(x0, y0) {
   }
   textR("" + statistics.minimum, xr, y);
   fill(0);
+  textFont(myFont, F9);
   if (statistics.minimum == 0) {
     text("! (" + statistics.histo[0] + "x)", xr + ifact, y);
   } else {
     text(" (" + statistics.histo[statistics.minimum] + "x)", xr + ifact, y);
   }
+  textFont(myFont, F12);
+
   text(getTranslation(LANG, "median") + ":", x, y += ifact * 16);
   setStatisticsColor(resPlayer, statistics.median);
   textR("" + statistics.median, xr, y);
@@ -447,6 +450,9 @@ function drawStatistics(x0, y0) {
   let yyou = y - ifact * 7;
   textR(getTranslation(LANG, "You"), xm, yyou);
   textR("" + resPlayer, xm, yyou + ifact * 20);
+  noFill();
+  rect(xm - 64 , yyou - 33, 70, 83, 5);
+
   textFont(myFont, F12);
 
   text(getTranslation(LANG, "mean") + ":", x, y += ifact * 13);
@@ -465,7 +471,7 @@ function drawStatistics(x0, y0) {
 
   stroke(0);
 
-  doStatTableMiniGraph(yyou + 60);
+  doStatTableMiniGraph();
 
   /*
   if (statistics.minimum == 0 || resPlayer == 0) {
@@ -595,7 +601,7 @@ function setStatisticsColor(res, indicator) {
   }
 }
 
-function doStatTableMiniGraph(yr) {
+function doStatTableMiniGraph() {
   var results = statistcsTable;
   var len = results.length;
   var r = results[len - 1];
@@ -615,7 +621,7 @@ function doStatTableMiniGraph(yr) {
     rect(x, y, 10, 10);
   }
 
-  let yy0 = 565;
+  let yy0 = 571;
   let dxx = 14;
   let dyy = 12;
   let xx0 = 490 - (len - 1) * dxx;
