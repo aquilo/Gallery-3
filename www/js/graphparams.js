@@ -37,6 +37,7 @@ function setGraphParams() {
   console.log("Offscreen-Canvas: " + WIDTH0 + " / " + HEIGHT0);
   console.log("scaleFactor: " + scaleFactor);
 
+  F8 = ifact * 8;
   F9 = ifact * 9;
   F10 = ifact * 10;
   F11 = ifact * 11;

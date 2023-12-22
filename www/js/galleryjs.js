@@ -46,7 +46,7 @@ let NEVALUATIONSTEP = 10;
 let BLUECIRCLERADIUS;
 let YLASTGAMES = 820;
 let nrbox;
-let F9, F10, F11, F12, F13, F14, F16, F18, F24;
+let F8, F9, F10, F11, F12, F13, F14, F16, F18, F24;
 let alfa = 0.99;
 let debug = true;
 let LANG = "en";
@@ -127,6 +127,7 @@ let x2res, y2res, dx2res, dy2res, x2res0, y2res0;
 
 let myFont;
 let myFontRegular;
+let successImages = "";
 let serie = new Array(32);
 let serie32 = new Array(32);
 let os;
@@ -138,7 +139,7 @@ let actualwidthNew;
 let deviceFactor;
 let translationStrings;
 let dbLoaded = false;
-let caption;
+let caption = new Array();
 let cnv;
 
 let shortTxt = [
@@ -160,6 +161,7 @@ function preload() {
   // translationStrings = loadStrings(dataPath + "translations.txt");
   myFont = loadFont("data/sf-pro-text-light.ttf");
   myFontRegular = loadFont("data/sf-pro-text-regular.ttf");
+  successImages = loadTable(dataPathPhotos + "photos.tsv", "tsv", "header");
   //  myFont = loadFont("data/Roboto-Light.ttf");
   // myFontRegular = loadFont("data/Roboto-Regular.ttf");
   My.print("/preload: " + My.round2String(millis() / 1000.0, 3) + " sec");
@@ -250,22 +252,12 @@ function setup() {
 
   moverCollection = new MoverCollection();
 
-  let photoName = [
-    "img_0611b", "img_0812b", "img_1021b", "img_1029b", "img_1049b", "img_1058b", "img_1080b", "img_1119b",
-    "img_1125b", "img_1144b", "img_1536b", "img_1747b", "img_1972b", "img_2070b", "img_2225b", "img_2856b", "img_2867b", "adula", "clariden", "gelb", "mittelholzer", "mittelholzer2", "pratod", "terri", "terribw", "toedi", "uomo", "grafik", "showyourstripes_switzerland2"
-  ];
+  bimg = new Array(successImages.getRowCount());
 
-  caption = [
-    "Adula (3402m) from Val Malvalglia", "Laghetto (2233m) near Cima di Pinadee", "", "", "Pizzo Cassinello (3103m)", "", "Adula (3402m) from Pizzo Cassinello", "Oratorio di Santa Caterina d'Alessandria (Ponto Aquilesco)",
-    "From Campra to the east", "In Val Scaradra", "Motterascio", "Oratorio di Santa Caterina d'Alessandria (Ponto Aquilesco)", "Val Canal", "Adula (3402m) from Lago Retico", "Cima di Gana Bianca (2843m)", "Piz Terri (3149m)", "Piz Terri (3149m) from Corói",
-    "Adula (3402m) from south", "Clariden (3267m) and Tödi (3614m) from Pizzo dell'Uomo", "", "Adula (3402m), areal view by Walter Mittelholzer, 1923", "Adula (3402m), areal view by Walter Mittelholzer, 1919", "Prodóir (1460m)", "Piz Terri (3149m)", "Piz Terri (3149m) Corói", "Clariden (3267m) and Tödi (3614m)", "Pizzo dell'Uomo (2663m)", "Data: Swiss Glacier Monitoring", "Warming Stripes for Switzerland 1864-2019", "Adula from Piz Cassimoi (3128m)"
-  ];
-
-  bimg = new Array(photoName.length);
-
-  for (let i = 0; i < photoName.length; i++) {
-    // My.print((i) + " " + dataPathPhotos + photoName[i] + ".png // " + caption[i]);
-    bimg[i] = loadImage(dataPathPhotos + photoName[i] + ".png");
+  for (let i = 0; i < successImages.getRowCount(); i++) {
+    let sarr = successImages.getRow(i).arr;
+    bimg[i] = loadImage(dataPathPhotos + sarr[0] + ".png");
+    caption[i] = sarr[1];
   }
 
   randbuffer = new Array(int(bimg.length / 2));
@@ -301,7 +293,9 @@ function setup() {
 
   // Start the background task by sending a message to the worker
   const inputData = 10000000; // For example, sending a large number for the task
-  myWorker.postMessage({gallerytest: 1000});
+  myWorker.postMessage({
+    gallerytest: 1000
+  });
 
 }
 
@@ -372,10 +366,11 @@ function draw() {
     if (windrawloop == nloops) {
       fill(50, 0, 0);
       stroke(50, 0, 0);
-      textFont(myFont, F9);
-      textR(caption[imgNow], ifact * 310, ifact * 344);
+      textFont(myFont, F8);
+      textR(caption[imgNow], ifact * 316, ifact * 329);
       noTint();
     }
+
     if (reduce) {
       image(bimg[imgNow], 0, 0, 640, 640);
     } else {
