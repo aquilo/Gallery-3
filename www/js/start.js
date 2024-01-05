@@ -66,6 +66,7 @@ function showSection(sectionId) {
 
 $(document).ready(function () {
 
+
     $('.nav-item').click(function () {
         $('.nav-item').removeClass('active');
         $(this).addClass('active');
@@ -143,5 +144,7 @@ $(document).ready(function () {
     const speedrange = document.getElementById("speedrange");
     speedrange.value = -global_mtime;
     handleRangeInput(speedrange);
+       
+   // $("#exampleModal").modal();
 
 });

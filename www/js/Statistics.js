@@ -423,16 +423,16 @@ function drawStatistics(x0, y0) {
   if (statistics.maximum < 0) return;
   y += ifact * 18;
   x += ifact * 7;
-  fill(0);
 
+  setFillStroke(0, 0, 0);
   text(getTranslation(LANG, "Random tapping") + ", " + statistics.n + " " + getTranslation(LANG, "games") + ": ", x, y + ifact * 2);
   text(getTranslation(LANG, "best score") + ":", x, y += ifact * 21);
   setStatisticsColor(resPlayer, statistics.minimum);
   if (statistics.minimum == 0 && resPlayer > 0) {
-    fill(35, 176, 0);
+    setFillStroke(35, 176, 0);
   }
   textR("" + statistics.minimum, xr, y);
-  fill(0);
+  setFillStroke(0, 0, 0);
   textFont(myFont, F9);
   if (statistics.minimum == 0) {
     text("! (" + statistics.histo[0] + "x)", xr + ifact, y);
@@ -444,16 +444,18 @@ function drawStatistics(x0, y0) {
   text(getTranslation(LANG, "median") + ":", x, y += ifact * 16);
   setStatisticsColor(resPlayer, statistics.median);
   textR("" + statistics.median, xr, y);
-  fill(0);
+  setFillStroke(0, 0, 0);
 
   textFont(myFont, F16);
   let yyou = y - ifact * 7;
   textR(getTranslation(LANG, "You"), xm, yyou);
-  textR("" + resPlayer, xm, yyou + ifact * 20);
+  textC("" + resPlayer, xm - 29, yyou + ifact * 11);
+  // textR("" + resPlayer, xm, yyou + ifact * 20);
   noFill();
   rect(xm - 64 , yyou - 33, 70, 83, 5);
 
   textFont(myFont, F12);
+  setFillStroke(0, 0, 0);
 
   text(getTranslation(LANG, "mean") + ":", x, y += ifact * 13);
   setStatisticsColor(resPlayer, statistics.mean);
@@ -466,10 +468,10 @@ function drawStatistics(x0, y0) {
   text(getTranslation(LANG, "most frequent") + ":", x, y += ifact * 20);
   setStatisticsColor(resPlayer, statistics.modus);
   textR("" + statistics.modus, xr, y);
-  fill(0);
+  setFillStroke(0, 0, 0);
   text("" + statistics.scores + " " + getTranslation(LANG, "different scores"), x, y += ifact * 16);
 
-  stroke(0);
+  setFillStroke(0, 0, 0);
 
   doStatTableMiniGraph();
 
@@ -592,13 +594,17 @@ function getEvaluationText() {
  */
 function setStatisticsColor(res, indicator) {
   if (res == indicator) {
-    fill(0);
+    setFillStroke(0, 0, 0);
   } else if (res > indicator) {
-    fill(215, 48, 39);
+    setFillStroke(215, 48, 39);
   } else {
-    fill(69, 117, 180);
-
+    setFillStroke(69, 117, 180);
   }
+}
+
+function setFillStroke(r, g, b) {
+  fill(r, g, b);
+  stroke(r, g, b);
 }
 
 function doStatTableMiniGraph() {

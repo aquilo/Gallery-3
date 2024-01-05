@@ -42,14 +42,14 @@
     </section>
 
     <section id="section2" style="display: none;">
-       <h2 style="display: none;">section2</h2>
-     <div class="restricted-div">
+      <h2 style="display: none;">section2</h2>
+      <div class="restricted-div">
         <div id="statisticstext"></div>
       </div>
     </section>
 
     <section id="section3" style="display: none;">
-       <h2 style="display: none;">section3</h2>
+      <h2 style="display: none;">section3</h2>
       <div class="restricted-div">
         <h1>Summary</h1>
         <p>The object of this <strong>solitaire game</strong> is to build a complete <strong>face-card
@@ -124,10 +124,17 @@
         </ul>
         <h2>CAP: "computer-aided play"</h2>
         <ul>
-          <li>Yellow shaded cards are movable. Concentrate your efforts on making good decisions instead
+          <li><img src="data/img/movable.png" width="82" height="114" alt="movable card"
+              style="padding: 12px 8px 6px 3px"><br>Yellow shaded cards are movable. Concentrate your efforts on making
+            good decisions instead
             of searching around for movable cards. </li>
-          <li>"<span style="color: #00f;">Jammed </span>situations" are marked by a blue bar.</li>
-          <li>In many situations there is no reason not to play a movable card: in these cases CAP does
+          <li><img src="data/img/jam.png" width="84" height="85" alt="jammed cards"
+              style="padding: 12px 8px 6px 3px"><span style="color: #00f;">"Jammed </span>situations" are marked by a
+            blue bar.</li>
+          <li><img src="data/img/finaljam.png" width="81" height="111" alt="dead cards"
+              style="padding: 12px 8px 6px 3px">Definitely jammed cards</li>
+          <li><b>Auto Moves</b>: In many situations there is no reason not to play a movable card: in these cases CAP
+            does
             such evident, unproblematic moves automatically. Some obvious cases: <ul>
               <li>the twin card is already in its correct place</li>
               <li>you have two Foundation piles to play a card to</li>
@@ -161,126 +168,137 @@
         </div>
         <br>
         <h3>Short Trend Indicators</h3>
-                <div class="row">
-          <div class="col-md-auto"><img src="data/img/trend.jpg" alt="eval" width="100" style="padding: 12px 8px 6px 3px"></div>
+        <div class="row">
+          <div class="col-md-auto"><img src="data/img/trend.jpg" alt="eval" width="100"
+              style="padding: 12px 8px 6px 3px"></div>
           <div class="col col-lg-">
 
-        <p>(in the lower right corner of the statistics graph). The small graph shows the same thing (at least the colors) as the summary table in the Statistics tab: the comparison indicators of the last games.</p>
+            <p>(in the lower right corner of the statistics graph). The small graph shows the same thing (at least the
+              colors) as the summary table in the Statistics tab: the comparison indicators of the last games.</p>
           </div>
         </div>
-      
+
         <p><br><br><br><br></p>
       </div>
     </section>
 
     <section id="section4" style="display: none;">
-             <h2 style="display: none;">section3</h2>
+      <h2 style="display: none;">section3</h2>
       <div class="restricted-div rules">
 
         <div style="background-image: url('data/img/mittelholzer_strip.png'); padding:0"><br><br><br><br><br><br><br>
         </div>
         <!-- <img src="data/img/mittelholzer_strip.png" class="img-fluid"> -->
-      <div class="rules">
-        <div style="text-align: left; margin-top: 23px;">
-          <h1>Gallery Solitaire</h1>
-          <p>Version 3.0, &copy; 2023, Adrian Herzog<br>
-            <a href="#" onclick="window.open(encodeURI('https://gallery.mapresso.com'), '_system')">
-              https://gallery.mapresso.com
-            </a>
+        <div class="rules">
+          <div style="text-align: left; margin-top: 23px;">
+            <h1>Gallery Solitaire</h1>
+            <p>Version 3.0, &copy; 2023, Adrian Herzog<br>
+              <a href="#" onclick="window.open(encodeURI('https://gallery.mapresso.com'), '_system')">
+                https://gallery.mapresso.com
+              </a>
+              <br>
+            </p>
+          </div>
+          <hr>
+          <h2>Game Settings</h2>
+          <br>
+          <h3>Animation Speed</h3>
+
+          <!-- <label for="customRange1" class="form-label">Animation Speed</label><br> -->
+          <input type="range" class="form-range" id="speedrange" min="-1000" max="-1">
+          <br>Speed at which cards move (slow → fast)
+          <br><br>
+          <h3>Computer Aided Playing</h3>
+          <br>
+
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" role="switch" checked id="showMoveable"
+              style="transform: scale(1.6); margin: 0 20px 5px -20px">
+            <!-- <label class="form-check-label" for="flexSwitchCheckChecked">Show moveable cards</label> -->
+            <label class="form-check-label">Show moveable cards</label>
+          </div>
+          <br>
+
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" role="switch" checked id="doAutoMoves"
+              style="transform: scale(1.6); margin: 0 20px 5px -20px">
+            <!-- <label class="form-check-label" for="flexSwitchCheckChecked">Make auto moves</label> -->
+            <label class="form-check-label">Make auto moves</label>
+          </div>
+          <br>
+
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" role="switch" id="showAutoMoveReason"
+              style="transform: scale(1.6); margin: 0 20px 5px -20px">
+            <!-- <label class="form-check-label" for="flexSwitchCheckDefault">View the reason for auto moves. For more -->
+            <label class="form-check-label">View the reason for auto moves. For more
+              details about the auto moves, see the Statistics tab.</label>
+          </div>
+          <br>
+
+          <hr>
+          <h2>Statistics</h2>
+          <br>
+
+          <p><button type="button" class="btn btn-primary" id="exportButton">Export Statistics</button><br>
+            Include your game results in an email
+            (in CSV format) for further analysis.</p>
+
+          <!-- Button to open the modal -->
+          <p><button type="button" class="btn btn-danger" data-toggle="modal" data-target="#myModal">
+              Reset Statistcs
+            </button>
             <br>
-          </p>
-        </div>
-        <hr>
-        <h2>Game Settings</h2>
-        <br>
-        <h3>Animation Speed</h3>
+            Include your game results in an email
+            (in CSV format) for further analysis.</p>
 
-        <!-- <label for="customRange1" class="form-label">Animation Speed</label><br> -->
-        <input type="range" class="form-range" id="speedrange" min="-1000" max="-1">
-        <br>Speed at which cards move (slow → fast)
-        <br><br>
-        <h3>Computer Aided Playing</h3>
-        <br>
+          <!-- Modal -->
+          <div class="modal" id="myModal">
+            <div class="modal-dialog">
+              <div class="modal-content">
 
-        <div class="form-check form-switch">
-          <input class="form-check-input" type="checkbox" role="switch" checked id="showMoveable"
-            style="transform: scale(1.6); margin: 0 20px 5px -20px">
-          <!-- <label class="form-check-label" for="flexSwitchCheckChecked">Show moveable cards</label> -->
-          <label class="form-check-label">Show moveable cards</label>
-        </div>
-        <br>
+                <!-- Modal header -->
+                <div class="modal-header">
+                  <h4 class="modal-title">Confirmation</h4>
+                  <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
 
-        <div class="form-check form-switch">
-          <input class="form-check-input" type="checkbox" role="switch" checked id="doAutoMoves"
-            style="transform: scale(1.6); margin: 0 20px 5px -20px">
-          <!-- <label class="form-check-label" for="flexSwitchCheckChecked">Make auto moves</label> -->
-          <label class="form-check-label">Make auto moves</label>
-        </div>
-        <br>
+                <!-- Modal body -->
+                <div class="modal-body">
+                  You will lose all your statistics data. This cannot be undone. Continue? </div>
 
-        <div class="form-check form-switch">
-          <input class="form-check-input" type="checkbox" role="switch" id="showAutoMoveReason"
-            style="transform: scale(1.6); margin: 0 20px 5px -20px">
-          <!-- <label class="form-check-label" for="flexSwitchCheckDefault">View the reason for auto moves. For more -->
-          <label class="form-check-label">View the reason for auto moves. For more
-            details about the auto moves, see the Statistics tab.</label>
-        </div>
-        <br>
+                <!-- Modal footer -->
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-light" data-dismiss="modal">Cancel</button>
+                  <button id="resetButton" type="button" class="btn btn-danger" data-dismiss="modal">Yes</button>
+                </div>
 
-        <hr>
-        <h2>Statistics</h2>
-        <br>
-
-        <p><button type="button" class="btn btn-primary" id="exportButton">Export Statistics</button><br>
-          Include your game results in an email
-          (in CSV format) for further analysis.</p>
-
-        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#resetStats" id="resetButton">
-          Reset Statistcs
-        </button><br>
-        Clear your statistics and start over.
-
-        <div class="modal fade" id="resetStats" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
-          aria-labelledby="resetStatsLabel" aria-hidden="true">
-          <div class="modal-dialog">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h1 class="modal-title fs-5" id="resetStatsLabel">Modal title</h1>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-              </div>
-              <div class="modal-body">
-                You will lose all your statistics data. This cannot be undone. Continue?
-              </div>
-              <div class="modal-footer">
-                <button type="button" class="btn btn-danger" id="resetButton">Yes, Reset</button>
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
               </div>
             </div>
           </div>
+
+          <br>
+          <hr>
+          <h2>Acknowledgments</h2>
+          <p>Thanks to Karen Morris for editing the texts.</p>
+          <p>
+            <a href="#"
+              onclick="window.open(encodeURI('https://totalnonsense.com/open-source-vector-playing-cards/#phonegap=external'), '_system')">Vectorized
+              Playing Cards 1.3</a>, Copyright 2011, 2021 - Chris Aguilar - conjurenation at gmail dot com
+            Licensed under: LGPL 3.0 - <a href="#"
+              onclick="window.open(encodeURI('https://www.gnu.org/licenses/lgpl-3.0.html#phonegap=external'), '_system')">https://www.gnu.org/licenses/lgpl-3.0.html</a>
+          </p>
+          <p>
+
+
+            Aerial photo from 1923: ETH-Bibliothek Zürich, Bildarchiv/Stiftung Luftbild Schweiz / Photographer: <a
+              href="http://en.wikipedia.org/wiki/Walter_Mittelholzer" target="_blank">Mittelholzer, Walter</a> / <a
+              href="https://ba.e-pics.ethz.ch/catalog/ETHBIB.Bildarchiv/r/497357/viewmode=infoview"
+              target="_blank">LBS_MH01-003541</a></p>
         </div>
-        <br>
-        <br>
-        <hr>
-        <h2>Acknowledgments</h2>
-        <p>Thanks to Karen Morris for editing the texts.</p>
-        <p>
-          <a href="#"
-            onclick="window.open(encodeURI('https://totalnonsense.com/open-source-vector-playing-cards/#phonegap=external'), '_system')">Vectorized
-            Playing Cards 1.3</a>, Copyright 2011, 2021 - Chris Aguilar - conjurenation at gmail dot com
-          Licensed under: LGPL 3.0 - <a href="#"
-            onclick="window.open(encodeURI('https://www.gnu.org/licenses/lgpl-3.0.html#phonegap=external'), '_system')">https://www.gnu.org/licenses/lgpl-3.0.html</a>
-        </p>
-        <p>
-
-
-          Aerial photo from 1923: ETH-Bibliothek Zürich, Bildarchiv/Stiftung Luftbild Schweiz / Photographer: <a
-            href="http://en.wikipedia.org/wiki/Walter_Mittelholzer" target="_blank">Mittelholzer, Walter</a> / <a
-            href="https://ba.e-pics.ethz.ch/catalog/ETHBIB.Bildarchiv/r/497357/viewmode=infoview"
-            target="_blank">LBS_MH01-003541</a></p>
       </div>
-            </div>
 
-  </section>
+    </section>
   </div>
 
   <!-- Footer Navigation -->

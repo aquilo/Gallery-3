@@ -846,6 +846,19 @@ function doUndo() {
   if (m.auto) {
     doUndo();
   }
+  resetFinalJam();
+}
+
+function resetFinalJam() {
+  for (let i = 0; i < 104; i++) {
+    cards[i].jamFinal = false;
+    cards[i].jamChecked = false;
+  }
+    for (let i = 0; i < 8; i++) {
+      stockPile[i].doJamCheck();
+    }
+ 
+
 }
 
 function doUndoClick() {

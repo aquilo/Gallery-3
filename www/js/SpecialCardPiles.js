@@ -196,7 +196,8 @@ class TableauPile extends CardPile {
     const filteredCards = cards.filter(card => card.suit === c.suit && card.rank === c.rank + 3);
     console.log(filteredCards);
     const countOKs = filteredCards.reduce((count, card) => {
-      return count + (card.ok === true || card.jamFinal == true ? 1 : 0);
+      return count + (card.ok === true ? 1 : 0);
+     // return count + (card.ok === true || card.jamFinal == true ? 1 : 0);
     }, 0);
     //console.log("checkfinal " + countOKs + " (delta " + delta);
     if (countOKs == 1) {
