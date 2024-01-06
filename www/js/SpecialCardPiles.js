@@ -9,9 +9,11 @@ class FoundationPile extends CardPile {
   }
 
   draw() {
+    
     if (this.empty()) {
       os.mytextFont(myFont, F14);
-      os.myfill(167);
+      os.myfill(145);
+      os.mystroke(145);
       textC(this.base + "", this.xc, this.yc);
     } else {
       this.peek().draw(this.x, this.y, this.ok, this.movable, this.autoMovable);
