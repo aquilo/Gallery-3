@@ -854,10 +854,9 @@ function resetFinalJam() {
     cards[i].jamFinal = false;
     cards[i].jamChecked = false;
   }
-    for (let i = 0; i < 8; i++) {
-      stockPile[i].doJamCheck();
-    }
- 
+  for (let i = 0; i < 8; i++) {
+    tableau[i].doJamCheck();
+  }
 
 }
 

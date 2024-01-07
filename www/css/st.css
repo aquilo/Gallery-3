@@ -13,7 +13,8 @@
 
 html, body {
     /* font-family: 'SF Pro Regular', -apple-system !important; */
-    font-family: -apple-system, 'SF Pro Regular' !important;
+    /* font-family: -apple-system, 'SF Pro Regular' !important; */
+    font-family:'SF Pro Regular';
     font-weight: normal;
    font-size: 14px;
 
