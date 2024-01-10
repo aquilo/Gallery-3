@@ -16,7 +16,7 @@
 
 // --------------------------------------------------------------
 // top left of Foundation, Tableau, Aces, Stock
-let isApp = true;
+let isApp = false;
 let jsstoreCon;
 
 let version = "Version 3.0"; // a

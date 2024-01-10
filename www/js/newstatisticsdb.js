@@ -129,6 +129,7 @@ function calcIndicators(stats) {
         avg_result: 0,
         nobetter: 0,
     }
+    console.log(stats);
     stats.forEach(s => {
         res.n++;
         if (s.player < s.mean) res.hwins++;
@@ -159,14 +160,30 @@ async function getIndicators(limit) {
     stats = await jsstoreCon.select({
         from: 'STAT',
         order: {
+            // by: datetime.substr(6, 4) + datetime.substr(3, 2) + datetime.substr(0, 2) + datetime.substr(11, 8),
             by: 'datetime',
             type: 'desc'
         },
-        limit: limit
+        // limit: limit
     });
-    console.log("statistics, last " + stats.length);
+    stats.forEach(s => {
+        s.sorter = s.datetime.substr(6, 4) + s.datetime.substr(3, 2) + s.datetime.substr(0, 2) + s.datetime.substr(11, 8);
+    });
+
+    const n = limit; // Replace with the desired number of elements
+
+    // Sort the array by the 'sorter' field in descending order
+    stats.sort((a, b) => b.sorter.localeCompare(a.sorter));
+
+    // Get the first 'n' elements after sorting
+    const firstNElements = stats.slice(0, n);
+
+    // console.log("The first", n, "elements sorted by 'sorter' field:", firstNElements);
+
     if (stats.length < 101) console.log(stats);
-    return stats;
+    if (stats.length < 101) console.log(firstNElements);
+
+    return firstNElements;
 }
 
 async function doStatTable() {
