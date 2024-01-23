@@ -141,6 +141,8 @@ let translationStrings;
 let dbLoaded = false;
 let caption = new Array();
 let cnv;
+let degreesoffreedom = 0;
+let resprev = 999;
 
 let shortTxt = [
   "", "T ok", "2 poss", "F clean", "just 1", "T botm",
@@ -394,6 +396,8 @@ function draw() {
 
   res = getResult();
 
+
+
   gameFinished = stockPile.empty() && !cardMoving() && noMovables();
   // Game finished
   if (gameFinished && humanPlayer) {
@@ -404,6 +408,8 @@ function draw() {
   if (dirty) loop();
   drawGrid();
 
+
+
   for (let i = 0; i < 34; i++) {
     if (allPiles[i].autoMovable) {
       if (!humanPlayer || (global_sayAuto == 0 && global_auto == 1)) allPiles[i].doAutoClick();
@@ -413,6 +419,26 @@ function draw() {
   }
   allDraw();
   drawGrid();
+
+  if (!dirty) {
+
+
+    let nnn = 0;
+    for (let i = 0; i < 34; i++) {
+      if (allPiles[i].movable) {
+        nnn++;
+      }
+    }
+    // as Degrees of Freedom we don't add the stockpile
+    // if (stockPile.nCards > 0) {
+    //   nnn++;
+    // }
+    if (res <= resprev)
+      degreesoffreedom += nnn;
+    resprev = res;
+
+    // console.log("____", res, "********** ", degreesoffreedom);
+  }
 }
 
 function drawGrid() {
@@ -741,6 +767,9 @@ function allDraw() {
     textFont(myFontRegular, F18);
     textC(res + "", 320, YRES - 52);
     textFont(myFont, F12);
+    // console.log("/***/", degreesoffreedom);
+    // textFont(myFont, F8);
+    // textR("[" + degreesoffreedom + "]", 630, YBN + 60);
   }
 
   if (explain != "") {
@@ -777,6 +806,8 @@ function newGame() {
   evaluated = false;
   statistics.emptyStat();
   moveStack.clear();
+  degreesoffreedom = 0;
+  resprev = 999;
   let startable = false;
   while (!startable) {
     shuffleDeck();
@@ -795,6 +826,8 @@ function redoGame() {
   evaluated = false;
   statistics.emptyStat();
   moveStack.clear();
+  degreesoffreedom = 0;
+  resprev = 999;
   windrawloop = -1;
   gameStart = My.simpleDateFormat();
   initLayout();

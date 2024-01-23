@@ -452,7 +452,7 @@ function drawStatistics(x0, y0) {
   textC("" + resPlayer, xm - 29, yyou + ifact * 11);
   // textR("" + resPlayer, xm, yyou + ifact * 20);
   noFill();
-  rect(xm - 64 , yyou - 33, 70, 83, 5);
+  rect(xm - 64, yyou - 33, 70, 83, 5);
 
   textFont(myFont, F12);
   setFillStroke(0, 0, 0);
@@ -470,6 +470,10 @@ function drawStatistics(x0, y0) {
   textR("" + statistics.modus, xr, y);
   setFillStroke(0, 0, 0);
   text("" + statistics.scores + " " + getTranslation(LANG, "different scores"), x, y += ifact * 16);
+
+  textFont(myFont, F9);
+  textR("DF: " + degreesoffreedom, xm - 80, y);
+
 
   setFillStroke(0, 0, 0);
 
