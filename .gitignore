@@ -82,6 +82,7 @@ App/App/config.xml
 ios/App
 
 ios/App/*
+android/*
 *.xcworkspacedata
 ios/App/App.xcworkspace/contents.xcworkspacedata
 ios/App/Gallery3.xcodeproj/project.pbxproj
