@@ -19,7 +19,7 @@
 let isApp = false;
 let jsstoreCon;
 
-let version = "Version 3.0"; // a
+let version = "Version 3.0a"; // a
 let device = "";
 let mymsg;
 let XSF, YSF, XST, YST, XSA, YSA, XSS, YSS;
@@ -190,6 +190,7 @@ function canvasInit() {
 
 function setup() {
   // pixelDensity(2);
+  My.print(version);
   My.print("setup: " + My.round2String(millis() / 1000.0, 3) + " sec");
   getAllPrefs();
   //TODO openTranslations(translationStrings);
@@ -392,6 +393,7 @@ function draw() {
   setCardsOK();
   allMovableChecks();
   allAutoMovableChecks();
+  allDangerCheck();
   if (humanPlayer) allJamChecks();
 
   res = getResult();
@@ -587,6 +589,46 @@ function fillBelowJam(i) {
   return newFilled;
 }
 
+function canCovered(tc, sc) {
+  if (tc.suit != sc.suit) {
+    return false;
+  }
+  if (tc.rank < sc.rank) {
+    let xx = ((sc.rank - tc.rank) % 3) == 0;
+    // console.log(tc + " < " + sc + " " + xx);
+    return xx;
+  }
+}
+
+function dangerCheck(i) {
+  // console.log("dangerCheck " + i);
+  // console.log(allPiles[i]);
+  if (allPiles[i].nCards < 1) {
+    return [0, 0, 0.1];
+  }
+
+  let danger = 0;
+  let bigDanger = 0;
+  let stockSize = stockPile.nCards;
+
+  for (let j = allPiles[i].nCards - 1; j >= 0; j--) {
+    let tableauCard = allPiles[i].cards[j];
+    if (tableauCard.rank <= 10) {
+      for (let k = 0; k < stockSize; k++) {
+        stockCard = stockPile.cards[k];
+        if (canCovered(tableauCard, stockCard)) {
+          danger ++;
+          if (stockPile.checkTwinOkInsideStock(stockCard)) {
+            bigDanger ++;
+          }
+        }
+      }
+    }    
+  }
+  // console.log((i - 25)  + ": " + danger + " / " + stockSize);
+  return [danger, bigDanger, stockSize];
+}
+
 function fillAllBelowJam() {
   //console.log("fillAllBelowJam");
   let newFilled = false;
@@ -594,6 +636,26 @@ function fillAllBelowJam() {
     newFilled = newFilled || fillBelowJam(i);
   }
   //console.log("fillAllBelowJam " + newFilled);
+}
+
+function allDangerCheck() {
+  // console.log("allDangerCheck");
+  if (stockPile.nCards == 0) {
+    return 0;
+  }
+  let dangerP = 1.0;
+  let bigDangerP = 1.0;
+  for (let i = 26; i < 34; i++) {
+    dc = dangerCheck(i);
+    // console.log(i + ": " + dc);
+    dangerP *= (1.0 - float(dc[0]) / float(dc[2]));
+    bigDangerP *= (1.0 - float(dc[1]) / float(dc[2]));
+  }
+  dangerP = 1.0 - dangerP;
+  bigDangerP = 1.0 - bigDangerP;
+  // console.log("allDangerCheck " + Math.round(100 * dangerP));
+  stockPile.danger = dangerP;
+  stockPile.bigDanger = bigDangerP;
 }
 
 function doAllAceMoves() {

@@ -198,6 +198,20 @@ class CardPile {
     return false;
   }
 
+    checkTwinOkInsideStock(topCard) {
+      info("checkTwinOkInsideStock");
+      if (topCard.rank > 4) {
+        let suitRow = topCard.rank % 3;
+        for (let i = 0; i < 8; i++)
+          if (foundationPile[suitRow][i].ok &&
+            foundationPile[suitRow][i].containsTwin(topCard)) {
+            return true;
+          }
+      }
+      return false;
+    }
+
+
   jamCheckTwinOk(topCard) {
     if (topCard.rank > 4) {
       let suitRow = topCard.rank % 3;

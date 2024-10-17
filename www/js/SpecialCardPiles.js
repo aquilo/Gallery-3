@@ -244,9 +244,12 @@ class TableauPile extends CardPile {
 // StockPile -------------------------------------------------------------
 
 class StockPile extends CardPile {
+
   constructor(x, y, id, nMax) {
     super(x, y, id, nMax);
     this.kind = "Stock";
+    this.danger = 0.0;
+    this.bigDanger = 0.0;
   }
 
   doClick() {
@@ -325,6 +328,9 @@ class StockPile extends CardPile {
       }
       yo += dys;
     }
+
+    os.mytextFont(myFont,12);
+    textC(round(100 * this.danger) + "  " + round(100 * this.bigDanger) + " %", this.xc, this.yc + 36);
   }
 }
 
