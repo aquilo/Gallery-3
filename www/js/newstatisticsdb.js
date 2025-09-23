@@ -17,6 +17,33 @@ let good_bettermean = 85.7;
 let good_solvable = 31.7;
 let game_time = "1'55\"";
 
+// Rating-Config (Option B: Gating)
+const ratingCfg = {
+    w_solved: 0.20,
+    w_mean: 0.25,
+    w_percentile: 0.45,
+    w_best: 0.10,
+    gamma: 1.6,
+    w_diff: 0.15,
+    diff_scale: 8,
+    cap_solvable_not_solved: 0.55,
+    floor_under_min: 0.90,
+    floor_solved: 0.80,
+    clip_low: 0.02,
+    clip_high: 0.98,
+    rating_scale: 800,
+    rating_mid: 1500,
+    alpha_ewma: 0.10,
+    start_ewma: 1500,
+    window_N: 20
+};
+
+const ratingState = {
+    ewma: ratingCfg.start_ewma,
+    buf: [], // letzte N GameRatings
+    N: ratingCfg.window_N
+};
+
 // let jsstoreCon = new JsStore.Connection();
 
 
@@ -129,7 +156,7 @@ function calcIndicators(stats) {
         avg_result: 0,
         nobetter: 0,
     }
-    console.log(stats);
+//    console.log(stats);
     stats.forEach(s => {
         res.n++;
         if (s.player < s.mean) res.hwins++;
@@ -153,8 +180,129 @@ function calcIndicators(stats) {
     res.avg_equal /= res.n;
     res.avg_more /= res.n;
     res.avg_result /= res.n;
+
+    // 4) Config (Beispiel: dein Balanced-Preset)
+    /* const cfg = {
+        w_solved: 0.20,
+        w_mean: 0.25,
+        w_percentile: 0.45,
+        w_best: 0.10,
+        gamma: 1.6,
+        cap_solvable_not_solved: 0.55,
+        floor_under_min: 0.90,
+        floor_solved: 0.80,
+        clip_low: 0.02,
+        clip_high: 0.98,
+        rating_scale: 800,
+        rating_mid: 1500,
+        alpha_ewma: 0.10,
+        start_ewma: 1500, // oder letzter gespeicherter EWMA-Wert
+        window_N: 20,
+    };
+ */
+    const cfg = ratingCfg;
+    // 5) Rechnen
+    // angenommen: const stat = [...]  // deine Objekte aus dem Spiel
+    const rows = adaptStat(stats);
+    const results = computeRatings(rows, cfg);
+
+    // 6) Ergebnis zurück in deine Objekte mergen (wenn gewünscht)
+    results.forEach((r, i) => {
+        stats[i].C_raw = r.C_raw;
+        stats[i].C_gated = r.C_gated;
+        stats[i].C_clipped = r.C_clipped;
+        stats[i].GameRating = r.GameRating;
+        stats[i].EWMA_Rating = r.EWMA_Rating;
+        stats[i].RollingNRating = r.RollingN_Rating;
+    });
+
+      // 3) State setzen (für schnelle Live-Updates)
+      ratingState.cfg = cfg;
+      ratingState.rows = rows;
+      ratingState.results = results;
+      ratingState.lastEWMA = results.length ? results[results.length - 1].EWMA_Rating : cfg.start_ewma;
+      ratingState.rollingN = cfg.window_N;
+      ratingState.rollingBuf = results.slice(-cfg.window_N).map(r => r.GameRating);
+/* 
+    console.log("stats with ratings");
+    console.log(stats);  
+     */
+     rebuildFeverFromResults(ratingState.results, true); // EWMA
+
+
     return res;
 }
+
+     function rebuildFeverFromResults(results, useEWMA = true) {
+        const pts = results.map(r => ({
+            x: r.datetime,
+            y: useEWMA ? r.EWMA_Rating : r.GameRating,
+            underMin: !!r.BestResult,
+            missedSolvable: (r.Solvable && r.SolvedGivenSolvable === 0)
+        }));
+        fever.setData(pts);
+    } 
+
+
+
+function buildSeriesFromResults(results) {
+    const main = results.map(r => ({
+        x: r.datetime,
+        y: r.EWMA_Rating, // Hauptkurve = EWMA
+        underMin: !!r.BestResult,
+        missedSolvable: (r.Solvable && r.SolvedGivenSolvable === 0)
+    }));
+    const alt = results.map(r => ({
+        x: r.datetime,
+        y: r.GameRating
+    })); // Zweitkurve
+    return {
+        main,
+        alt
+    };
+}
+
+function getConfigFromUIOrDefaults() {
+    return {
+        w_solved: 0.20,
+        w_mean: 0.25,
+        w_percentile: 0.45,
+        w_best: 0.10,
+        gamma: 1.6,
+        cap_solvable_not_solved: 0.55,
+        floor_under_min: 0.90,
+        floor_solved: 0.80,
+        clip_low: 0.02,
+        clip_high: 0.98,
+        rating_scale: 800,
+        rating_mid: 1500,
+        alpha_ewma: 0.10,
+        start_ewma: 1500,
+        window_N: 20
+    };
+}
+// 1) Helfer: "26.08.2025_23:18:03" -> "2025-08-26T23:18:03"
+function deDateToISO(s) {
+    // "DD.MM.YYYY_HH:mm:ss"
+    const [d, t] = s.split('_');
+    const [dd, mm, yyyy] = d.split('.').map(Number);
+    return `${yyyy}-${String(mm).padStart(2,'0')}-${String(dd).padStart(2,'0')}T${t}`;
+}
+
+// 3) Deine Rohdaten (stat) -> rows für computeRatings
+function adaptStat(stat) {
+    return stat.map(row => ({
+        datetime: deDateToISO(row.datetime),
+        player: Number(row.player),
+        equal: Number(row.equal),
+        more: Number(row.more),
+        minimum: Number(row.minimum),
+        mean: Number(row.mean),
+        median: Number(row.median),
+    }));
+}
+
+
 
 async function getIndicators(limit) {
     stats = await jsstoreCon.select({
@@ -167,7 +315,8 @@ async function getIndicators(limit) {
         // limit: limit
     });
     stats.forEach(s => {
-        s.sorter = s.datetime.substr(6, 4) + s.datetime.substr(3, 2) + s.datetime.substr(0, 2) + s.datetime.substr(11, 8);
+    //    s.sorter = s.datetime.substr(6, 4) + s.datetime.substr(3, 2) + s.datetime.substr(0, 2) + s.datetime.substr(11, 8);
+        s.sorter = deDateToISO(s.datetime); 
     });
 
     const n = limit; // Replace with the desired number of elements
@@ -179,10 +328,13 @@ async function getIndicators(limit) {
     const firstNElements = stats.slice(0, n);
 
     // console.log("The first", n, "elements sorted by 'sorter' field:", firstNElements);
-
+/*
     if (stats.length < 101) console.log(stats);
     if (stats.length < 101) console.log(firstNElements);
 
+    console.log("****************************");
+    console.log(firstNElements);
+  */
     return firstNElements;
 }
 
@@ -192,6 +344,7 @@ async function doStatTable() {
         let res, stats;
         stats = await getIndicators(999999);
         res_all = calcIndicators(stats);
+        
 
         let nn = 100;
         if (res_all.n > nn) {
@@ -347,19 +500,20 @@ function updateStats(results) {
     }
     rrr += '<td class="valcompare">' + good_best + '</td><td>%<td></tr>';
 
+     
     rrr += '<tr><th>Better or equal</th>';
     for (var i = 0; i < len; i++) {
         rrr += compareres(results[i].avg_more + results[i].avg_equal, good_be, 'valbetter', 'valworse');
     }
     rrr += '<td class="valcompare">' + good_be + '</td><td>%<td></tr>';
 
-    rrr += '<tr><th>Mean result</th>';
+/*    rrr += '<tr><th>Mean result</th>';
     for (var i = 0; i < len; i++) {
         s = results[i];
         rrr += compareres(s.avg_result, good_meanres, 'valbetter', 'valworse');
     }
     rrr += '<td class="valcompare">' + good_meanres + '</td><td>%<td></tr>';
-
+ */
     rrr += '<tr><th>Better than c\'s mean</th>';
     for (var i = 0; i < len; i++) {
         s = results[i];
@@ -379,35 +533,31 @@ function updateStats(results) {
         '<h2>The Indicators</h2>',
         '<strong>Number of games</strong>: <b>' + r.n + '</b>',
         '<br/>Mean score: <b>' + round_number(r.avg_player, 2) + '</b>',
-        '&nbsp;&nbsp;(<i>' + good_mean + '%</i>; computer: ' + round_number(r.avg_mean, 2) + ')<br><br>',
+        '&nbsp;&nbsp;(<i>' + good_mean + '</i>; computer: ' + round_number(r.avg_mean, 2) + ')<br>',
 
-        '<h3>Winning Situations</h3>',
-        '<strong>Games with score 0</strong>: <b>' + percent(r.hzeros, r.n, 2) + '%</b> (<i>' + good_zeros + '%</i>)',
-        ', but solvable were at least <strong>' + percent(r.hsolvable, r.n, 2) + '%</strong> (<i>' + good_solvable + '%</i>). <br>This means that you solved at most <b>' + percent(r.hzeros, r.hsolvable, 2) + '%</b> (<i>' + good_solvsolv + '%</i>) of all solvable games.<br><br>',
+        '<strong>Zero-score games</strong>: <b>' + percent(r.hzeros, r.n, 2) + '%</b> (<i>' + good_zeros + '%</i>)',
+        ', but at least <strong>' + percent(r.hsolvable, r.n, 2) + '%</strong> (<i>' + good_solvable + '%</i>) were solvable. <br>You solved <b>' + percent(r.hzeros, r.hsolvable, 2) + '%</b> (<i>' + good_solvsolv + '%</i>) of solvable games.<br><br>',
 
-        '<h3>Comparisons</h3>',
-        'Comparisons to the random tapping "strategy": ',
+        '<h3>Comparisons to the random tapping "strategy"</h3>',
 
-        '</p><strong>Best Result</strong>: In only <b>' + percent(r.n - r.hcbetter, r.n, 2) + '%</b> (<i>' + good_best + '%</i>) ',
-        'you achieved the best possible result.</p>',
+        '<strong>Best result</strong>: Achieved in <b>' + percent(r.n - r.hcbetter, r.n, 2) + '%</b> (<i>' + good_best + '%</i>) ',
+        ' of the games.</p>',
 
-        '</p><strong>Perfect Games</strong>: You are at least as good as the computer in <b>' + round_number(r.avg_more + r.avg_equal, 2) + '%</b> (<i>' +
-        good_be + '%</i>) ',
-        'of the games. Compared to the computer your result was better result in <strong>' + round_number(r.avg_more, 1) + '%</strong>, equal in <strong>' + round_number(r.avg_equal, 1) + '%</strong>, and worse in <strong>' + round_number(r.avg_less, 1) + '%</strong>.</p>',
-        '<hr>',
-        '<strong>Mean result</strong>: <b>' + round_number(r.avg_result, 2) + '%</b> (<i>' + good_meanres + '%</i>)<br/>',
+        '</p><strong>Compared to all attempts</strong>: In <b>' + round_number(r.avg_more + r.avg_equal, 2) + '%</b> of the attempts, you performed at least as well as the computer (<i>' +
+        good_be + '%</i>) - ',
+        'better <strong>' + round_number(r.avg_more, 1) + '%</strong>, equal <strong>' + round_number(r.avg_equal, 1) + '%</strong>, worse <strong>' + round_number(r.avg_less, 1) + '%</strong></p>',
+/*         '<strong>Mean result</strong>: <b>' + round_number(r.avg_result, 2) + '%</b> (<i>' + good_meanres + '%</i>)<br/>',
         'The result of a single game is the percentage of computer\'s scores worse than your\'s (mean: <strong>' + round_number(r.avg_more, 2) + '</strong>) plus half of the drawn attempts (mean: <strong>' + round_number(r.avg_equal, 2) + ' / 2</strong>). You see this number after a evaluation in the center of ',
-        'the horizontal coloured bar.</p>',
+        'the horizontal coloured bar.</p>', */
 
-        '<p><strong>Games won</strong>: <b>' + percent(r.hwins, r.n, 2) + '%</b> (<i>' + good_bettermean + '%</i>)',
-        '<br>Your score was better than computer\'s mean out of many attempts.</p>',
-        '<p>Games better than computer\'s best: <strong>' + percent(r.hminwins, r.n, 2) + ' %</strong>.',
-        '<br/>This depends on the number of attempts. With very many attempts the program ',
-        'will sometime play the same game as you did - or even a better one.</p><br>',
+        '<p><strong>Compared to the mean</strong>: In <b>' + percent(r.hwins, r.n, 2) + '%</b> (<i>' + good_bettermean + '%</i>)',
+        ' of games, your score was better than the computer’s average over many attempts.</p>',
+        // '<p>Games better than computer\'s best: <strong>' + percent(r.hminwins, r.n, 2) + ' %</strong>.',
+        // 'With many attempts, the program will sometimes match or exceed your best play.</p><br>',
 
 
         '<h3>Other indicators</h3>',
-        'Usual duration of a game: <i>' + game_time + '</i> (includes evaluation).<br>',
+        'Typical game duration: <i>' + game_time + '</i> (including evaluation).<br>',
         'Auto moves: <b>' + percent(r.sum_nauto, r.sum_nmoves, 1) + ' %</b>. ',
 
         '<br/><br>'

@@ -37,7 +37,6 @@ class Statistics {
   }
 
   statisticsgraphinit() {
-
     dx1res = ifact * 10;
     dy1res = ifact * 10;
 
@@ -216,6 +215,7 @@ class Statistics {
     this.resultf = (100.0 * (float(this.more) + (float(this.equal)) / 2.0) / floatn);
     let resultf2 = (100.0 * (float(this.more) + float(this.equal)) / floatn);
     this.str_result = My.round2String(this.resultf, 3);
+    // this.str_resultnew = My.round2String(resultf2, 3) + " | " + My.round2String(this.resultf, 3);
     this.str_resultnew = My.round2String(resultf2, 3) + " | " + My.round2String(this.resultf, 3);
     let gn = float(this.n) / 100.0;
     this.gmore = float(this.more) / gn;
@@ -229,7 +229,43 @@ class Statistics {
     this.str_mean = My.round2String(floatnXi / floatn, 3);
     let floatequal = float(this.equal);
     this.str_equal = My.round2String(100.0 * floatequal / floatn, 3);
+
+    // Spieler-Resultat (dein resPlayer — übergib/lese ihn passend)
+    const player = resPlayer; // oder this.player, falls du es dort ablegst
+
+    // 1) Indikatoren aus dem gerade berechneten Statistics-Objekt
+    const ind = indicatorsFromStats(this, player);
+
+    // 2) Score-Pipeline
+    const C_raw = computeCRaw(ind, ratingCfg);
+    const C_gated = gateC(C_raw, ind, player, ratingCfg);
+    const C_clipped = clip01(C_gated, ratingCfg);
+    const GameRating = toRating(C_clipped, ratingCfg);
+
+    // 3) EWMA & Rolling-N (inkrementell, aus ratingState)
+    ratingState.ewma = (1 - ratingCfg.alpha_ewma) * ratingState.ewma + ratingCfg.alpha_ewma * GameRating;
+
+    ratingState.buf.push(GameRating);
+    if (ratingState.buf.length > ratingState.N) ratingState.buf.shift();
+    const RollingN_Rating = ratingState.buf.reduce((a, b) => a + b, 0) / ratingState.buf.length;
+
+    // 4) An dein Statistics-Objekt anhängen (für UI/Logging)
+    this.Solvable = ind.Solvable;
+    this.SolvedGivenSolvable = ind.SolvedGivenSolvable; // 0/1/null
+    this.BetterThanMean = ind.BetterThanMean; // 0/1
+    this.Percentile_p = ind.Percentile_p; // 0..1
+    this.BestResult = ind.BestResult; // 0/1
+
+    this.C_raw = C_raw;
+    this.C_gated = C_gated;
+    this.C_clipped = C_clipped;
+    this.GameRating = GameRating;
+    this.EWMA_Rating = ratingState.ewma;
+    this.RollingN = RollingN_Rating;
+    this.str_resultnew = My.round2String(resultf2, 3) + " ||| " + round(this.GameRating);
+
   }
+
 
   toString() {
     let str = this.less + " " + this.more + " " + this.str_mean;
@@ -265,6 +301,61 @@ class Statistics {
   }
 }
 
+  function pow01(x, g) {
+    return Math.pow(Math.max(0, Math.min(1, x)), g);
+  }
+
+  function log10(x) {
+    return Math.log(x) / Math.LN10;
+  }
+
+  function indicatorsFromStats(stats, player) {
+    // stats: hat minimum, mean, gequal, gmore (Prozent), S = lösbar?
+    const Solvable = (player === 0) || (stats.minimum === 0);
+    const SolvedGivenSolvable = Solvable ? (player === 0 ? 1 : 0) : null;
+    const BetterThanMean = player <= stats.mean ? 1 : 0;
+    // gequal/gmore sind bereits Prozentwerte (0..100)
+    const Percentile_p = (Number(stats.gequal) + Number(stats.gmore)) / 100;
+    const BestResult = player <= stats.minimum ? 1 : 0;
+    const d = (stats.median ?? stats.mean) - player; // >0 gut, <0 schlecht
+    const s = ratingCfg.diff_scale || 8;
+    const DiffScore = 1 / (1 + Math.exp(-d / s)); // (0,1), 0.5 bei d=0
+    return {
+      Solvable,
+      SolvedGivenSolvable,
+      BetterThanMean,
+      Percentile_p,
+      BestResult,
+      DiffScore
+    };
+  }
+
+ function computeCRaw(ind, cfg) {
+   const t = ind.SolvedGivenSolvable != null ? ind.SolvedGivenSolvable : 0;
+   const pGamma = Math.pow(Math.max(0, Math.min(1, ind.Percentile_p)), cfg.gamma);
+   return cfg.w_mean * ind.BetterThanMean +
+     cfg.w_solved * t +
+     cfg.w_percentile * pGamma +
+     cfg.w_best * ind.BestResult +
+     (cfg.w_diff || 0) * ind.DiffScore;
+ }
+
+  function gateC(x, ind, player, cfg) {
+    if (ind.Solvable && player > 0) return Math.min(x, cfg.cap_solvable_not_solved); // lösbar & NICHT gelöst
+    if (ind.BestResult === 1) return Math.max(x, cfg.floor_under_min); // unter Minimum
+    if (ind.Solvable && player === 0) return Math.max(x, cfg.floor_solved); // lösbar & gelöst
+    return x;
+  }
+
+  function clip01(x, cfg) {
+    return Math.min(cfg.clip_high, Math.max(cfg.clip_low, x));
+  }
+
+  function toRating(c, cfg) {
+    return cfg.rating_mid + cfg.rating_scale * log10(c / (1 - c));
+  }
+
+  
 function drawHisto(x0, y0) {
   let fhisto;
   let x = x0;
@@ -474,6 +565,7 @@ function drawStatistics(x0, y0) {
   textFont(myFont, F9);
   textR("DF: " + degreesoffreedom, xm - 80, y);
 
+  // text("ELO: " + round(statistics.GameRating, 0), xr + 20, y - ifact * 12);
 
   setFillStroke(0, 0, 0);
 
@@ -624,13 +716,19 @@ function doStatTableMiniGraph() {
   } while (results[k].n !== nn);
   len = k + 1;
 
+  function compareRectEmpty(x, y, val, goodval) {
+    let col = (val < goodval) ? "#FF1010" : "#0F0FFB";
+    fill("#FFFFFF");
+    stroke(col);
+    rect(x, y, 10, 10);
+  }
+
   function compareRect(x, y, val, goodval) {
     let col = (val < goodval) ? "#FF1010" : "#0F0FFB";
     fill(col);
     stroke(col);
     rect(x, y, 10, 10);
   }
-
   let yy0 = 571;
   let dxx = 14;
   let dyy = 12;
@@ -638,11 +736,11 @@ function doStatTableMiniGraph() {
 
   for (var i = 0; i < len; i++) {
     let s = results[i];
-    let yy = yy0;
+    let yy = yy0 + dyy;
     let xx = xx0 + i * dxx;
-    compareRect(xx, yy, good_mean, results[i].avg_player);
+    compareRectEmpty(xx, yy, good_mean, results[i].avg_player);
     yy += dyy;
-    compareRect(xx, yy, percent(s.hzeros, s.n, 2), good_zeros);
+    compareRectEmpty(xx, yy, percent(s.hzeros, s.n, 2), good_zeros);
     yy += dyy;
     compareRect(xx, yy, percent(s.hzeros, s.hsolvable, 2), good_solvsolv);
     yy += dyy;
@@ -650,8 +748,8 @@ function doStatTableMiniGraph() {
     yy += dyy;
     compareRect(xx, yy, results[i].avg_more + results[i].avg_equal, good_be);
     yy += dyy;
-    compareRect(xx, yy, s.avg_result, good_meanres);
-    yy += dyy;
+    // fcompareRect(xx, yy, s.avg_result, good_meanres);
+    // yy += dyy;
     compareRect(xx, yy, percent(s.hwins, s.n, 2), good_bettermean);
     yy += dyy;
   }

@@ -13,6 +13,8 @@ class CardPile {
   // int base = 0;
   // int col = 0;
 
+  static SUIT_ROW = Object.freeze([0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1]);
+
 
   constructor(x, y, id, nMax) {
     this.x = x;
@@ -84,12 +86,11 @@ class CardPile {
       this.movable = true;
       return;
     }
-    let suitRow = topCard.rank % 3;
+    const foundationRow = foundationPile[CardPile.SUIT_ROW[topCard.rank]];
     for (let i = 0; i < 8; i++) {
-      let f = foundationPile[suitRow][i];
+      let f = foundationRow[i];
       if (!f.reserved) {
         if (f.empty()) {
-          //         if (topCard.rank < 5 && topCard.rank > 1) {
           if (topCard.rank < 5) {
             this.ziel = f;
             this.movable = true;
@@ -171,10 +172,10 @@ class CardPile {
   checkRowClean(topCard) {
     info("checkRowClean");
     if (topCard.rank < 5) {
-      let suitRow = topCard.rank % 3;
+      const foundationRow = foundationPile[CardPile.SUIT_ROW[topCard.rank]];
       for (let i = 0; i < 8; i++) {
-        if (!foundationPile[suitRow][i].empty() &&
-          !foundationPile[suitRow][i].ok) {
+        if (!foundationRow[i].empty() &&
+          !foundationRow[i].ok) {
           return false;
         }
       }
@@ -187,10 +188,10 @@ class CardPile {
   checkTwinOk(topCard) {
     info("checkTwinOk");
     if (topCard.rank > 4) {
-      let suitRow = topCard.rank % 3;
+      const foundationRow = foundationPile[CardPile.SUIT_ROW[topCard.rank]];
       for (let i = 0; i < 8; i++)
-        if (foundationPile[suitRow][i].ok &&
-          foundationPile[suitRow][i].containsTwin(topCard)) {
+        if (foundationRow[i].ok &&
+          foundationRow[i].containsTwin(topCard)) {
           sayAutoReason(this.id, 1, "twin already OK ", topCard.toString());
           return true;
         }
@@ -201,10 +202,10 @@ class CardPile {
     checkTwinOkInsideStock(topCard) {
       info("checkTwinOkInsideStock");
       if (topCard.rank > 4) {
-        let suitRow = topCard.rank % 3;
+      const foundationRow = foundationPile[CardPile.SUIT_ROW[topCard.rank]];
         for (let i = 0; i < 8; i++)
-          if (foundationPile[suitRow][i].ok &&
-            foundationPile[suitRow][i].containsTwin(topCard)) {
+          if (foundationRow[i].ok &&
+            foundationRow[i].containsTwin(topCard)) {
             return true;
           }
       }
@@ -214,10 +215,10 @@ class CardPile {
 
   jamCheckTwinOk(topCard) {
     if (topCard.rank > 4) {
-      let suitRow = topCard.rank % 3;
+      const foundationRow = foundationPile[CardPile.SUIT_ROW[topCard.rank]];
       for (let i = 0; i < 8; i++)
-        if (foundationPile[suitRow][i].ok &&
-          foundationPile[suitRow][i].containsTwin(topCard)) {
+        if (foundationRow[i].ok &&
+          foundationRow[i].containsTwin(topCard)) {
           return true;
         }
     }
@@ -236,12 +237,9 @@ class CardPile {
       return false;
     }
     let possibilities = 0;
-    let suitRow = topCard.rank % 3;
-    //      print("sr " + suitRow);
+    const foundationRow = foundationPile[CardPile.SUIT_ROW[topCard.rank]];
     for (let i = 0; i < 8; i++) {
-      //        print(foundationPile[suitRow][i].toString());
-      if (foundationPile[suitRow][i].canTake(topCard)) {
-        //         print(possibilities);
+      if (foundationRow[i].canTake(topCard)) {
         possibilities++;
         if (possibilities == 2) {
           sayAutoReason(this.id, 2, "2 possibilities ", topCard.toString());

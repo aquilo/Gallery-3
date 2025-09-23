@@ -10,11 +10,21 @@
   <meta name="msapplication-tap-highlight" content="no">
   <meta name="viewport" content="initial-scale=1, width=device-width, viewport-fit=cover">
   <meta name="color-scheme" content="light dark">
+
   <link rel="stylesheet" href="./css/st.css">
+
+  <!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"> -->
   <link rel="stylesheet" href="./libs/css/bootstrap.min.css">
+
+  <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"> -->
   <link rel="stylesheet" href="./libs/css/all.min.css">
+
+  <!--  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">-->
   <link rel="stylesheet" href="./libs/css/bootstrap-icons.css">
-  <script src="dist/app.20250919233010.js"></script>
+
+  <!-- https://mode.fh-joanneum.at/cola/p5.js-cordova-demo-app/-/blob/main/www/js/sketch.js -->
+
+  <script src="./libs/js/p5.min.js"></script>
 </head>
 
 <body>
@@ -185,13 +195,15 @@
         <div class="rules">
           <div style="text-align: left; margin-top: 23px;">
             <h1>Gallery Solitaire</h1>
-            <p>Version 3.0.4, &copy; 2025, Adrian Herzog<br>
+            <p>Version 3.0.3, &copy; 2025, Adrian Herzog<br>
               <a href="#" onclick="window.open(encodeURI('https://gallery.mapresso.com'), '_system')">
                 https://gallery.mapresso.com
               </a>
               </p><p>
-              11.09.2025, 3.0.4: New holistic indicator - with graph to show the personal development
-            
+              24.08.2025, 3.0.3: A controversial indicator has been removed. Result panel cleaned up<br>
+              17.10.2024, 3.0.2: Error in auto move statistics introduced in 3.0.1 resolved.
+              <br>
+              23.09.2024, 3.0.1: Additional indicator showing the risk of a stock jam situation on the tableau with the next deal (small numbers showing the probability of a new or even a final stock jam situation).
             </p>
           </div>
           <hr>
@@ -326,7 +338,47 @@
     </nav>
   </div>
 
- 
+  <!-- <script src="https://kit.fontawesome.com/a076d05399.js"></script> -->
+
+  <!-- Include Bootstrap JS (jQuery and Popper.js are required) -->
+  <!-- <sc
+    ript src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script> -->
+  <script src="./libs/js/jquery-3.5.1.slim.min.js"></script>
+
+  <!-- <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script> -->
+  <script src="./libs/js/popper.min.js"></script>
+
+  <!-- <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script> -->
+  <script src="./libs/bootstrap/js/bootstrap.min.js"></script>
+
+  <!-- <script src="https://kit.fontawesome.com/a076d05399.js"></script> -->
+
+  <!-- <script src="cordova.js"></script> -->
+  <script>
+    // document.addEventListener('deviceready', onDeviceReady, false);
+  </script>
+
+  <!-- <script src="./js/start.js" defer></script> -->
+  <script src="./js/rating.js"></script>
+  <script src="./js/FeverCurve.js"></script>
+  <script src="./js/start.js"></script>
+  <script src="./js/worker.js"></script>
+  <!-- <script src="./js/capathings.js"></script> -->
+  <script src="./libs/js/jsstore.js"></script>
+  <script src="./libs/js/jsstore.worker.js"></script>
+  <script src="./js/newstatisticsdb.js"></script>
+  <script src="./js/prefs.js"></script>
+  <script src="./js/Statistics.js"></script>
+  <script src="./js/Button.js"></script>
+  <script src="./js/MoveStack.js"></script>
+  <script src="./js/CardPile.js"></script>
+  <script src="./js/SpecialCardPiles.js"></script>
+  <script src="./js/Card.js"></script>
+  <script src="./js/Movers.js"></script>
+  <script src="./js/graphparams.js"></script>
+  <script src="./js/My.js"></script>
+  <script src="./js/galleryjs.js"></script>
+
 </body>
 
 </html>

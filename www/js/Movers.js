@@ -144,10 +144,10 @@ class MoverCollection {
     //console.log(auto + " " + fromto(from, to, ""), steps, this.maxMover);
 
     dirty = true;
-    if (from.id == 0) {
+    if (from.id === 0) {
       moveStack.clear();
     }
-    if (from.id != 0 && to.id != 1) {
+    if (from.id !== 0 && to.id !== 1) {
       moveStack.push(new Move(from, to, auto));
       from.autoMovable = false;
       nMovesStat++;

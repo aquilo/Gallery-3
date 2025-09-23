@@ -152,6 +152,7 @@ let shortTxt = [
 let longTxt = [
   "", "Twin is already ok.", "There are two possibilities for this card.", "The foundation row is completely clean.", "At the end and only one card can be moved.", "Twin is at the bottom of the tableau (this card on foundation).", "Twin is on the same foundation row.", "Twin is under this card.", "Twin is at the bottom of the tableau (this card on tableau).", "Twin is directly under its own base.", "Twin is directly under its own base."
 ];
+let fever;
 
 function preload() {
   My.print("*** p5js: preload at " + new Date().toISOString());
@@ -300,6 +301,20 @@ function setup() {
     gallerytest: 1000
   });
 
+  fever = new FeverCurve(this, menustart + ifact * 91, YRES - ifact * 30 + ifact * 9, ifact * 223, ifact * 64, {
+    window: 200, // letzte N Punkte
+    padPct: 0.05, // Headroom
+    smooth: 0.2, // Skalen-Easing
+    title: "EWMA Rating",
+    baseline: 1500, // Linie bei 1500
+  });
+/*     fever = new FeverCurve(this, 40, height - 300, width - 80, 260, {
+      window: 150,
+      padPct: 0.1,
+      smooth: 0.2,
+      title: "",
+      baseline: 1500 // Linie bei 1500
+    }); */
 }
 
 function drawE() {
@@ -343,6 +358,7 @@ function draw() {
       nEvals0 = 0;
       evaluating = false;
       evaluated = true;
+      // fever.draw();
     }
     evaluationfinished = true;
     return;
@@ -398,8 +414,6 @@ function draw() {
 
   res = getResult();
 
-
-
   gameFinished = stockPile.empty() && !cardMoving() && noMovables();
   // Game finished
   if (gameFinished && humanPlayer) {
@@ -409,8 +423,6 @@ function draw() {
   dirty = cardMoving();
   if (dirty) loop();
   drawGrid();
-
-
 
   for (let i = 0; i < 34; i++) {
     if (allPiles[i].autoMovable) {
@@ -423,7 +435,6 @@ function draw() {
   drawGrid();
 
   if (!dirty) {
-
 
     let nnn = 0;
     for (let i = 0; i < 34; i++) {
@@ -438,8 +449,6 @@ function draw() {
     if (res <= resprev)
       degreesoffreedom += nnn;
     resprev = res;
-
-    // console.log("____", res, "********** ", degreesoffreedom);
   }
 }
 
@@ -454,7 +463,6 @@ function drawGrid() {
   //   }
   // }
 }
-
 
 function evalGame(alphanow) {
   initLayout();
@@ -563,7 +571,6 @@ function setCardsOK() {
           allPiles[i].cards[j].ok = true;
           // console.log(i + " " + j + " " + allPiles[i].cards[j] + " now ok");
         }
-
       }
     }
   }
@@ -617,13 +624,13 @@ function dangerCheck(i) {
       for (let k = 0; k < stockSize; k++) {
         stockCard = stockPile.cards[k];
         if (canCovered(tableauCard, stockCard)) {
-          danger ++;
+          danger++;
           if (stockPile.checkTwinOkInsideStock(stockCard)) {
-            bigDanger ++;
+            bigDanger++;
           }
         }
       }
-    }    
+    }
   }
   // console.log((i - 25)  + ": " + danger + " / " + stockSize);
   return [danger, bigDanger, stockSize];
@@ -697,7 +704,7 @@ function drawProgress(part, all) {
   if (part < 10) drawE();
   if (part < 0) {
     noStroke();
-    fill(statistics.getResColor(statistics.mean, resPlayer));
+    fill(statistics.getResColor((statistics.mean), resPlayer));
     rect(0, YPROGRESS - 0.5 * ifact, widthNew, DYPROGRESS + 0.5 * ifact);
     fill(0);
     textFont(myFont, F12);
@@ -847,7 +854,7 @@ function allDraw() {
   }
   // image(lastGames, 0, YLASTGAMES);
   // console.log("image");
-
+  if (evaluated) fever.draw();
 }
 
 function numberOfMovables() {
@@ -952,7 +959,6 @@ function resetFinalJam() {
   for (let i = 0; i < 8; i++) {
     tableau[i].doJamCheck();
   }
-
 }
 
 function doUndoClick() {

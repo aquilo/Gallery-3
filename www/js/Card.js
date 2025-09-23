@@ -14,8 +14,8 @@ class Card {
   ];
 
   constructor(suit, rank, id, img, imgOk, imgCovered) {
-    this.suit = suit;
-    this.rank = rank;
+    this.rank = (rank | 0); // schneller int-cast (entspricht Number(rank)|0)
+    this.suit = (suit | 0);
     this.id = id;
     this.img = img;
     this.imgOk = imgOk;
@@ -32,11 +32,11 @@ class Card {
   }
 
   isAce() {
-    return this.rank == 1;
+    return this.rank === 1;
   }
 
   isTwin(a) {
-    return (this.rank == a.rank) && (this.suit == a.suit) && (this.id != a.id);
+    return (this.rank === a.rank) && (this.suit === a.suit) && (this.id !== a.id);
   }
 
   drawMini(x, y) {
@@ -51,7 +51,7 @@ class Card {
     } else {
       this.drawMini(x, y);
       if (autoMovable) {
-        if (global_sayAuto != 1) this.drawMovable(x, y);
+        if (global_sayAuto !== 1) this.drawMovable(x, y);
         this.drawAutoMovable(x, y);
 
         return;
@@ -59,13 +59,13 @@ class Card {
       if (movable) {
         this.drawMovable(x, y);
       }
-            if (this.jamFinal && (global_show == 1)) {
+            if (this.jamFinal && (global_show === 1)) {
               os.myfill3(220, 220, 220);
               os.mynoStroke();
               os.myrect(x + 34, y + 2, 37, 14);
             }
     }
-    if (this.jammer && (global_show == 1)) {
+    if (this.jammer && (global_show === 1)) {
       if (this.jamFinal) {
         os.myfill3(220, 220, 220);
         os.mynoStroke();
@@ -82,17 +82,17 @@ class Card {
   drawHidden(x, y) {
     os.myimage(this.imgCovered, x, y);
     os.mystroke(180);
-    if (this.jamFinal && (global_show == 1)) {
+    if (this.jamFinal && (global_show === 1)) {
       os.myfill3(220, 220, 220);
       os.mynoStroke();
       os.myrect(x + 34, y + 2, 37, 16);
     }
-    if (this.jammed && (global_show == 1)) {
+    if (this.jammed && (global_show === 1)) {
       os.myfill3(0, 200, 0);
       os.mynoStroke();
       os.myrect(x + 43, y + 5, 16, 5);
     }
-    if (this.jammer && (global_show == 1)) {
+    if (this.jammer && (global_show === 1)) {
       os.myfill3(0, 180, 0);
       os.mynoStroke();
       os.myrect(x + 38, y + 5, 26, 6);
@@ -108,7 +108,7 @@ class Card {
 
   drawAutoMovable(x, y) {
     if (global_show === 0) return;
-    if (global_sayAuto != 1) return;
+    if (global_sayAuto !== 1) return;
     os.mynoStroke();
     os.myfill4(0, 255, 100, 80);
     os.myrect(x, y, CARDwidthNew, CARDHEIGHT);
