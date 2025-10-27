@@ -358,7 +358,6 @@ function draw() {
       nEvals0 = 0;
       evaluating = false;
       evaluated = true;
-      // fever.draw();
     }
     evaluationfinished = true;
     return;
@@ -798,7 +797,9 @@ function allDraw() {
   if (humanPlayer)
     btnUndo.draw(moveStack.nMoves > 0 && res != 0);
 
-  if (humanPlayer) {
+    btnEvaluate.draw(gameFinished);
+
+    if (humanPlayer) {
     let nact = moverCollection.draw();
     if (nact == 0) {
       mustDraw = true;
@@ -809,13 +810,14 @@ function allDraw() {
     fill(statistics.getResColor(statistics.mean, resPlayer));
     drawResult(XSTAT, YSTAT - ifact * 21);
     image(lastGames, 0, YLASTGAMES);
+    fever.draw();
   }
   btnNew.draw((!gameFinished && stockPile.nCards > 32) || evaluated);
   btnRedo.draw(evaluated);
   if (res > 94) {
     mymsg = version;
   }
-  btnEvaluate.draw(gameFinished);
+
   if (gameFinished) {
     set1Pref("autostat", global_autostat.join());
   }
@@ -839,6 +841,7 @@ function allDraw() {
     // console.log("/***/", degreesoffreedom);
     // textFont(myFont, F8);
     // textR("[" + degreesoffreedom + "]", 630, YBN + 60);
+
   }
 
   if (explain != "") {
@@ -854,7 +857,7 @@ function allDraw() {
   }
   // image(lastGames, 0, YLASTGAMES);
   // console.log("image");
-  if (evaluated) fever.draw();
+  // if (evaluated) fever.draw();
 }
 
 function numberOfMovables() {

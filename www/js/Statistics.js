@@ -296,7 +296,6 @@ class Statistics {
       nAuto: nAutoMovesStat,
       nMoves: nMovesStat
     };
-
     saveGame(game);
   }
 }

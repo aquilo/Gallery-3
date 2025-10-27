@@ -205,7 +205,18 @@ class FeverCurve {
       p.circle(xMap(i), yMap(pt.y), 4);
     }
 
+    let elo = Math.round(view[view.length - 1].y);
+    //p.stroke(0);
+    p.fill(0);
+    p.textSize(14);
+    p.textAlign(p.RIGHT, p.TOP);
+    if (Math.abs(elo - yMin) < Math.abs(elo - yMax)) {
+      p.text("" + elo, x + w - 15, y + 8);
+    } else {
+      p.text("" + elo, x + w - 15, y + h - 28);
+    }
     p.pop();
-    console.log("FeverCurve draw complete");
+    console.log(yMin, yMax);
+    console.log("FeverCurve draw complete with ELO " + elo);
   }
 }
