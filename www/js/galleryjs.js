@@ -159,7 +159,7 @@ function preload() {
   dataPath = "data/";
   dataPathImg = "data/img/";
   dataPathPhotos = "data/photos/";
-  newCards = loadImage(dataPathImg + "newcards2013.png");
+  newCards = loadImage(dataPathImg + "newcards2025.png");
   numbcol = loadImage(dataPathImg + "numbersandcolors.png");
   // translationStrings = loadStrings(dataPath + "translations.txt");
   myFont = loadFont("data/sf-pro-text-light.ttf");
@@ -353,6 +353,7 @@ function draw() {
       My.print(evaltime);
       statistics.doStatistics();
       statistics.saveResultat(alfa, gameStart);
+      // Ensure fever curve is drawn with final statistics
       drawProgress(-1, nEvalsEnd0);
       nEvalsEnd0 = 0;
       nEvals0 = 0;

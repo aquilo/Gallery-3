@@ -1,3 +1,5 @@
+# starten aus www (cd www)
+
 # 1) Dist-Ordner
 mkdir -p dist
 

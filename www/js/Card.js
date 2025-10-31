@@ -53,49 +53,59 @@ class Card {
       if (autoMovable) {
         if (global_sayAuto !== 1) this.drawMovable(x, y);
         this.drawAutoMovable(x, y);
-
         return;
       }
       if (movable) {
         this.drawMovable(x, y);
       }
-            if (this.jamFinal && (global_show === 1)) {
-              os.myfill3(220, 220, 220);
-              os.mynoStroke();
-              os.myrect(x + 34, y + 2, 37, 14);
-            }
+      if (this.jamFinal && (global_show === 1)) {
+        this.coverPlot(x, y, 4);
+      }
     }
     if (this.jammer && (global_show === 1)) {
       if (this.jamFinal) {
-        os.myfill3(220, 220, 220);
-        os.mynoStroke();
-        os.myrect(x + 34, y + 2, 37, 14);
+        this.coverPlot(x, y, 3);
       }
-      os.myfill3(0, 200, 0);
-      os.mynoStroke();
-      os.myrect(x + 38, y + 5, 26, 6);
+      this.coverPlot(x, y, 2);
+
 
     }
 
+  }
+
+  coverPlot(x,y, type) {
+    if (type === 1) { // jammed
+      os.myfill3(0, 220, 0);
+      os.mynoStroke();
+      os.myrect(x + 56, y + 3, 14, 9);
+    } else if (type === 2) { // jammer
+      os.myfill3(0, 130, 0);
+      os.mynoStroke();
+      os.myrect(x + 53, y + 3, 17, 7);
+    } else if (type === 3) { // final jammed
+      os.myfill3(220, 220, 220);
+      os.mynoStroke();
+      os.myrect(x + 50, y + 1, 22, 17);
+    } else if (type === 4) { // final jammed on top
+      os.myfill3(220, 220, 220);
+      os.mynoStroke();
+      os.myrect(x + 40, y + 1, 32, 14);
+    } else { // normal
+      os.myimage(this.img, x, y);
+    } 
   }
 
   drawHidden(x, y) {
     os.myimage(this.imgCovered, x, y);
     os.mystroke(180);
     if (this.jamFinal && (global_show === 1)) {
-      os.myfill3(220, 220, 220);
-      os.mynoStroke();
-      os.myrect(x + 34, y + 2, 37, 16);
+      this.coverPlot(x, y, 3);
     }
     if (this.jammed && (global_show === 1)) {
-      os.myfill3(0, 200, 0);
-      os.mynoStroke();
-      os.myrect(x + 43, y + 5, 16, 5);
+      this.coverPlot(x, y, 1);
     }
     if (this.jammer && (global_show === 1)) {
-      os.myfill3(0, 180, 0);
-      os.mynoStroke();
-      os.myrect(x + 38, y + 5, 26, 6);
+      this.coverPlot(x, y, 2);
     }
   }
 

@@ -240,6 +240,7 @@ function calcIndicators(stats) {
             underMin: !!r.BestResult,
             missedSolvable: (r.Solvable && r.SolvedGivenSolvable === 0)
         }));
+        console.log("rebuildFeverFromResults", pts.length);
         fever.setData(pts);
     } 
 

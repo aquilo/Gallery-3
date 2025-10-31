@@ -7,7 +7,7 @@
 
 @font-face {
     font-family: 'SF Pro Regular';
-    src: url('/data/sf-pro-text-regular.ttf') format('truetype');
+    src: url('/www/data/sf-pro-text-regular.ttf') format('truetype');
     /* You can specify different formats like woff, woff2, etc. for better browser compatibility */
 }
 
