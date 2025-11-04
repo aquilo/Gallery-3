@@ -44,6 +44,12 @@ class FeverCurve {
     this.data.push(p);
   }
 
+  meanElo() {
+    if (this.data.length === 0) return 0;
+    const sum = this.data.reduce((acc, pt) => acc + pt.y, 0);
+    return sum / this.data.length;
+  }
+
   _viewData() {
     const n = this.data.length;
     return n > this.window ? this.data.slice(n - this.window) : this.data;

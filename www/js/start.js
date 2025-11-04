@@ -125,6 +125,23 @@ $(document).ready(function () {
         exportStatisticsAsCsv();
     });
 
+    const exportPrefButton = document.getElementById("exportPrefButton");
+    exportPrefButton.addEventListener("click", function () {
+        exportPreferences();
+    });
+    /*   
+    const importButton = document.getElementById("importButton");
+    importButton.addEventListener("click", function () {
+        importStatisticsFromCsv();
+    });
+    
+ 
+    const importPrefButton = document.getElementById("importPrefButton");
+    importPrefButton.addEventListener("click", function () {
+        importPreferences();
+    });
+    */
+
     const resetButton = document.getElementById("resetButton");
     resetButton.addEventListener("click", function () {
         resetStatistics();

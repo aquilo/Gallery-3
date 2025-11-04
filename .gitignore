@@ -98,3 +98,4 @@ ios/App/Podfile
 ios/App/Podfile.lock
 *.xcworkspacedata
 *.lock
+_scratch/

@@ -1,0 +1,4 @@
+./css/st.css
+./libs/css/bootstrap.min.css
+./libs/css/all.min.css
+./libs/css/bootstrap-icons.css

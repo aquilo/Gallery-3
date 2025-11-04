@@ -16,6 +16,7 @@ let good_meanres = 78.7;
 let good_bettermean = 85.7;
 let good_solvable = 31.7;
 let game_time = "1'55\"";
+let good_elo = 1885.5;
 
 // Rating-Config (Option B: Gating)
 const ratingCfg = {
@@ -155,6 +156,7 @@ function calcIndicators(stats) {
         avg_more: 0,
         avg_result: 0,
         nobetter: 0,
+        elo: 0
     }
 //    console.log(stats);
     stats.forEach(s => {
@@ -227,24 +229,23 @@ function calcIndicators(stats) {
     console.log("stats with ratings");
     console.log(stats);  
      */
-     rebuildFeverFromResults(ratingState.results, true); // EWMA
+     res.elo = rebuildFeverFromResults(ratingState.results, true); // EWMA
 
 
     return res;
 }
 
-     function rebuildFeverFromResults(results, useEWMA = true) {
-        const pts = results.map(r => ({
-            x: r.datetime,
-            y: useEWMA ? r.EWMA_Rating : r.GameRating,
-            underMin: !!r.BestResult,
-            missedSolvable: (r.Solvable && r.SolvedGivenSolvable === 0)
-        }));
-        console.log("rebuildFeverFromResults", pts.length);
-        fever.setData(pts);
-    } 
-
-
+function rebuildFeverFromResults(results, useEWMA = true) {
+    const pts = results.map(r => ({
+        x: r.datetime,
+        y: useEWMA ? r.EWMA_Rating : r.GameRating,
+        underMin: !!r.BestResult,
+        missedSolvable: (r.Solvable && r.SolvedGivenSolvable === 0)
+    }));
+    fever.setData(pts);
+    console.log(pts.length + " " + fever.meanElo());
+    return fever.meanElo();
+} 
 
 function buildSeriesFromResults(results) {
     const main = results.map(r => ({
@@ -522,6 +523,13 @@ function updateStats(results) {
     }
     rrr += '<td class="valcompare">' + good_bettermean + '</td><td>%<td></tr>';
 
+   rrr += '<tr><th>"ELO"</th>';
+    for (var i = 0; i < len; i++) {
+        s = results[i];
+        rrr += compareres(results[i].elo, good_elo, 'valbetter', 'valworse');
+    }
+    rrr += '<td class="valcompare">' + good_elo + '</td><td><td></tr>';
+
 
 
 
@@ -642,3 +650,166 @@ async function resetStatistics() {
     });
     console.log(rowsDeleted);
 }
+
+async function handleStatisticsFileSelect(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    try {
+        const text = await file.text();
+        const success = await importStatisticsFromCsv(text);
+        if (success) {
+            console.log("Statistics imported successfully");
+        } else {
+            console.log("Failed to import statistics");
+        }
+    } catch (error) {
+        console.error("Error reading file:", error);
+    }
+}
+
+async function importStatisticsFromCsv(csvText) {
+    try {
+        const lines = csvText.split('\n').filter(line => line.trim());
+        const headers = lines[0].split(',').map(h => h.trim()).filter(h => h !== '$');
+        const data = [];
+
+        for (let i = 1; i < lines.length; i++) {
+            if (!lines[i].trim()) continue;
+            
+            const values = lines[i].split(',').map(v => v.trim()).filter(v => v !== '$');
+            if (values.length !== headers.length) continue;
+
+            const row = {};
+            headers.forEach((header, index) => {
+                // Convert string values to appropriate types based on the schema
+                const value = values[index];
+                if (header === 'datetime') {
+                    row[header] = value;
+                } else {
+                    row[header] = parseFloat(value);
+                }
+            });
+            data.push(row);
+        }
+
+        if (data.length === 0) {
+            throw new Error('No valid data found in CSV');
+        }
+
+        // Insert data into database
+        await jsstoreCon.insert({
+            into: 'STAT',
+            values: data,
+            upsert: true // If record with same primary key exists, update it
+        });
+
+        // Refresh statistics display
+        await doStatTable();
+        return true;
+    } catch (ex) {
+        console.error("Error importing CSV:", ex);
+        return false;
+    }
+}
+
+// Export all preferences as an object
+function exportPreferencesAsJson() {
+    return {
+        helplevel: get1Pref("helplevel", 0),
+        steps: get1Pref("steps", 30),
+        speed: get1Pref("speed", 250),
+        cardface: get1Pref("cardface", 1),
+        resimg: get1Pref('resimg', '---'),
+        auto: get1Pref("auto", 1),
+        autostat: get1Pref("autostat", ""),
+        colorblind: get1Pref("cardfacecolorblind", false)
+    };
+}
+   
+
+function exportPreferences() {
+    console.log("Exporting preferences to file");
+    const exportData = {
+        version: 1,
+        date: new Date().toISOString(),
+        preferences: exportPreferencesAsJson()
+    };
+
+    // Convert to JSON string
+    const jsonStr = JSON.stringify(exportData, null, 2);
+    
+    // Create download
+    const blob = new Blob([jsonStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'gallery-solitaire-preferences-' + new Date().toISOString().split('T')[0] + '.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+function importPreferences(prefs) {
+    if (!prefs) return;
+    
+    if (prefs.helplevel !== undefined) set1Pref("helplevel", prefs.helplevel);
+    if (prefs.steps !== undefined) set1Pref("steps", prefs.steps);
+    if (prefs.speed !== undefined) set1Pref("speed", prefs.speed);
+    if (prefs.cardface !== undefined) global_cardface = prefs.cardface;
+    if (prefs.resimg !== undefined) set1Pref("resimg", prefs.resimg);
+    if (prefs.auto !== undefined) set1Pref("auto", prefs.auto);
+    if (prefs.autostat !== undefined) set1Pref("autostat", prefs.autostat);
+    if (prefs.colorblind !== undefined) set1Pref("cardfacecolorblind", prefs.colorblind);
+    
+    // Apply the imported preferences
+    getAllPrefs();
+}
+
+// Import preferences from a file content (JSON) and apply them
+async function importPreferencesFromFile(fileContent) {
+    try {
+        const importData = JSON.parse(fileContent);
+        if (importData && importData.preferences) {
+            importPreferences(importData.preferences);
+            return true;
+        }
+        throw new Error('Invalid preferences file');
+    } catch (err) {
+        console.error('Failed to import preferences from file:', err);
+        return false;
+    }
+}
+
+// Handle selection of a preferences file from a file input
+async function handlePreferencesFileSelect(event) {
+    const file = event.target.files && event.target.files[0];
+    if (!file) return false;
+    try {
+        const content = await file.text();
+        const ok = await importPreferencesFromFile(content);
+        if (ok) console.log('Preferences imported from', file.name);
+        return ok;
+    } catch (err) {
+        console.error('Error reading preferences file:', err);
+        return false;
+    }
+}
+
+// Programmatically open a file dialog to pick a preferences file
+function openPreferencesFileDialog() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json,application/json';
+    input.style.display = 'none';
+    input.addEventListener('change', handlePreferencesFileSelect);
+    document.body.appendChild(input);
+    input.click();
+    // remove after a short delay to allow the change event to fire
+    setTimeout(() => document.body.removeChild(input), 1500);
+}
+
+// expose globally for inline onclick handlers
+window.openPreferencesFileDialog = openPreferencesFileDialog;
+

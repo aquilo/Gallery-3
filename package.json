@@ -10,7 +10,8 @@
     "@capacitor/assets": "^3.0.1",
     "@capacitor/cli": "^5.6.0",
     "cordova-browser": "^7.0.0",
-    "cordova-ios": "^7.0.1"
+    "cordova-ios": "^7.0.1",
+    "csso-cli": "^4.0.2"
   },
   "cordova": {
     "platforms": [

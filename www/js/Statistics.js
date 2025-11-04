@@ -735,7 +735,7 @@ function doStatTableMiniGraph() {
 
   for (var i = 0; i < len; i++) {
     let s = results[i];
-    let yy = yy0 + dyy;
+    let yy = yy0;
     let xx = xx0 + i * dxx;
     compareRectEmpty(xx, yy, good_mean, results[i].avg_player);
     yy += dyy;
@@ -751,5 +751,6 @@ function doStatTableMiniGraph() {
     // yy += dyy;
     compareRect(xx, yy, percent(s.hwins, s.n, 2), good_bettermean);
     yy += dyy;
+    compareRect(xx, yy, results[i].elo, good_elo);
   }
 }

@@ -355,11 +355,10 @@ function getAllPrefs() {
     global_helplevel = get1Pref("helplevel", 0);
     global_steps = get1Pref("steps", 30);
     global_mtime = get1Pref("speed", 250);
- //   global_cardface = get1Pref("cardface", 1);
+    global_cardface = get1Pref("cardface", 1);
     global_cardface = 2;
     global_resimg = get1Pref('resimg', '---');
     global_auto = get1Pref("auto", 1);
-
 }
 
 function setAllPrefs() {
@@ -371,17 +370,73 @@ function setAllPrefs() {
     set1Pref("auto", global_auto);
 }
 
+
+// Import and apply preferences from an object
 function bufferToBase64(buf) {
     var binstr = Array.prototype.map.call(buf, function (ch) {
         return String.fromCharCode(ch);
     }).join('');
     return btoa(binstr);
 }
+
 function doSaveResultImage(img) {
     var base64 = img.canvas.toDataURL();
     set1Pref("resimg", base64);
 }
-   
+
+// Export just preferences to a file
+
+// Import preferences from a file
+async function importPreferencesFromFile(fileContent) {
+    try {
+        const importData = JSON.parse(fileContent);
+        
+        // If it's our preferences format
+        if (importData.version && importData.preferences) {
+            importPreferences(importData.preferences);
+            return true;
+        } else {
+            throw new Error('Invalid preferences file format');
+        }
+    } catch (e) {
+        console.error('Error importing preferences:', e);
+        throw new Error('Could not import preferences: ' + e.message);
+    }
+}
+
+// Handle a preferences file selected via a file input change event.
+async function handlePreferencesFileSelect(event) {
+    const file = event.target.files && event.target.files[0];
+    if (!file) return false;
+    try {
+        const content = await file.text();
+        const ok = await importPreferencesFromFile(content);
+        if (ok) {
+            console.log('Preferences imported from file:', file.name);
+        }
+        return ok;
+    } catch (err) {
+        console.error('Failed to read/import preferences file:', err);
+        return false;
+    }
+}
+
+// Programmatically open a file dialog and import the selected preferences file.
+function openPreferencesFileDialog() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json,application/json';
+    input.style.display = 'none';
+    input.addEventListener('change', handlePreferencesFileSelect);
+    document.body.appendChild(input);
+    input.click();
+    // Cleanup after a short delay to allow the change handler to run
+    setTimeout(() => document.body.removeChild(input), 1000);
+}
+
+// Make the function available globally so an HTML button can call it directly.
+window.openPreferencesFileDialog = openPreferencesFileDialog;
+
 var global_helplevel = 999;
 var stat_n = 0;
 var stat_player = -1.0;
