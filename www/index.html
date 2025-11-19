@@ -14,18 +14,21 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
 
-  <link rel="apple-touch-icon" sizes="57x57" href="/_assets/icons/apple-touch-icon-57x57.png">
-  <link rel="apple-touch-icon" sizes="60x60" href="/_assets/icons/apple-touch-icon-60x60.png">
-  <link rel="apple-touch-icon" sizes="72x72" href="/_assets/icons/apple-touch-icon-72x72.png">
-  <link rel="apple-touch-icon" sizes="76x76" href="/_assets/icons/apple-touch-icon-76x76.png">
-  <link rel="apple-touch-icon" sizes="114x114" href="/_assets/icons/apple-touch-icon-114x114.png">
-  <link rel="apple-touch-icon" sizes="120x120" href="/_assets/icons/apple-touch-icon-120x120.png">
-  <link rel="apple-touch-icon" sizes="144x144" href="/_assets/icons/apple-touch-icon-144x144.png">
-  <link rel="apple-touch-icon" sizes="152x152" href="/_assets/icons/apple-touch-icon-152x152.png">
-  <link rel="apple-touch-icon" sizes="180x180" href="/_assets/icons/apple-touch-icon-180x180.png">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#ffffff">
 
-  <link rel="stylesheet" href="dist/gallery.min.css">
-  <script src="dist/app.20251104164211.js"></script>
+  <link rel="apple-touch-icon" sizes="57x57" href="data/icons/apple-touch-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="data/icons/apple-touch-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="data/icons/apple-touch-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="data/icons/apple-touch-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="data/icons/apple-touch-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="data/icons/apple-touch-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="data/icons/apple-touch-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="data/icons/apple-touch-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="data/icons/apple-touch-icon-180x180.png">
+
+  <link rel="stylesheet" href="gallery.min.css">
+  <script src="app.XXXXX.js"></script>
 </head>
 
 <body>
@@ -196,7 +199,7 @@
         <div class="rules">
           <div style="text-align: left; margin-top: 23px;">
             <h1>Gallery Solitaire</h1>
-            <p>Version 3.0.4, &copy; 2025, Adrian Herzog<br>
+            <p>Version 3.1, &copy; 2025, Adrian Herzog<br>
               <a href="#" onclick="window.open(encodeURI('https://gallery.mapresso.com'), '_system')">
                 https://gallery.mapresso.com
               </a>
@@ -241,21 +244,22 @@
           <br>
 
           <hr>
-          <h2>Statistics</h2>
+           <h2>Statistics</h2>
           <br>
 
           <p><button type="button" class="btn btn-primary" id="exportButton">
             Export Statistics
           </button><br>
+            Export your game results in CSV format for further analysis.
+          </p>
+<!--           <p><button type="button" class="btn btn-primary" id="exportButtonMail">
+            Export Statistics as Mail
+          </button><br>
             Include your game results in an email (CSV format) for further analysis.
           </p>
-
+ -->
           <!-- Button to open the modal -->
-          <p><button type="button" class="btn btn-danger" data-toggle="modal" data-target="#myModal">
-              Reset Statistcs
-            </button>
-          </p>
-
+ 
           <p><button type="button" class="btn btn-dark" onclick="document.getElementById('statisticsFileInput').click()">
             Import Statistics
           </button><br>
@@ -264,6 +268,10 @@
 
           <input type="file" id="statisticsFileInput" accept=".csv" style="display: none" onchange="handleStatisticsFileSelect(event)">
 
+         <p><button type="button" class="btn btn-danger" data-toggle="modal" data-target="#myModal">
+              Reset Statistcs
+            </button>
+          </p>
 
 
             <!-- Modal -->
@@ -318,6 +326,7 @@
           <hr>
           <h2>Version History</h2>
           <p>
+              17.11.2025, 3.1: New indicator ("ELO"), new build and deployment procedures.<br>              
               24.08.2025, 3.0.4: New evaluation graph. Import button for previously exported statistics<br>
               24.08.2025, 3.0.3: Removed a controversial indicator. Cleaned up the result panel<br>
               17.10.2024, 3.0.2: Fixed an error in the auto-move statistics introduced in 3.0.1

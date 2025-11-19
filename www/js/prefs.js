@@ -66,6 +66,7 @@ function bufferToBase64(buf) {
 function doSaveResultImage(img) {
     var base64 = img.canvas.toDataURL();
     set1Pref("resimg", base64);
+    console.log("prefs.js, saved result image pref, length " + base64.length);
 }
 
 var global_helplevel = 0;

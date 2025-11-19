@@ -260,15 +260,16 @@
           <p><button type="button" class="btn btn-primary" id="exportButton">
             Export Statistics
           </button><br>
+            Export your game results in CSV format for further analysis.
+          </p>
+<!--           <p><button type="button" class="btn btn-primary" id="exportButtonMail">
+            Export Statistics as Mail
+          </button><br>
             Include your game results in an email (CSV format) for further analysis.
           </p>
-
+ -->
           <!-- Button to open the modal -->
-          <p><button type="button" class="btn btn-danger" data-toggle="modal" data-target="#myModal">
-              Reset Statistcs
-            </button>
-          </p>
-
+ 
           <p><button type="button" class="btn btn-dark" onclick="document.getElementById('statisticsFileInput').click()">
             Import Statistics
           </button><br>
@@ -277,6 +278,10 @@
 
           <input type="file" id="statisticsFileInput" accept=".csv" style="display: none" onchange="handleStatisticsFileSelect(event)">
 
+         <p><button type="button" class="btn btn-danger" data-toggle="modal" data-target="#myModal">
+              Reset Statistcs
+            </button>
+          </p>
 
 
             <!-- Modal -->

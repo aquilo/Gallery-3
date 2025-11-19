@@ -44,7 +44,7 @@ let NEVALUATIONS = 1000;
 let nEvaluationsEnd = 0;
 let NEVALUATIONSTEP = 10;
 let BLUECIRCLERADIUS;
-let YLASTGAMES = 820;
+let YLASTGAMES = 800;
 let nrbox;
 let F8, F9, F10, F11, F12, F13, F14, F16, F18, F24;
 let alfa = 0.99;
@@ -68,7 +68,6 @@ let suitImages = new Array();
 let numberImages = new Array();
 let bimg = new Array();
 let lastGames;
-let resImage;
 
 let offScreen;
 let lastGamesScreen;
@@ -244,9 +243,10 @@ function setup() {
   let ybtns = YBN + 60;
   let menustart = 10;
   ybtns -= 40;
+  ybtns = YRES + 12;
   btnNew = new Button(getTranslation(LANG, "New"), menustart, ybtns, WBN, HBN, 1);
-  btnRedo = new Button(getTranslation(LANG, "Redo"), menustart + ifact * 45, ybtns, WBU, HBU, 1);
-  btnUndo = new Button(getTranslation(LANG, "Undo"), menustart + ifact * 90, ybtns, WBU, HBU, 1);
+  btnRedo = new Button(getTranslation(LANG, "Redo"), menustart + ifact * 70, ybtns, WBU, HBU, 1);
+  btnUndo = new Button(getTranslation(LANG, "Undo"), menustart + ifact * 70, ybtns, WBU, HBU, 1);
   btnEvaluate = new Button(getTranslation(LANG, "Evaluate"), 245, YRES - 22, WBF, HBF, 1);
 
   for (let i = 2; i < 34; i++) {
@@ -301,7 +301,8 @@ function setup() {
     gallerytest: 1000
   });
 
-  fever = new FeverCurve(this, menustart + ifact * 91, YRES - ifact * 30 + ifact * 9, ifact * 223, ifact * 64, {
+ // fever = new FeverCurve(this, menustart + ifact * 91, YRES - ifact * 30 + ifact * 9, ifact * 223, ifact * 64, {
+  fever = new FeverCurve(this, 0, YLASTGAMES + 42, widthNew, 150, {
     window: 200, // letzte N Punkte
     padPct: 0.05, // Headroom
     smooth: 0.2, // Skalen-Easing
@@ -713,25 +714,25 @@ function drawProgress(part, all) {
     text(evaltime, ifact * 3, YRES - ifact * 40);
     noStroke();
     let nowImage;
-    resImage = get(0, 0, scaleFactor * widthNew, scaleFactor * widthNew);
+    // resImage = get(0, 0, scaleFactor * widthNew, scaleFactor * widthNew);
     nowImage = get(0, 0, scaleFactor * widthNew, scaleFactor * widthNew);
 
     ifx = 20;
     ify = ifx;
     nowImage.resize(widthNew / ifx, widthNew / ify);
     if (nEvaluationsEnd <= global_evaluations) {
-      image(lastGames, widthNew / ifx, YLASTGAMES);
-      rescanvas.image(lastGames, widthNew / ifx, 0);
+      image(lastGames, -widthNew / ifx, YLASTGAMES);
+      rescanvas.image(lastGames, -widthNew / ifx, 0);
     }
 
-    image(nowImage, 0, YLASTGAMES);
-    rescanvas.image(nowImage, 0, 0);
+    image(nowImage, widthNew - widthNew / ifx, YLASTGAMES);
+    rescanvas.image(nowImage, widthNew - widthNew / ifx, 0);
 
     stroke(255);
     line(widthNew / ifx, YLASTGAMES, widthNew / ifx, YLASTGAMES + widthNew / ify);
     // lastGames = get(0, ylastgames, widthNew, widthNew / ify);
     // lastGames.loadPixels();
-    lastGames = rescanvas.get(0, 0, widthNew, widthNew / ifx);
+    lastGames = rescanvas.get(0, 0, widthNew, widthNew / ify);
     lastGames.loadPixels();
     doSaveResultImage(lastGames);
   } else {
@@ -795,6 +796,7 @@ function allDraw() {
     }
   }
 
+  btnRedo.draw(evaluated);
   if (humanPlayer)
     btnUndo.draw(moveStack.nMoves > 0 && res != 0);
 
@@ -814,7 +816,6 @@ function allDraw() {
     fever.draw();
   }
   btnNew.draw((!gameFinished && stockPile.nCards > 32) || evaluated);
-  btnRedo.draw(evaluated);
   if (res > 94) {
     mymsg = version;
   }
@@ -1004,6 +1005,8 @@ function mouseClicked() {
     btnUndo.draw(false);
     fill(255);
     rect(5, YRES - 16, 250, 30);
+        
+    fill(255);
     rect(300, YRES - 70, 40, 40);
 
     statistics.drawEvaluationLegend(resPlayer, YRES - ifact * 30);

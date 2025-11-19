@@ -229,9 +229,7 @@ function calcIndicators(stats) {
     console.log("stats with ratings");
     console.log(stats);  
      */
-     res.elo = rebuildFeverFromResults(ratingState.results, true); // EWMA
-
-
+    res.elo = rebuildFeverFromResults(ratingState.results, true); // EWMA
     return res;
 }
 
@@ -243,7 +241,7 @@ function rebuildFeverFromResults(results, useEWMA = true) {
         missedSolvable: (r.Solvable && r.SolvedGivenSolvable === 0)
     }));
     fever.setData(pts);
-    console.log(pts.length + " " + fever.meanElo());
+    console.log("ELO-Mean (" + pts.length + "): " + round_number(fever.meanElo(), 2));
     return fever.meanElo();
 } 
 
@@ -606,6 +604,40 @@ async function exportStatisticsAsCsv() {
     try {
         stats = await getIndicators(999999);
     } catch (ex) {
+        console.log("ERROR: ", ex.message);
+        alert("Fehler beim Lesen der Statistiken: " + ex.message);
+        return;
+    }
+
+    const csvData = statsToCsv(stats);
+
+    // Optional: global_csv weiterverwenden, falls du es anderswo brauchst
+    window.global_csv = csvData;
+
+    // CSV als Blob erzeugen
+    const blob = new Blob([csvData], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+
+    // „Virtuellen“ Download-Link erstellen
+    const a = document.createElement("a");
+    const d = new Date();
+    const ts = d.getFullYear().toString()
+              + String(d.getMonth() + 1).padStart(2, "0")
+              + String(d.getDate()).padStart(2, "0");    
+    a.href = url;
+    a.download = `galleryresults${ts}.csv`;
+
+    document.body.appendChild(a);
+    a.click();                  // Download auslösen
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);   // Aufräumen
+}
+
+async function exportStatisticsAsMail() {
+    let stats;
+    try {
+        stats = await getIndicators(999999);
+    } catch (ex) {
         console.log("ERROR: ", ex.message)
     }
 
@@ -666,6 +698,37 @@ async function handleStatisticsFileSelect(event) {
     } catch (error) {
         console.error("Error reading file:", error);
     }
+}
+
+function statsToCsv(stats) {
+    if (!stats || !stats.length) return "";
+
+    const keys = Object.keys(stats[0]);
+
+    const escapeCsv = (val) => {
+        if (val === null || val === undefined) return "";
+        const s = String(val).replace(/"/g, '""'); // " -> ""
+        // Wenn Kommas, Anführungszeichen oder Zeilenumbrüche vorkommen, in Quotes packen
+        if (/[",\n]/.test(s)) {
+            return `"${s}"`;
+        }
+        return s;
+    };
+
+    const lines = [];
+
+    // Header-Zeile
+    lines.push(
+        keys.map(escapeCsv).join(",") + ",$"
+    );
+
+    // Daten-Zeilen
+    for (const row of stats) {
+        const line = keys.map(k => escapeCsv(row[k])).join(",") + ",$";
+        lines.push(line);
+    }
+
+    return lines.join("\n");
 }
 
 async function importStatisticsFromCsv(csvText) {

@@ -71,6 +71,7 @@ class FeverCurve {
     //p.fill(20, 24, 40);
     p.fill(245);
     p.rect(x, y, w, h, 10);
+    console.log(x, y, w, h, 10);
 
     const view = this._viewData();
     if (!view.length) {
@@ -222,7 +223,7 @@ class FeverCurve {
       p.text("" + elo, x + w - 15, y + h - 28);
     }
     p.pop();
-    console.log(yMin, yMax);
+    console.log(round(yMin), round(yMax));
     console.log("FeverCurve draw complete with ELO " + elo);
   }
 }

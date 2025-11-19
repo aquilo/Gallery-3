@@ -26,6 +26,7 @@ function setGraphParams() {
   if (ifact == 2) {
     HEIGHT0 = ifact * 620;
     HEIGHT0 = ifact * 430;
+    HEIGHT0 = ifact * 630;
   } else {
     HEIGHT0 = ifact * 480;
   }

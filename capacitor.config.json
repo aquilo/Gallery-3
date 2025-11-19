@@ -1,8 +1,0 @@
-{
-  "appId": "com.mapresso.gallery3",
-  "appName": "Gallery3",
-  "webDir": "www",
-  "server": {
-    "androidScheme": "https"
-  }
-}

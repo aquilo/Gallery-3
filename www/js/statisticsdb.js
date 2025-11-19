@@ -379,9 +379,10 @@ function bufferToBase64(buf) {
     return btoa(binstr);
 }
 
-function doSaveResultImage(img) {
+function doSaveResultImage000(img) {
     var base64 = img.canvas.toDataURL();
     set1Pref("resimg", base64);
+    console.log("statisticsdb.js, saved result image pref, length " + base64.length);
 }
 
 // Export just preferences to a file

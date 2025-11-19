@@ -120,10 +120,16 @@ $(document).ready(function () {
         switchdoAutoMoves.disabled = switchshowAutoMoveReason.checked ? true : false;
     });
 
+    const exportButtonMail = document.getElementById("exportButtonMail");
+    exportButtonMail.addEventListener("click", function () {
+        exportStatisticsAsMail();
+    });
+
     const exportButton = document.getElementById("exportButton");
     exportButton.addEventListener("click", function () {
         exportStatisticsAsCsv();
     });
+
 
     const exportPrefButton = document.getElementById("exportPrefButton");
     exportPrefButton.addEventListener("click", function () {
