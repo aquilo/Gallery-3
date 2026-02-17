@@ -255,19 +255,13 @@ class Os {
       fill(g);
   }
     
-  myline(g) {
+  myline(x1, y1, x2, y2) {
     if (osp)
-      offScreen.line(g);
+      offScreen.line(x1, y1, x2, y2);
     else
-      line(g);
+      line(x1, y1, x2, y2);
   }
-  
-  mystroke(g) {
-    if (osp)
-      offScreen.stroke(g);
-    else
-      stroke(g);
-  }
+
   mystroke(g) {
     if (osp)
       offScreen.stroke(g);

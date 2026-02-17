@@ -11,6 +11,10 @@
     /* You can specify different formats like woff, woff2, etc. for better browser compatibility */
 }
 
+canvas {
+  touch-action: manipulation;
+}
+
 html, body {
     /* font-family: 'SF Pro Regular', -apple-system !important; */
     /* font-family: -apple-system, 'SF Pro Regular' !important; */

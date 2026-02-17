@@ -88,10 +88,13 @@ function computeRatings(rows, cfg) {
 
   const out = [];
   let ewma = cfg.start_ewma;
+  let ewmaPct = 50; // EWMA for percentile (0-100 scale)
   const gameRatings = [];
   for (let i = 0; i < tmp.length; i++) {
     const t = tmp[i];
     ewma = (1 - cfg.alpha_ewma) * ewma + cfg.alpha_ewma * t.GameRating;
+    const alphaPct = cfg.alpha_ewma_pct ?? cfg.alpha_ewma;
+    ewmaPct = (1 - alphaPct) * ewmaPct + alphaPct * (t.ind.Percentile_p * 100);
     gameRatings.push(t.GameRating);
     out.push({
       datetime: t.r.datetime,
@@ -110,6 +113,7 @@ function computeRatings(rows, cfg) {
       C_clipped: t.C_clipped,
       GameRating: t.GameRating,
       EWMA_Rating: ewma,
+      EWMA_Percentile: ewmaPct,
       RollingN_Rating: 0 // später gefüllt
     });
   }

@@ -24,7 +24,7 @@ class FeverCurve {
     this.yMin = null;
     this.yMax = null;
 
-    // Datenpunkte: {x, y, underMin?, missedSolvable?}
+    // Datenpunkte: {x, y, y2?, underMin?, missedSolvable?}
     this.data = [];
     // oben in constructor:
     this.baseline = opts.baseline ?? null;
@@ -36,7 +36,7 @@ class FeverCurve {
   }
 
   setData(points) {
-    // points = [{x, y, underMin, missedSolvable}, ...]  (x nur für tooltips falls du willst)
+    // points = [{x, y, y2?, underMin, missedSolvable}, ...]
     this.data = points.slice();
   }
 
@@ -71,7 +71,6 @@ class FeverCurve {
     //p.fill(20, 24, 40);
     p.fill(245);
     p.rect(x, y, w, h, 10);
-    console.log(x, y, w, h, 10);
 
     const view = this._viewData();
     if (!view.length) {
@@ -120,19 +119,20 @@ class FeverCurve {
     const yMin = this.yMin,
       yMax = this.yMax;
     const yRange = Math.max(1e-6, yMax - yMin);
-    // const xMap = (i) => ix + iw * (i / Math.max(1, view.length - 1));
 
-    const tailFrac = 0.015; // = 6% vom Plot-Bereich frei
-
-    const xMap = (i) =>
-      ix + iw * (i / Math.max(1, view.length - 1)) * (1 - tailFrac);
-    const yMap = (val) => iy + ih - ih * ((val - yMin) / yRange);
+    const tailFrac = 0.015;
 
     // Achsenbereich
     const ix = x + pad,
       iy = y + pad,
       iw = w - 2 * pad,
       ih = h - 2 * pad;
+
+    const xMap = (i) =>
+      ix + iw * (i / Math.max(1, view.length - 1)) * (1 - tailFrac);
+    const yMap = (val) => iy + ih - ih * ((val - yMin) / yRange);
+    // Percentile: fixed 0-100 scale on right axis
+    const yMap2 = (val) => iy + ih - ih * (val / 100);
 
     if (this.baseline != null) {
       p.stroke(150);
@@ -158,12 +158,6 @@ class FeverCurve {
 
       p.noStroke();
       p.fill(180);
-      /*       p.textSize(12); p.textAlign(p.LEFT, p.TOP);
-            if (this.title) p.text(this.title, ix, y+6);
-            p.textAlign(p.LEFT, p.CENTER);
-            p.text(nf(yMax,1,0), ix+4, iy+8);
-            p.text(nf(yMin,1,0), ix+4, iy+ih-8);
-       */
     }
 
     // Mapping
@@ -172,13 +166,36 @@ class FeverCurve {
       p.stroke(150, 0, 150);
       p.strokeWeight(1);
       const yBase = yMap(this.baseline);
-      //console.log(this.baseline, yBase, y, h, (y + h),iy, iy + ih);
       if (yBase < (y + h)) {
         // p.line(ix, yBase, ix + iw, yBase);
       }
     }
 
-    // Linie
+    // --- Percentile line (behind ELO line) ---
+    const hasY2 = view.some(pt => pt.y2 != null);
+    if (hasY2) {
+      // Shadow
+      p.stroke(255);
+      p.strokeWeight(2 * Math.max(1, this.strokeWeight - 0.5));
+      p.noFill();
+      p.beginShape();
+      for (let i = 0; i < view.length; i++) {
+        if (view[i].y2 != null) p.vertex(xMap(i), yMap2(view[i].y2));
+      }
+      p.endShape();
+
+      // Orange percentile line
+      p.stroke(220, 150, 30);
+      p.strokeWeight(Math.max(1, this.strokeWeight - 0.5));
+      p.noFill();
+      p.beginShape();
+      for (let i = 0; i < view.length; i++) {
+        if (view[i].y2 != null) p.vertex(xMap(i), yMap2(view[i].y2));
+      }
+      p.endShape();
+    }
+
+    // --- ELO line (on top) ---
 
     p.stroke(255);
     p.strokeWeight(2 * this.strokeWeight);
@@ -212,8 +229,9 @@ class FeverCurve {
       p.circle(xMap(i), yMap(pt.y), 4);
     }
 
-    let elo = Math.round(view[view.length - 1].y);
-    //p.stroke(0);
+    // --- Labels ---
+    const last = view[view.length - 1];
+    let elo = Math.round(last.y);
     p.fill(0);
     p.textSize(14);
     p.textAlign(p.RIGHT, p.TOP);
@@ -222,8 +240,16 @@ class FeverCurve {
     } else {
       p.text("" + elo, x + w - 15, y + h - 28);
     }
+
+    // Percentile label (right side, orange)
+    if (hasY2 && last.y2 != null) {
+      let pct = Math.round(last.y2);
+      p.fill(200, 130, 20);
+      p.textSize(12);
+      p.textAlign(p.LEFT, p.TOP);
+      p.text(pct + "%", x + 10, y + 8);
+    }
+
     p.pop();
-    console.log(round(yMin), round(yMax));
-    console.log("FeverCurve draw complete with ELO " + elo);
   }
 }

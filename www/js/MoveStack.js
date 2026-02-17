@@ -45,9 +45,9 @@ class MoveStack {
 
   print() {
     for (let i=0; i < this.nMoves; i++) {
-      print(i + ". " + elementAt(i).toString());
+      My.print(i + ". " + this.elementAt(i).toString());
     }
-    print();
+    My.print();
   }
 }
 
@@ -67,6 +67,6 @@ class Move {
   }
 
   toString2() {
-    return this.from.id + " " + this.from.base + " > " + this.to.kind + " " + from.peek().toString();
+    return this.from.id + " " + this.from.base + " > " + this.to.kind + " " + this.from.peek().toString();
   }
 }

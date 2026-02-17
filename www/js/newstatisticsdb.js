@@ -20,27 +20,29 @@ let good_elo = 1885.5;
 
 // Rating-Config (Option B: Gating)
 const ratingCfg = {
-    w_solved: 0.20,
-    w_mean: 0.25,
-    w_percentile: 0.45,
-    w_best: 0.10,
+    w_solved: 0.10,
+    w_mean: 0.05,
+    w_percentile: 0.75,
+    w_best: 0.05,
     gamma: 1.6,
-    w_diff: 0.15,
+    w_diff: 0.05,
     diff_scale: 8,
-    cap_solvable_not_solved: 0.55,
+    cap_solvable_not_solved: 0.60,
     floor_under_min: 0.90,
-    floor_solved: 0.80,
+    floor_solved: 0.65,
     clip_low: 0.02,
     clip_high: 0.98,
     rating_scale: 800,
     rating_mid: 1500,
     alpha_ewma: 0.10,
+    alpha_ewma_pct: 0.30,
     start_ewma: 1500,
     window_N: 20
 };
 
 const ratingState = {
     ewma: ratingCfg.start_ewma,
+    ewmaPct: 50, // EWMA for percentile (0-100)
     buf: [], // letzte N GameRatings
     N: ratingCfg.window_N
 };
@@ -223,6 +225,7 @@ function calcIndicators(stats) {
       ratingState.rows = rows;
       ratingState.results = results;
       ratingState.lastEWMA = results.length ? results[results.length - 1].EWMA_Rating : cfg.start_ewma;
+      ratingState.ewmaPct = results.length ? results[results.length - 1].EWMA_Percentile : 50;
       ratingState.rollingN = cfg.window_N;
       ratingState.rollingBuf = results.slice(-cfg.window_N).map(r => r.GameRating);
 /* 
@@ -237,6 +240,7 @@ function rebuildFeverFromResults(results, useEWMA = true) {
     const pts = results.map(r => ({
         x: r.datetime,
         y: useEWMA ? r.EWMA_Rating : r.GameRating,
+        y2: r.EWMA_Percentile ?? ((r.Percentile_p ?? 0) * 100),
         underMin: !!r.BestResult,
         missedSolvable: (r.Solvable && r.SolvedGivenSolvable === 0)
     }));

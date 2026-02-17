@@ -121,9 +121,11 @@ $(document).ready(function () {
     });
 
     const exportButtonMail = document.getElementById("exportButtonMail");
-    exportButtonMail.addEventListener("click", function () {
-        exportStatisticsAsMail();
-    });
+    if (exportButtonMail) {
+        exportButtonMail.addEventListener("click", function () {
+            exportStatisticsAsMail();
+        });
+    }
 
     const exportButton = document.getElementById("exportButton");
     exportButton.addEventListener("click", function () {

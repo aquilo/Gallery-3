@@ -46,14 +46,14 @@ class CardPile {
   toString() {
     if (!this.empty()) {
       if (this.ok) {
-        return (this.kind + " stack with " + cards.length + " places, occupied: +" + this.nCards +
+        return (this.kind + " stack with " + this.cards.length + " places, occupied: +" + this.nCards +
           ", top: " + this.peek().toString());
       } else {
-        return (this.kind + " stack with " + cards.length + " places, occupied:  " + this.nCards +
+        return (this.kind + " stack with " + this.cards.length + " places, occupied:  " + this.nCards +
           ", top: " + this.peek().toString());
       }
     } else {
-      return (this.kind + " stack with " + cards.length + " places, empty");
+      return (this.kind + " stack with " + this.cards.length + " places, empty");
     }
   }
 
@@ -397,7 +397,7 @@ class CardPile {
   }
 
   doHover() {
-    explain = kind;
+    explain = this.kind;
   }
 
   nOk() {

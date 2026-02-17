@@ -244,6 +244,8 @@ class Statistics {
 
     // 3) EWMA & Rolling-N (inkrementell, aus ratingState)
     ratingState.ewma = (1 - ratingCfg.alpha_ewma) * ratingState.ewma + ratingCfg.alpha_ewma * GameRating;
+    const alphaPct = ratingCfg.alpha_ewma_pct ?? ratingCfg.alpha_ewma;
+    ratingState.ewmaPct = (1 - alphaPct) * ratingState.ewmaPct + alphaPct * (ind.Percentile_p * 100);
 
     ratingState.buf.push(GameRating);
     if (ratingState.buf.length > ratingState.N) ratingState.buf.shift();
@@ -263,6 +265,16 @@ class Statistics {
     this.EWMA_Rating = ratingState.ewma;
     this.RollingN = RollingN_Rating;
     this.str_resultnew = My.round2String(resultf2, 3) + " ||| " + round(this.GameRating);
+
+    // Update fever curve synchronously so it's visible immediately
+    // (the async doStatTable chain will later rebuild the full dataset)
+    fever.appendPoint({
+      x: gameStart,
+      y: this.EWMA_Rating,
+      y2: ratingState.ewmaPct,
+      underMin: !!this.BestResult,
+      missedSolvable: (this.Solvable && this.SolvedGivenSolvable === 0)
+    });
 
   }
 
@@ -397,11 +409,11 @@ function drawHisto(x0, y0) {
   stroke(255);
   let ynow;
   let ffhisto = float(statistics.n) / float((dy0 - 10));
-  ynow = ybasis - ifact * Math.max((int)((statistics.n / 4) / ffhisto), 1);
+  ynow = ybasis - ifact * Math.max(Math.floor((statistics.n / 4) / ffhisto), 1);
   line(xx, ynow, xx + 97 * ifact * 2, ynow);
-  ynow = ybasis - ifact * Math.max((int)((statistics.n / 2) / ffhisto), 1);
+  ynow = ybasis - ifact * Math.max(Math.floor((statistics.n / 2) / ffhisto), 1);
   line(xx, ynow, xx + 97 * ifact * 2, ynow);
-  ynow = ybasis - ifact * Math.max((int)((3 * statistics.n / 4) / ffhisto), 1);
+  ynow = ybasis - ifact * Math.max(Math.floor((3 * statistics.n / 4) / ffhisto), 1);
   line(xx, ynow, xx + 97 * ifact * 2, ynow);
   for (let i = 0; i < 97; i++) {
     if (statistics.histo[i] > 0) {
@@ -426,6 +438,7 @@ function drawHisto(x0, y0) {
       } else {
         stroke(116, 173, 209);
       }
+      let c;
       if (i == resPlayer) {
         c = color(120);
       } else {
@@ -708,7 +721,7 @@ function doStatTableMiniGraph() {
   var r = results[len - 1];
   global_statistics = r;
   var nn = r.n;
-  aaa = results;
+  let aaa = results;
   var k = -1;
   do {
     k = k + 1;

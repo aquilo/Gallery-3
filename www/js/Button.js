@@ -26,7 +26,7 @@ class Button {
     if (!active) {
       fill(color(255));
       stroke(color(255));
-      rect(x - 2, y - 2, this.dx + 4, this.dy + 8);
+      rect(this.x - 2, this.y - 2, this.dx + 4, this.dy + 8);
       return;
     };
     if (!dimmed) {
@@ -36,7 +36,7 @@ class Button {
       stroke(this.activtextcolor);
       fill(this.activtextcolor);
     }
-    textC(this.label, this.x + dx/2, this.y + dy/2);
+    textC(this.label, this.x + this.dx/2, this.y + this.dy/2);
   }
 
    draw(active) {

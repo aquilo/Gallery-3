@@ -29,7 +29,7 @@ let CARDwidthNew, CARDHEIGHT;
 
 let XRIGHT;
 let YBASE = 640;
-let WIDTH0 = window.innerwidthNew - 5;
+let WIDTH0 = window.innerWidth - 5;
 let HEIGHT0 = window.innerHeight - 5;
 let scaleFactor = 1;
 let XSTAT, YSTAT, XHISTO, YHISTO, XGRAPH, XRES, YRES;
@@ -184,7 +184,7 @@ function canvasInit() {
   if (isApp) {
     canvasPositionY = 60;
   }
-  actualwidthNew = min(screen.widthNew, 640);
+  actualwidthNew = min(screen.width, 640);
   deviceFactor = actualwidthNew / 320.0;
 }
 
@@ -326,7 +326,7 @@ function drawE() {
   textFont(myFont, F14);
   fill(color(0));
   stroke(color(0));
-  jx = max(min(resPlayer, 93), 2);
+  let jx = max(min(resPlayer, 93), 2);
   jx = 3 + jx * ifact * 10 / 3;
   textC(resPlayer + "", jx, YRES - ifact * 10);
 }
@@ -602,10 +602,9 @@ function canCovered(tc, sc) {
     return false;
   }
   if (tc.rank < sc.rank) {
-    let xx = ((sc.rank - tc.rank) % 3) == 0;
-    // console.log(tc + " < " + sc + " " + xx);
-    return xx;
+    return ((sc.rank - tc.rank) % 3) == 0;
   }
+  return false;
 }
 
 function dangerCheck(i) {
@@ -623,7 +622,7 @@ function dangerCheck(i) {
     let tableauCard = allPiles[i].cards[j];
     if (tableauCard.rank <= 10) {
       for (let k = 0; k < stockSize; k++) {
-        stockCard = stockPile.cards[k];
+        let stockCard = stockPile.cards[k];
         if (canCovered(tableauCard, stockCard)) {
           danger++;
           if (stockPile.checkTwinOkInsideStock(stockCard)) {
@@ -654,7 +653,7 @@ function allDangerCheck() {
   let dangerP = 1.0;
   let bigDangerP = 1.0;
   for (let i = 26; i < 34; i++) {
-    dc = dangerCheck(i);
+    let dc = dangerCheck(i);
     // console.log(i + ": " + dc);
     dangerP *= (1.0 - float(dc[0]) / float(dc[2]));
     bigDangerP *= (1.0 - float(dc[1]) / float(dc[2]));
@@ -717,8 +716,8 @@ function drawProgress(part, all) {
     // resImage = get(0, 0, scaleFactor * widthNew, scaleFactor * widthNew);
     nowImage = get(0, 0, scaleFactor * widthNew, scaleFactor * widthNew);
 
-    ifx = 20;
-    ify = ifx;
+    let ifx = 20;
+    let ify = ifx;
     nowImage.resize(widthNew / ifx, widthNew / ify);
     if (nEvaluationsEnd <= global_evaluations) {
       image(lastGames, -widthNew / ifx, YLASTGAMES);
@@ -979,7 +978,21 @@ function noMovables() {
   return true;
 }
 
+let touchHandled = false;
+
+function touchStarted() {
+  touchHandled = true;
+  handleTap();
+  setTimeout(() => { touchHandled = false; }, 500);
+  return false;
+}
+
 function mouseClicked() {
+  if (touchHandled) return;
+  handleTap();
+}
+
+function handleTap() {
   loop();
   let x = mouseX;
   let y = mouseY;
@@ -1005,7 +1018,7 @@ function mouseClicked() {
     btnUndo.draw(false);
     fill(255);
     rect(5, YRES - 16, 250, 30);
-        
+
     fill(255);
     rect(300, YRES - 70, 40, 40);
 
@@ -1051,7 +1064,7 @@ function keyPressed() {
       My.print(allPiles[i].toString());
     }
   }
-  if (key == 'f' || key == 'f') {
+  if (key == 'f' || key == 'F') {
     finishGame();
     humanPlayer = true;
   }
@@ -1059,9 +1072,9 @@ function keyPressed() {
     sayAutoReasonStat();
   }
   if (key == 'm' || key == 'M') {
-    moveStack.My.print();
+    moveStack.print();
   }
-  if (key == 'd' || key == 'd') {
+  if (key == 'd' || key == 'D') {
     mustDraw = true;
   }
   if (key == 'z' || key == 'Z') {
