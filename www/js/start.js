@@ -1,6 +1,6 @@
 // import {setup, draw} from './galleryjs.js';
 
-console.log("*** addEventListener added");
+// console.log("*** addEventListener added");
 
 /**
  * helper to dynamically load p5-library and code after device is read
@@ -10,7 +10,7 @@ function dynamicallyLoadScript(url) {
     const script = document.createElement('script');
     script.src = url;
     document.head.appendChild(script);
-    console.log("*** dynamicallyLoadScript " + url);
+    // console.log("*** dynamicallyLoadScript " + url);
 }
 
 function onDeviceReady() {
@@ -61,7 +61,8 @@ function showSection(sectionId) {
 
     // Show the selected section
     document.getElementById(sectionId).style.display = "block";
-    document.getElementById("defaultCanvas0").style.display = sectionId == "section1" ? "block" : "none";
+    const canvas = document.getElementById("defaultCanvas0");
+    if (canvas) canvas.style.display = sectionId == "section1" ? "block" : "none";
 }
 
 $(document).ready(function () {
@@ -97,7 +98,7 @@ $(document).ready(function () {
     });
 
 
-    console.log("*** switches and other interactive elements");
+    // console.log("*** switches and other interactive elements");
 
     const switchshowMoveable = document.getElementById("showMoveable");
     switchshowMoveable.addEventListener("change", function () {

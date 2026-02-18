@@ -12,19 +12,57 @@ find dist -maxdepth 1 -type f -name 'app.*.js' -exec mv {} dist/old/ \;
 STAMP=$(date +%Y%m%d%H%M%S)
 
 # 2) JS zusammenziehen & minifizieren
-npx terser $(cat bundle-order_js.txt) -o "dist/app.$STAMP.js" -c -m
+KEEP="showSection,handleStatisticsFileSelect,openPreferencesFileDialog,allDraw"
+npx terser $(cat bundle-order_js.txt) -o "dist/app.$STAMP.js" \
+  --compress --mangle "reserved=[$KEEP]"
 
-# 3) index.html nach dist kopieren und Script-Tag anpassen
-if [ -f index.html ]; then
-  echo "Kopiere index.html nach dist/ und setze app.$STAMP.js ein..."
-  cp index.html dist/index.html
-  # macOS-sed: -i ''
-  sed -i '' "s/app\.XXXXX\.js/app.$STAMP.js/" dist/index.html
-else
-  echo "Hinweis: index.html nicht gefunden, überspringe Kopie/Anpassung."
-fi
+# 3) index.html aus index_dev.html generieren
+#    - <!-- build:meta --> Block → manifest + theme-color
+#    - <!-- build:css ... --> Block → ein <link> auf gallery.min.css
+#    - <!-- build:js ... --> Block → ein <script> auf app.$STAMP.js
+echo "Generiere dist/index.html aus index_dev.html..."
+STAMP="$STAMP" python3 -c "
+import re, os
+
+stamp = os.environ['STAMP']
+
+with open('index_dev.html', 'r') as f:
+    html = f.read()
+
+# Replace build:meta block
+html = re.sub(
+    r'<!-- build:meta -->.*?<!-- endbuild -->',
+    '  <link rel=\"manifest\" href=\"manifest.json\">\n  <meta name=\"theme-color\" content=\"#ffffff\">',
+    html, flags=re.DOTALL
+)
+
+# Replace build:css block
+html = re.sub(
+    r'<!-- build:css (\S+) -->.*?<!-- endbuild -->',
+    r'  <link rel=\"stylesheet\" href=\"\1\">',
+    html, flags=re.DOTALL
+)
+
+# Replace build:js-head block (in <head>) with the bundled script tag
+html = re.sub(
+    r'<!-- build:js-head \S+ -->.*?<!-- endbuild -->',
+    f'  <script src=\"app.{stamp}.js\"></script>',
+    html, flags=re.DOTALL
+)
+
+# Remove build:js block (in <body>) — individual script tags no longer needed
+html = re.sub(
+    r'\n *<!-- build:js \S+ -->.*?<!-- endbuild -->\n',
+    '',
+    html, flags=re.DOTALL
+)
+
+with open('dist/index.html', 'w') as f:
+    f.write(html)
+"
 
 cp manifest.json dist/manifest.json
+
 # 4) CSS zusammenführen & minifizieren
 concat=/tmp/gallery.concat.css
 > "$concat"
@@ -56,3 +94,9 @@ if [ -d fonts ]; then
 else
   echo "Hinweis: Verzeichnis fonts/ existiert nicht, überspringe Kopie."
 fi
+
+# 7) worker.js separat kopieren (wird per new Worker() geladen, nicht gebündelt)
+mkdir -p dist/js
+cp js/worker.js dist/js/worker.js
+
+echo "Build fertig: dist/app.$STAMP.js + dist/gallery.min.css + dist/index.html"

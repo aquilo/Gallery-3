@@ -1,7 +1,7 @@
 {
   "name": "Gallery Solitaire",
   "short_name": "Gallery",
-  "start_url": "/play/data/icons",
+  "start_url": "/play/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#ffffff",

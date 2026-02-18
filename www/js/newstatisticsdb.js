@@ -35,7 +35,7 @@ const ratingCfg = {
     rating_scale: 800,
     rating_mid: 1500,
     alpha_ewma: 0.10,
-    alpha_ewma_pct: 0.30,
+    alpha_ewma_pct: 0.1,
     start_ewma: 1500,
     window_N: 20
 };
@@ -603,6 +603,23 @@ function updateStats(results) {
     statisticsTextDiv.innerHTML = statText;
 }
 
+function downloadFile(blob, filename) {
+    const url = URL.createObjectURL(blob);
+    // iOS Safari doesn't support a.click() downloads — open in new tab instead
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    if (isIOS) {
+        window.open(url, '_blank');
+    } else {
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    }
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
+}
+
 async function exportStatisticsAsCsv() {
     let stats;
     try {
@@ -618,23 +635,13 @@ async function exportStatisticsAsCsv() {
     // Optional: global_csv weiterverwenden, falls du es anderswo brauchst
     window.global_csv = csvData;
 
-    // CSV als Blob erzeugen
+    // CSV als Blob erzeugen & herunterladen
     const blob = new Blob([csvData], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-
-    // „Virtuellen“ Download-Link erstellen
-    const a = document.createElement("a");
     const d = new Date();
     const ts = d.getFullYear().toString()
               + String(d.getMonth() + 1).padStart(2, "0")
-              + String(d.getDate()).padStart(2, "0");    
-    a.href = url;
-    a.download = `galleryresults${ts}.csv`;
-
-    document.body.appendChild(a);
-    a.click();                  // Download auslösen
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);   // Aufräumen
+              + String(d.getDate()).padStart(2, "0");
+    downloadFile(blob, `galleryresults${ts}.csv`);
 }
 
 async function exportStatisticsAsMail() {
@@ -806,16 +813,10 @@ function exportPreferences() {
     // Convert to JSON string
     const jsonStr = JSON.stringify(exportData, null, 2);
     
-    // Create download
+    // Download
     const blob = new Blob([jsonStr], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'gallery-solitaire-preferences-' + new Date().toISOString().split('T')[0] + '.json';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    const filename = 'gallery-solitaire-preferences-' + new Date().toISOString().split('T')[0] + '.json';
+    downloadFile(blob, filename);
 }
 
 function importPreferences(prefs) {

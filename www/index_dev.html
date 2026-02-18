@@ -10,35 +10,34 @@
   <meta name="msapplication-tap-highlight" content="no">
   <meta name="viewport" content="initial-scale=1, width=device-width, viewport-fit=cover">
   <meta name="color-scheme" content="light dark">
-  
-  <link rel="apple-touch-icon" href="/play/icons/icon-180.png">
+
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
 
-  <link rel="apple-touch-icon" sizes="57x57" href="/_assets/img/apple-touch-icon-57x57.png">
-	<link rel="apple-touch-icon" sizes="60x60" href="/_assets/img/apple-touch-icon-60x60.png">
-	<link rel="apple-touch-icon" sizes="72x72" href="/_assets/img/apple-touch-icon-72x72.png">
-	<link rel="apple-touch-icon" sizes="76x76" href="/_assets/img/apple-touch-icon-76x76.png">
-	<link rel="apple-touch-icon" sizes="114x114" href="/_assets/img/apple-touch-icon-114x114.png">
-	<link rel="apple-touch-icon" sizes="120x120" href="/_assets/img/apple-touch-icon-120x120.png">
-	<link rel="apple-touch-icon" sizes="144x144" href="/_assets/img/apple-touch-icon-144x144.png">
-	<link rel="apple-touch-icon" sizes="152x152" href="/_assets/img/apple-touch-icon-152x152.png">
-	<link rel="apple-touch-icon" sizes="180x180" href="/_assets/img/apple-touch-icon-180x180.png">
+  <!-- build:meta -->
+  <!-- (build adds: manifest.json link, theme-color meta) -->
+  <!-- endbuild -->
 
+  <link rel="apple-touch-icon" sizes="57x57" href="data/icons/apple-touch-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="data/icons/apple-touch-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="data/icons/apple-touch-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="data/icons/apple-touch-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="data/icons/apple-touch-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="data/icons/apple-touch-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="data/icons/apple-touch-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="data/icons/apple-touch-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="data/icons/apple-touch-icon-180x180.png">
+
+  <!-- build:css gallery.min.css -->
   <link rel="stylesheet" href="./css/st.css">
-
-  <!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"> -->
   <link rel="stylesheet" href="./libs/css/bootstrap.min.css">
-
-  <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"> -->
   <link rel="stylesheet" href="./libs/css/all.min.css">
-
-  <!--  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">-->
   <link rel="stylesheet" href="./libs/css/bootstrap-icons.css">
+  <!-- endbuild -->
 
-  <!-- https://mode.fh-joanneum.at/cola/p5.js-cordova-demo-app/-/blob/main/www/js/sketch.js -->
-
-  <script src="./libs/js/p5.min.js"></script>
+  <!-- build:js-head app.min.js -->
+  <!-- (build inserts bundled script here) -->
+  <!-- endbuild -->
 </head>
 
 <body>
@@ -209,7 +208,7 @@
         <div class="rules">
           <div style="text-align: left; margin-top: 23px;">
             <h1>Gallery Solitaire</h1>
-            <p>Version 3.0.4, &copy; 2025, Adrian Herzog<br>
+            <p>Version 3.1.1, &copy; 2026, Adrian Herzog<br>
               <a href="#" onclick="window.open(encodeURI('https://gallery.mapresso.com'), '_system')">
                 https://gallery.mapresso.com
               </a>
@@ -223,7 +222,7 @@
 
           <!-- <label for="customRange1" class="form-label">Animation Speed</label><br> -->
           <input type="range" class="form-range" id="speedrange" min="-1000" max="-1">
-          <br>Controls how quickly cards move (slow → fast)
+          <br>Controls how quickly cards move (slow &rarr; fast)
           <br><br>
           <h3>Computer Aided Playing</h3>
           <br>
@@ -254,7 +253,7 @@
           <br>
 
           <hr>
-          <h2>Statistics</h2>
+           <h2>Statistics</h2>
           <br>
 
           <p><button type="button" class="btn btn-primary" id="exportButton">
@@ -269,7 +268,7 @@
           </p>
  -->
           <!-- Button to open the modal -->
- 
+
           <p><button type="button" class="btn btn-dark" onclick="document.getElementById('statisticsFileInput').click()">
             Import Statistics
           </button><br>
@@ -336,6 +335,8 @@
           <hr>
           <h2>Version History</h2>
           <p>
+              17.02.2026, 3.1.1: Bug fixes and minor improvements.<br>
+              17.11.2025, 3.1: New indicator ("ELO"), new build and deployment procedures.<br>
               24.08.2025, 3.0.4: New evaluation graph. Import button for previously exported statistics<br>
               24.08.2025, 3.0.3: Removed a controversial indicator. Cleaned up the result panel<br>
               17.10.2024, 3.0.2: Fixed an error in the auto-move statistics introduced in 3.0.1
@@ -377,32 +378,16 @@
     </nav>
   </div>
 
-  <!-- <script src="https://kit.fontawesome.com/a076d05399.js"></script> -->
-
-  <!-- Include Bootstrap JS (jQuery and Popper.js are required) -->
-  <!-- <sc
-    ript src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script> -->
+  <!-- build:js app.min.js -->
+  <script src="./libs/js/p5.min.js"></script>
   <script src="./libs/js/jquery-3.5.1.slim.min.js"></script>
-
-  <!-- <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script> -->
   <script src="./libs/js/popper.min.js"></script>
-
-  <!-- <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script> -->
   <script src="./libs/bootstrap/js/bootstrap.min.js"></script>
 
-  <!-- <script src="https://kit.fontawesome.com/a076d05399.js"></script> -->
-
-  <!-- <script src="cordova.js"></script> -->
-  <script>
-    // document.addEventListener('deviceready', onDeviceReady, false);
-  </script>
-
-  <!-- <script src="./js/start.js" defer></script> -->
   <script src="./js/rating.js"></script>
   <script src="./js/FeverCurve.js"></script>
   <script src="./js/start.js"></script>
   <script src="./js/worker.js"></script>
-  <!-- <script src="./js/capathings.js"></script> -->
   <script src="./libs/js/jsstore.js"></script>
   <script src="./libs/js/jsstore.worker.js"></script>
   <script src="./js/newstatisticsdb.js"></script>
@@ -417,6 +402,7 @@
   <script src="./js/graphparams.js"></script>
   <script src="./js/My.js"></script>
   <script src="./js/galleryjs.js"></script>
+  <!-- endbuild -->
 
 </body>
 

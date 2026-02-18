@@ -154,7 +154,7 @@ let longTxt = [
 let fever;
 
 function preload() {
-  My.print("*** p5js: preload at " + new Date().toISOString());
+  // My.print("*** p5js: preload at " + new Date().toISOString());
   dataPath = "data/";
   dataPathImg = "data/img/";
   dataPathPhotos = "data/photos/";
@@ -166,7 +166,7 @@ function preload() {
   successImages = loadTable(dataPathPhotos + "photos.tsv", "tsv", "header");
   //  myFont = loadFont("data/Roboto-Light.ttf");
   // myFontRegular = loadFont("data/Roboto-Regular.ttf");
-  My.print("/preload: " + My.round2String(millis() / 1000.0, 3) + " sec");
+  // My.print("/preload: " + My.round2String(millis() / 1000.0, 3) + " sec");
 }
 
 function windowResized() {
@@ -286,7 +286,7 @@ function setup() {
   doStatTable();
   initDb();
   loop();
-  My.print("/setup: " + My.round2String(millis() / 1000.0, 3) + " sec");
+  // My.print("/setup: " + My.round2String(millis() / 1000.0, 3) + " sec");
 
   const myWorker = new Worker('./js/worker.js');
 
@@ -981,10 +981,14 @@ function noMovables() {
 let touchHandled = false;
 
 function touchStarted() {
-  touchHandled = true;
-  handleTap();
-  setTimeout(() => { touchHandled = false; }, 500);
-  return false;
+  // Only handle touches on the p5 canvas; let other elements (nav links etc.) handle touch normally
+  if (touches.length > 0 && document.elementFromPoint(touches[0].x, touches[0].y) === document.getElementById('defaultCanvas0')) {
+    touchHandled = true;
+    handleTap();
+    setTimeout(() => { touchHandled = false; }, 500);
+    return false; // preventDefault — stops click synthesis, needed for canvas
+  }
+  // For touches outside the canvas, do nothing and let the browser handle them
 }
 
 function mouseClicked() {
@@ -1126,3 +1130,9 @@ function shuffleDeck() {
     cards[i] = card;
   }
 }
+
+// Expose functions called from HTML onclick attributes so terser won't remove them
+window.showSection = showSection;
+window.handleStatisticsFileSelect = handleStatisticsFileSelect;
+window.openPreferencesFileDialog = openPreferencesFileDialog;
+window.allDraw = allDraw;

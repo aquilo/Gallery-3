@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(bash gallery_build.sh)",
+      "Bash(ls:*)"
+    ]
+  }
+}
