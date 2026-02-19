@@ -3,13 +3,12 @@
 Alles in www/
 
 ## Entwicklung
-Entwickeln mit http://localhost:5503/www/index_dev.html. Falls Änderungen nicht nur im JavaScript-Teil gemacht werden: HTML auch in index.html an index_dev.html angleichen.
+Entwickeln mit http://localhost:5503/www/index_dev.html.
 
 ## Build
 `./gallery_build.sh`
 
-Damit werden JavaScript und css komprimiert und in index.html das    `<script src="app.XXXXX.js"></script>`
-auf den aktuellen Zeitstempel angepasst.
+JavaScript und css werden komprimiert und das aktuelle index.html (in dist/) generiert.
 
 ## Deploy
 `./gallery_deploy.sh`
