@@ -19,7 +19,7 @@
 let isApp = false;
 let jsstoreCon;
 
-let version = "Version 3.0a"; // a
+let version = "Version 3.1.2"; 
 let device = "";
 let mymsg;
 let XSF, YSF, XST, YST, XSA, YSA, XSS, YSS;
@@ -102,7 +102,6 @@ let explain = "";
 let TEXTCOLOR, col_resulttext;
 let gameStart;
 let timerstart;
-let reduce = false;
 
 let cards = new Array(104);
 
@@ -118,7 +117,7 @@ let evaltime = 0;
 
 let rescanvas = "";
 
-let ifact;
+let TWO;
 
 let x1res, y1res, dx1res, dy1res;
 let x2res, y2res, dx2res, dy2res, x2res0, y2res0;
@@ -145,11 +144,11 @@ let resprev = 999;
 
 let shortTxt = [
   "", "T ok", "2 poss", "F clean", "just 1", "T botm",
-  "T row", "Tbelow", "T botm", "TuBase", "Tjammed"
+  "T row", "Tbelow", "T botm", "TuBase", "Tjammed","Tfinjam",""
 ];
 
 let longTxt = [
-  "", "Twin is already ok.", "There are two possibilities for this card.", "The foundation row is completely clean.", "At the end and only one card can be moved.", "Twin is at the bottom of the tableau (this card on foundation).", "Twin is on the same foundation row.", "Twin is under this card.", "Twin is at the bottom of the tableau (this card on tableau).", "Twin is directly under its own base.", "Twin is directly under its own base."
+  "", "Twin is already ok.", "There are two possibilities for this card.", "The foundation row is completely clean.", "At the end and only one card can be moved.", "Twin is at the bottom of the tableau (this card on foundation).", "Twin is on the same foundation row.", "Twin is under this card.", "Twin is at the bottom of the tableau (this card on tableau).", "Twin is directly under its own base.", "Twin is directly under its own base.", "Twin is finally jammed.", ""
 ];
 let fever;
 
@@ -245,8 +244,8 @@ function setup() {
   ybtns -= 40;
   ybtns = YRES + 12;
   btnNew = new Button(getTranslation(LANG, "New"), menustart, ybtns, WBN, HBN, 1);
-  btnRedo = new Button(getTranslation(LANG, "Redo"), menustart + ifact * 70, ybtns, WBU, HBU, 1);
-  btnUndo = new Button(getTranslation(LANG, "Undo"), menustart + ifact * 70, ybtns, WBU, HBU, 1);
+  btnRedo = new Button(getTranslation(LANG, "Redo"), menustart + TWO * 70, ybtns, WBU, HBU, 1);
+  btnUndo = new Button(getTranslation(LANG, "Undo"), menustart + TWO * 70, ybtns, WBU, HBU, 1);
   btnEvaluate = new Button(getTranslation(LANG, "Evaluate"), 245, YRES - 22, WBF, HBF, 1);
 
   for (let i = 2; i < 34; i++) {
@@ -301,11 +300,11 @@ function setup() {
     gallerytest: 1000
   });
 
- // fever = new FeverCurve(this, menustart + ifact * 91, YRES - ifact * 30 + ifact * 9, ifact * 223, ifact * 64, {
+ // fever = new FeverCurve(this, menustart + TWO * 91, YRES - TWO * 30 + TWO * 9, TWO * 223, TWO * 64, {
   fever = new FeverCurve(this, 0, YLASTGAMES + 42, widthNew, 150, {
     window: 200, // letzte N Punkte
     padPct: 0.05, // Headroom
-    smooth: 0.2, // Skalen-Easing
+    smooth: 0.4, // Skalen-Easing
     title: "EWMA Rating",
     baseline: 1500, // Linie bei 1500
   });
@@ -322,13 +321,13 @@ function drawE() {
   btnUndo.draw(false);
   fill(255);
   rect(XRES - 20, YRES - 20, 40, 40)
-  statistics.drawEvaluationLegend(resPlayer, YRES - ifact * 30);
+  statistics.drawEvaluationLegend(resPlayer, YRES - TWO * 30);
   textFont(myFont, F14);
   fill(color(0));
   stroke(color(0));
   let jx = max(min(resPlayer, 93), 2);
-  jx = 3 + jx * ifact * 10 / 3;
-  textC(resPlayer + "", jx, YRES - ifact * 10);
+  jx = 3 + jx * TWO * 10 / 3;
+  textC(resPlayer + "", jx, YRES - TWO * 10);
 }
 
 function doEvaluation(n, alfa) {
@@ -387,15 +386,11 @@ function draw() {
       fill(50, 0, 0);
       stroke(50, 0, 0);
       textFont(myFont, F8);
-      textR(caption[imgNow], ifact * 316, ifact * 329);
+      textR(caption[imgNow], TWO * 316, TWO * 329);
       noTint();
     }
 
-    if (reduce) {
-      image(bimg[imgNow], 0, 0, 640, 640);
-    } else {
-      image(bimg[imgNow], 0, 0);
-    }
+    image(bimg[imgNow], 0, 0, 640, 640);
     noTint();
     return;
   }
@@ -705,12 +700,12 @@ function drawProgress(part, all) {
   if (part < 0) {
     noStroke();
     fill(statistics.getResColor((statistics.mean), resPlayer));
-    rect(0, YPROGRESS - 0.5 * ifact, widthNew, DYPROGRESS + 0.5 * ifact);
+    rect(0, YPROGRESS - 0.5 * TWO, widthNew, DYPROGRESS + 0.5 * TWO);
     fill(0);
     textFont(myFont, F12);
-    textC("Tap to continue.", widthNew / 2, YRES - ifact * 48);
+    textC("Tap to continue.", widthNew / 2, YRES - TWO * 48);
     textFont(myFont, F9);
-    text(evaltime, ifact * 3, YRES - ifact * 40);
+    text(evaltime, TWO * 3, YRES - TWO * 40);
     noStroke();
     let nowImage;
     // resImage = get(0, 0, scaleFactor * widthNew, scaleFactor * widthNew);
@@ -743,10 +738,10 @@ function drawProgress(part, all) {
     rect(0, YPROGRESS, widthNew, DYPROGRESS);
     fill(0, 122, 255);
     fill(122);
-    rect(0, YPROGRESS + 16 * ifact, p * widthNew, 4 * ifact);
+    rect(0, YPROGRESS + 16 * TWO, p * widthNew, 4 * TWO);
   }
   stroke(0);
-  line(0, YPROGRESS - ifact, widthNew, YPROGRESS - ifact);
+  line(0, YPROGRESS - TWO, widthNew, YPROGRESS - TWO);
   line(0, YPROGRESS + DYPROGRESS, widthNew, YPROGRESS + DYPROGRESS);
 }
 
@@ -758,9 +753,9 @@ function allDraw() {
     offScreen.background(248);
     offScreen.fill(255);
     offScreen.stroke(255);
-    offScreen.rect(0, ifact * 320, widthNew, 670);
+    offScreen.rect(0, TWO * 320, widthNew, 670);
     offScreen.stroke(224);
-    offScreen.line(0, ifact * 320, widthNew, ifact * 320);
+    offScreen.line(0, TWO * 320, widthNew, TWO * 320);
     offScreen.stroke(0);
 
     if (!allPiles[2]) {
@@ -785,7 +780,7 @@ function allDraw() {
   } else {
     stroke(255);
     fill(255);
-    rect(0, ifact * 350, widthNew, ifact * 80);
+    rect(0, TWO * 350, widthNew, TWO * 80);
   }
 
 
@@ -807,12 +802,12 @@ function allDraw() {
       mustDraw = true;
     }
   } else {
-    drawHisto(XSTAT, YHISTO - ifact * 2);
-    drawStatistics(XSTAT, YSTAT - ifact * 10);
+    drawHisto(XSTAT, YHISTO - TWO * 2);
+    drawStatistics(XSTAT, YSTAT - TWO * 10);
     fill(statistics.getResColor(statistics.mean, resPlayer));
-    drawResult(XSTAT, YSTAT - ifact * 21);
+    drawResult(XSTAT, YSTAT - TWO * 21);
     image(lastGames, 0, YLASTGAMES);
-    fever.draw();
+    if (feverReady) fever.draw();
   }
   btnNew.draw((!gameFinished && stockPile.nCards > 32) || evaluated);
   if (res > 94) {
@@ -826,7 +821,7 @@ function allDraw() {
 
   if (gameFinished) {
     if (evaluating) {
-      textC("Evaluating", XRES - ifact * 95, YRES - ifact * 12);
+      textC("Evaluating", XRES - TWO * 95, YRES - TWO * 12);
     }
     if (!evaluated && res != 0) {
       textFont(myFont, F9);
@@ -852,9 +847,9 @@ function allDraw() {
   if (noMovables() && !cardMoving() && humanPlayer && res != 0) {
     os.mynoStroke();
     os.myfill2(0, 40);
-    os.myrect(0, 0, widthNew, ifact * 320);
+    os.myrect(0, 0, widthNew, TWO * 320);
     os.mystroke(12);
-    os.myline(0, ifact * 320, widthNew, ifact * 320);
+    os.myline(0, TWO * 320, widthNew, TWO * 320);
   }
   // image(lastGames, 0, YLASTGAMES);
   // console.log("image");
@@ -1001,10 +996,8 @@ function handleTap() {
   let x = mouseX;
   let y = mouseY;
 
-  if (reduce) {
-    x /= scaleFactor;
-    y /= scaleFactor;
-  }
+  x /= scaleFactor;
+  y /= scaleFactor;
   for (let i = 0; i < 34; i++) {
     if (allPiles[i].includes(x, y)) {
       allPiles[i].doClick();
@@ -1026,7 +1019,7 @@ function handleTap() {
     fill(255);
     rect(300, YRES - 70, 40, 40);
 
-    statistics.drawEvaluationLegend(resPlayer, YRES - ifact * 30);
+    statistics.drawEvaluationLegend(resPlayer, YRES - TWO * 30);
 
     if (resPlayer > 0 || (resPlayer == 0 && evaluated)) {
       fill(0);
@@ -1036,8 +1029,8 @@ function handleTap() {
     statistics.setResPlayer(resPlayer);
     drawNext = 0.0;
 
-    dx1res = ifact * 10;
-    dy1res = ifact * 10;
+    dx1res = TWO * 10;
+    dy1res = TWO * 10;
 
     nEvaluationsEnd += global_evaluations;
     nEvalsEnd0 += global_evaluations;
@@ -1094,8 +1087,8 @@ function sayAutoReasonStat() {
 }
 
 function sayAutoReason(id, type, what, card) {
-  global_autostat[type]++;
-  if (global_sayAuto != 1) return;
+  if (global_sayAuto !== 1) global_autostat[type]++;
+  if (global_sayAuto !== 1) return;
   os.myfill4(255, 255, 0, 200);
   os.myrect(allPiles[id].getTopX(), allPiles[id].yc - 13, CARDwidthNew, 26);
   os.mystroke(0);

@@ -1,35 +1,14 @@
 function detectDevice() {
   console.log("window: " + windowWidth + " / " + windowHeight);
-  let widthNewDraw = 640;
-  reduce = (widthNewDraw == 640);
-  //TEST
-  ifact = reduce ? 2 : 1;
-  if (debug) {
-    print("screen: " + screen.width + " / " + screen.height);
-    print("widthNewDraw: " + widthNewDraw);
-    print("reduce: " + reduce);
-    print("ifact: " + ifact);
-  }
-  if (screen.widthNew == 375) {
-    device = "iPhone6";
-  } else if (screen.widthNew == 414) {
-    device = "iPhone6s";
-  } else {
-    device = "iPhone";
-  }
+  TWO = 2;
+  device = "iPhone";
   setGraphParams();
 }
 
 function setGraphParams() {
   setCards();
-  WIDTH0 = ifact * 320;
-  if (ifact == 2) {
-    HEIGHT0 = ifact * 620;
-    HEIGHT0 = ifact * 430;
-    HEIGHT0 = ifact * 630;
-  } else {
-    HEIGHT0 = ifact * 480;
-  }
+  WIDTH0 = TWO * 320;
+  HEIGHT0 = TWO * 630;
   scaleFactor = min(1.0, windowWidth / 640.0);
   scaleFactor = min(scaleFactor, windowHeight / 1006.0);
   console.log("Window: " + windowWidth + " / " + windowHeight);
@@ -38,50 +17,45 @@ function setGraphParams() {
   console.log("Offscreen-Canvas: " + WIDTH0 + " / " + HEIGHT0);
   console.log("scaleFactor: " + scaleFactor);
 
-  F8 = ifact * 8;
-  F9 = ifact * 9;
-  F10 = ifact * 10;
-  F11 = ifact * 11;
-  F12 = ifact * 12;
-  F13 = ifact * 13;
-  F14 = ifact * 14;
-  F16 = ifact * 16;
-  F18 = ifact * 18;
-  F24 = ifact * 24;
+  F8 = TWO * 8;
+  F9 = TWO * 9;
+  F10 = TWO * 10;
+  F11 = TWO * 11;
+  F12 = TWO * 12;
+  F13 = TWO * 13;
+  F14 = TWO * 14;
+  F16 = TWO * 16;
+  F18 = TWO * 18;
+  F24 = TWO * 24;
 
-  XSF = reduce ? 7 : 5;
+  XSF = 7;
   YSF = XSF;
-  DXSF = CARDwidthNew + (reduce ? 7 : 2);
-  DYSF = CARDHEIGHT + (reduce ? 7 : 4);
+  DXSF = CARDwidthNew + 7;
+  DYSF = CARDHEIGHT + 7;
 
-  XRIGHT = WIDTH0 - ifact * (reduce ? 7 : 3);
+  XRIGHT = WIDTH0 - TWO * 7;
   XST = XSF;
-  //  YST = YSF + 3 * DYSF + (reduce ? 15 : 8); 
-  YST = YSF + 3 * DYSF + (reduce ? 30 : 15);
+  YST = YSF + 3 * DYSF + 30;
   DXST = DXSF;
-  DYST = reduce ? 18 : 10;
+  DYST = 18;
 
   XSA = XSF;
-  if (ifact == 1) {
-    YSA = 339 + 7;
-  } else {
-    YSA = YST + 3 * CARDHEIGHT + 25;
-  }
+  YSA = YST + 3 * CARDHEIGHT + 25;
   DXSA = 0;
   DYSA = 0;
-  XSS = XRIGHT - ifact * 4 - CARDwidthNew;
+  XSS = XRIGHT - TWO * 4 - CARDwidthNew;
   YSS = YSA;
   DXSS = 3;
   DYSS = 0;
 
-  WBN = ifact * 40;
-  HBN = ifact * 20;
+  WBN = TWO * 40;
+  HBN = TWO * 20;
   WBU = WBN;
   HBU = HBN;
   WBE = CARDwidthNew;
   HBE = CARDHEIGHT;
-  WBF = ifact * 75;
-  HBF = ifact * 20;
+  WBF = TWO * 75;
+  HBF = TWO * 20;
 
   XBN = CARDwidthNew * 2;
   YBN = YSS + CARDHEIGHT - HBN; //YBN = YSS + CARDHEIGHT / 2 - 2;
@@ -96,39 +70,39 @@ function setGraphParams() {
   YRES = YSA + 24;
 
 
-  XSTAT = ifact * 60;
-  YSTAT = ifact * 150;
+  XSTAT = TWO * 60;
+  YSTAT = TWO * 150;
 
   XRES = (XBE + XBF + CARDwidthNew) / 2;
   YRES = YSS + CARDHEIGHT / 2;
   XHISTO = XSTAT;
-  YHISTO = YSTAT - ifact * 114;
+  YHISTO = YSTAT - TWO * 114;
 
-  XHISTO = ifact * 30;
-  YHISTO = ifact * 2;
-  YSTAT = ifact * 215;
-  YPROGRESS = ifact * 311;
-  DYPROGRESS = ifact * 20;
+  XHISTO = TWO * 30;
+  YHISTO = TWO * 2;
+  YSTAT = TWO * 215;
+  YPROGRESS = TWO * 311;
+  DYPROGRESS = TWO * 20;
 
-  BLUECIRCLERADIUS = ifact * 24;
+  BLUECIRCLERADIUS = TWO * 24;
 
   TEXTCOLOR = color(120);
   col_resulttext = color(60);
   col_resulttext = color(0);
   WINDRAWSTART = -50;
   //TEST bei 100 Eval
-  dx1res = ifact * 10;
-  dy1res = ifact * 10;
+  dx1res = TWO * 10;
+  dy1res = TWO * 10;
   x1res = -dx1res;
   y1res = 0;
-  x2res0 = ifact * 260;
-  y2res0 = ifact * 438;
+  x2res0 = TWO * 260;
+  y2res0 = TWO * 438;
 
   x2res0 = 0;
-  y2res0 = ifact * 600;
+  y2res0 = TWO * 600;
 
-  dx2res = ifact * 1;
-  dy2res = ifact * 1;
+  dx2res = TWO * 1;
+  dy2res = TWO * 1;
   x2res = -dx2res;
   y2res = y2res0;
   winfrom = color(180, 180, 255);
@@ -136,12 +110,12 @@ function setGraphParams() {
   lostfrom = color(255, 180, 180);
   lostto = color(255, 16, 16);
 
-  XMSG = ifact * 20;
-  YMSG = ifact * 425;
+  XMSG = TWO * 20;
+  YMSG = TWO * 425;
   //TEST iphone4
-  XMSG = ifact * 85;
-  YMSG = ifact * 385;
-  DXMSG = ifact * (320 - 2 * 20);
+  XMSG = TWO * 85;
+  YMSG = TWO * 385;
+  DXMSG = TWO * (320 - 2 * 20);
 }
 
 function setCards() {

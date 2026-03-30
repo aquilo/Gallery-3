@@ -247,7 +247,11 @@ class FeverCurve {
       p.fill(200, 130, 20);
       p.textSize(12);
       p.textAlign(p.LEFT, p.TOP);
-      p.text(pct + "%", x + 10, y + 8);
+      if (Math.abs(yMap2(0) - yMin) > Math.abs(yMap2(0) - yMax)) {
+        p.text(pct + "%", x + 10, y + 8);
+      } else {
+        p.text(pct + "%", x + 10, y + h - 28);
+      }
     }
 
     p.pop();

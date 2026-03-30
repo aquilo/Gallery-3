@@ -4,6 +4,8 @@
 // 	//calcValues();
 // };
 
+let feverReady = false;
+
 let statText;
 let statistcsTable;
 
@@ -245,6 +247,7 @@ function rebuildFeverFromResults(results, useEWMA = true) {
         missedSolvable: (r.Solvable && r.SolvedGivenSolvable === 0)
     }));
     fever.setData(pts);
+    feverReady = true;
     console.log("ELO-Mean (" + pts.length + "): " + round_number(fever.meanElo(), 2));
     return fever.meanElo();
 } 
@@ -343,6 +346,7 @@ async function getIndicators(limit) {
 }
 
 async function doStatTable() {
+    feverReady = false;
     let stattable = new Array();
     try {
         let res, stats;
@@ -594,6 +598,7 @@ function updateStats(results) {
 
     rrr = '<h3>Auto move reasons</h3><p><i>T, Twin</i> = card of same suit and rank<br>' + totalauto + ' auto moves.</p><table class="table table-sm statsummary" border="0.0px" style="font-size: 11px">';
     for (let i = 0; i < stab.length; i++) {
+        if (stab[i].short === "") continue;
         rrr += "<tr><td class='text-start'>" + stab[i].short + "</td><td class='text-start'>" + stab[i].long + "</td><td>" + percent(stab[i].n, totalauto, 2) + "&nbsp;%</td></tr>";
     }
     rrr += "</table></div>";

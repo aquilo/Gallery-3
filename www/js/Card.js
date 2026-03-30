@@ -58,53 +58,54 @@ class Card {
       if (movable) {
         this.drawMovable(x, y);
       }
-      if (this.jamFinal && (global_show === 1)) {
+      if (this.jamFinal) {
         this.coverPlot(x, y, 4);
       }
     }
-    if (this.jammer && (global_show === 1)) {
+    if (this.jammer) {
       if (this.jamFinal) {
         this.coverPlot(x, y, 3);
       }
       this.coverPlot(x, y, 2);
-
-
     }
 
   }
 
   coverPlot(x,y, type) {
-    if (type === 1) { // jammed
-      os.myfill3(0, 220, 0);
+    if (global_show === 0) return;
+   if (type === 1) { // jammed
+      os.myfill3(0, 130, 0);
       os.mynoStroke();
       os.myrect(x + 56, y + 3, 14, 9);
     } else if (type === 2) { // jammer
-      os.myfill3(0, 130, 0);
+      os.myfill3(0, 210, 0);
       os.mynoStroke();
       os.myrect(x + 53, y + 3, 17, 7);
     } else if (type === 3) { // final jammed
-      os.myfill3(220, 220, 220);
+      //os.myfill4(180, 180, 180, 90);
+      os.myfill4(60, 0, 0, 20);
       os.mynoStroke();
-      os.myrect(x + 50, y + 1, 22, 17);
-    } else if (type === 4) { // final jammed on top
-      os.myfill3(220, 220, 220);
+      os.myrect(x, y, CARDwidthNew, CARDHEIGHT);
+    } else if (type=== 4) { // final jammed
+      //os.myfill4(180, 180, 180, 90);
+      os.myfill4(0, 0, 60, 20);
       os.mynoStroke();
-      os.myrect(x + 40, y + 1, 32, 14);
+      os.myrect(x, y, CARDwidthNew, CARDHEIGHT);
     } else { // normal
-      os.myimage(this.img, x, y);
+      // os.myimage(this.img, x, y);
     } 
   }
 
   drawHidden(x, y) {
     os.myimage(this.imgCovered, x, y);
     os.mystroke(180);
-    if (this.jamFinal && (global_show === 1)) {
+    if (this.jamFinal) {
       this.coverPlot(x, y, 3);
     }
-    if (this.jammed && (global_show === 1)) {
+    if (this.jammed) {
       this.coverPlot(x, y, 1);
     }
-    if (this.jammer && (global_show === 1)) {
+    if (this.jammer) {
       this.coverPlot(x, y, 2);
     }
   }

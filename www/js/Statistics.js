@@ -37,8 +37,8 @@ class Statistics {
   }
 
   statisticsgraphinit() {
-    dx1res = ifact * 10;
-    dy1res = ifact * 10;
+    dx1res = TWO * 10;
+    dy1res = TWO * 10;
 
     x1res = -dx1res;
     y1res = 0;
@@ -47,7 +47,7 @@ class Statistics {
       if (x1res >= 640) {
         x1res = 0;
         y1res += dy1res;
-        if (y1res >= ifact * 310) {
+        if (y1res >= TWO * 310) {
           y1res = 0;
         }
       }
@@ -80,7 +80,7 @@ class Statistics {
       let ix, c, dx, dy;
       if (this.histo[i] > 0) {
         if (i == myres && this.histo[i] > 1) {
-          ix = min(i, 95) * ifact * 10 / 3;
+          ix = min(i, 95) * TWO * 10 / 3;
           c = color(55);
           fill(c);
           rect(ix, iy - 4, dx, 4);
@@ -99,23 +99,23 @@ class Statistics {
         c = this.histo[i] == 0 && i == myres ? color(55) : color(220);
       }
       noStroke();
-      dy = ifact * 9;
+      dy = TWO * 9;
       fill(c);
-      ix = min(i, 95) * ifact * 10 / 3;
+      ix = min(i, 95) * TWO * 10 / 3;
       if (i == 0) {
-        dx = ifact * 13 / 3;
+        dx = TWO * 13 / 3;
       } else {
-        dx = ifact * 10 / 3;
+        dx = TWO * 10 / 3;
       }
       rect(ix, iy, dx, dy);
       stroke(0);
-      line(ix, iy, ix, iy + dy - ifact);
+      line(ix, iy, ix, iy + dy - TWO);
       if (i == 0) {
-        line(dx, iy, dx, iy + dy - ifact);
+        line(dx, iy, dx, iy + dy - TWO);
       }
       if (evnot) {
         ix = ix + dx;
-        line(ix, iy, ix, iy + dy - ifact);
+        line(ix, iy, ix, iy + dy - TWO);
       }
     }
   }
@@ -125,7 +125,7 @@ class Statistics {
     let all;
     let jx, dx, dy, drawNext;
     let n = 0;
-    dy = ifact * 9;
+    dy = TWO * 9;
     for (let i = 0; i < 97; i++) {
       n += this.histo[i];
     }
@@ -144,7 +144,7 @@ class Statistics {
     this.setResColor(now, myres);
     rect(x1res, y1res, dx1res, dy1res);
     nrbox++;
-    this.drawEvaluationLegendOne(now, myres, YRES - ifact * 30, true);
+    this.drawEvaluationLegendOne(now, myres, YRES - TWO * 30, true);
   }
 
   getResColor(now, myres) {
@@ -371,10 +371,10 @@ function drawHisto(x0, y0) {
   let fhisto;
   let x = x0;
   let y = y0;
-  let xx = x + ifact * 4;
+  let xx = x + TWO * 4;
 
   let dy0 = 194;
-  let dy = ifact * dy0;
+  let dy = TWO * dy0;
 
   let maxres = 0;
 
@@ -387,14 +387,14 @@ function drawHisto(x0, y0) {
 
   fill(255);
   stroke(0);
-  rect(x, y, ifact * 200, dy);
+  rect(x, y, TWO * 200, dy);
   fhisto = float(statistics.histo[statistics.modus]) / float(dy0 - 13);
   if (!(statistics.histo[statistics.modus] > dy0 - 13)) {
     fhisto = float(Math.sqrt(fhisto));
   }
   fill(34);
   strokeWeight(2);
-  let ybasis = y + dy - ifact * 5;
+  let ybasis = y + dy - TWO * 5;
   let gray = true;
   noStroke();
   for (let i = 0; i < 9; i++) {
@@ -403,18 +403,18 @@ function drawHisto(x0, y0) {
     else
       fill(255);
     gray = !gray;
-    rect(xx + (i * ifact * 2) * 10 - ifact, y + ifact * 4, ifact * 20, dy - ifact * 9);
+    rect(xx + (i * TWO * 2) * 10 - TWO, y + TWO * 4, TWO * 20, dy - TWO * 9);
   }
 
   stroke(255);
   let ynow;
   let ffhisto = float(statistics.n) / float((dy0 - 10));
-  ynow = ybasis - ifact * Math.max(Math.floor((statistics.n / 4) / ffhisto), 1);
-  line(xx, ynow, xx + 97 * ifact * 2, ynow);
-  ynow = ybasis - ifact * Math.max(Math.floor((statistics.n / 2) / ffhisto), 1);
-  line(xx, ynow, xx + 97 * ifact * 2, ynow);
-  ynow = ybasis - ifact * Math.max(Math.floor((3 * statistics.n / 4) / ffhisto), 1);
-  line(xx, ynow, xx + 97 * ifact * 2, ynow);
+  ynow = ybasis - TWO * Math.max(Math.floor((statistics.n / 4) / ffhisto), 1);
+  line(xx, ynow, xx + 97 * TWO * 2, ynow);
+  ynow = ybasis - TWO * Math.max(Math.floor((statistics.n / 2) / ffhisto), 1);
+  line(xx, ynow, xx + 97 * TWO * 2, ynow);
+  ynow = ybasis - TWO * Math.max(Math.floor((3 * statistics.n / 4) / ffhisto), 1);
+  line(xx, ynow, xx + 97 * TWO * 2, ynow);
   for (let i = 0; i < 97; i++) {
     if (statistics.histo[i] > 0) {
       if (i < resPlayer) {
@@ -449,29 +449,29 @@ function drawHisto(x0, y0) {
       }
 
       stroke(c);
-      let xnow = xx + i * ifact * 2;
+      let xnow = xx + i * TWO * 2;
       let ynow = ybasis -
-        ifact * Math.max(int((statistics.histo[i] / fhisto), 1));
+        TWO * Math.max(int((statistics.histo[i] / fhisto), 1));
 
-      rect(xnow, ybasis, ifact, ynow - ybasis);
+      rect(xnow, ybasis, TWO, ynow - ybasis);
     }
   }
 
   stroke(0);
   noFill();
-  line(xx, ybasis + ifact * 2, xx + ifact * 192, ybasis + ifact * 2);
-  line(xx, ybasis - ifact, xx, ybasis + ifact * 3);
-  let xres = xx + ifact * 2 * resPlayer;
-  line(xres, ybasis - ifact, xres, ybasis + ifact * 3);
-  line(xx + ifact * 192, ybasis - ifact, xx + ifact * 192, ybasis + ifact * 3);
+  line(xx, ybasis + TWO * 2, xx + TWO * 192, ybasis + TWO * 2);
+  line(xx, ybasis - TWO, xx, ybasis + TWO * 3);
+  let xres = xx + TWO * 2 * resPlayer;
+  line(xres, ybasis - TWO, xres, ybasis + TWO * 3);
+  line(xx + TWO * 192, ybasis - TWO, xx + TWO * 192, ybasis + TWO * 3);
 
   noStroke();
   fill(255, 0, 0, 20);
-  rect(xx - ifact, y + ifact * 4, resPlayer * ifact * 2, dy - ifact * 8);
+  rect(xx - TWO, y + TWO * 4, resPlayer * TWO * 2, dy - TWO * 8);
 
   fill(0, 0, 200, 20);
 
-  rect(ifact + xx + resPlayer * ifact * 2, y + ifact * 4, ifact * 2 * (96 - resPlayer), dy - ifact * 8);
+  rect(TWO + xx + resPlayer * TWO * 2, y + TWO * 4, TWO * 2 * (96 - resPlayer), dy - TWO * 8);
   strokeWeight(1);
 }
 
@@ -484,8 +484,8 @@ function darker(c, f) {
 
 function drawResult(x, y) {
   if (statistics.maximum < 0) return;
-  let dx = ifact * 200;
-  let dy = ifact * 17;
+  let dx = TWO * 200;
+  let dy = TWO * 17;
   let yc = y + dy / 2 - 4;
   stroke(0);
 
@@ -501,9 +501,9 @@ function drawResult(x, y) {
   stroke(0);
   fill(0);
   textAlign(LEFT, CENTER);
-  text(("" + statistics.less), x + ifact * 5, yc);
+  text(("" + statistics.less), x + TWO * 5, yc);
   textAlign(RIGHT, CENTER);
-  text(("" + statistics.more), x + dx - ifact * 5, yc);
+  text(("" + statistics.more), x + dx - TWO * 5, yc);
   textAlign(CENTER, CENTER);
   text(statistics.str_resultnew, x + dx / 2, yc);
   textAlign(LEFT, BASELINE);
@@ -515,21 +515,21 @@ function drawStatistics(x0, y0) {
   textFont(myFont, F12);
   let x = x0;
   let y = y0;
-  let xr = x + ifact * 112;
-  let xm = x + ifact * 193;
-  let dy = ifact * 125;
+  let xr = x + TWO * 112;
+  let xm = x + TWO * 193;
+  let dy = TWO * 125;
   fill(255);
-  rect(x, y, ifact * 200, dy + 2);
+  rect(x, y, TWO * 200, dy + 2);
   stroke(0);
   noFill();
-  rect(x, y, ifact * 200, dy + 2);
+  rect(x, y, TWO * 200, dy + 2);
   if (statistics.maximum < 0) return;
-  y += ifact * 18;
-  x += ifact * 7;
+  y += TWO * 18;
+  x += TWO * 7;
 
   setFillStroke(0, 0, 0);
-  text(getTranslation(LANG, "Random tapping") + ", " + statistics.n + " " + getTranslation(LANG, "games") + ": ", x, y + ifact * 2);
-  text(getTranslation(LANG, "best score") + ":", x, y += ifact * 21);
+  text(getTranslation(LANG, "Random tapping") + ", " + statistics.n + " " + getTranslation(LANG, "games") + ": ", x, y + TWO * 2);
+  text(getTranslation(LANG, "best score") + ":", x, y += TWO * 21);
   setStatisticsColor(resPlayer, statistics.minimum);
   if (statistics.minimum == 0 && resPlayer > 0) {
     setFillStroke(35, 176, 0);
@@ -538,46 +538,46 @@ function drawStatistics(x0, y0) {
   setFillStroke(0, 0, 0);
   textFont(myFont, F9);
   if (statistics.minimum == 0) {
-    text("! (" + statistics.histo[0] + "x)", xr + ifact, y);
+    text("! (" + statistics.histo[0] + "x)", xr + TWO, y);
   } else {
-    text(" (" + statistics.histo[statistics.minimum] + "x)", xr + ifact, y);
+    text(" (" + statistics.histo[statistics.minimum] + "x)", xr + TWO, y);
   }
   textFont(myFont, F12);
 
-  text(getTranslation(LANG, "median") + ":", x, y += ifact * 16);
+  text(getTranslation(LANG, "median") + ":", x, y += TWO * 16);
   setStatisticsColor(resPlayer, statistics.median);
   textR("" + statistics.median, xr, y);
   setFillStroke(0, 0, 0);
 
   textFont(myFont, F16);
-  let yyou = y - ifact * 7;
+  let yyou = y - TWO * 7;
   textR(getTranslation(LANG, "You"), xm, yyou);
-  textC("" + resPlayer, xm - 29, yyou + ifact * 11);
-  // textR("" + resPlayer, xm, yyou + ifact * 20);
+  textC("" + resPlayer, xm - 29, yyou + TWO * 11);
+  // textR("" + resPlayer, xm, yyou + TWO * 20);
   noFill();
   rect(xm - 64, yyou - 33, 70, 83, 5);
 
   textFont(myFont, F12);
   setFillStroke(0, 0, 0);
 
-  text(getTranslation(LANG, "mean") + ":", x, y += ifact * 13);
+  text(getTranslation(LANG, "mean") + ":", x, y += TWO * 13);
   setStatisticsColor(resPlayer, statistics.mean);
-  textR(My.round2String(statistics.mean, 3), xr + ifact * 12, y);
+  textR(My.round2String(statistics.mean, 3), xr + TWO * 12, y);
   fill(0);
-  text(getTranslation(LANG, "worst") + ":", x, y += ifact * 16);
+  text(getTranslation(LANG, "worst") + ":", x, y += TWO * 16);
   setStatisticsColor(resPlayer, statistics.maximum);
   textR("" + statistics.maximum, xr, y);
   fill(0);
-  text(getTranslation(LANG, "most frequent") + ":", x, y += ifact * 20);
+  text(getTranslation(LANG, "most frequent") + ":", x, y += TWO * 20);
   setStatisticsColor(resPlayer, statistics.modus);
   textR("" + statistics.modus, xr, y);
   setFillStroke(0, 0, 0);
-  text("" + statistics.scores + " " + getTranslation(LANG, "different scores"), x, y += ifact * 16);
+  text("" + statistics.scores + " " + getTranslation(LANG, "different scores"), x, y += TWO * 16);
 
   textFont(myFont, F9);
   textR("DF: " + degreesoffreedom, xm - 80, y);
 
-  // text("ELO: " + round(statistics.GameRating, 0), xr + 20, y - ifact * 12);
+  // text("ELO: " + round(statistics.GameRating, 0), xr + 20, y - TWO * 12);
 
   setFillStroke(0, 0, 0);
 
@@ -590,21 +590,21 @@ function drawStatistics(x0, y0) {
     } else {
       fill(215, 40, 40);
     }
-    rect(xm - ifact * 30, y - ifact * 14, ifact * 14, ifact * 14);
+    rect(xm - TWO * 30, y - TWO * 14, TWO * 14, TWO * 14);
   } else {
     if (resPlayer <= statistics.minimum) {
       fill(0, 0, 200);
     } else {
       fill(215, 40, 40);
     }
-    ellipse(xm - ifact * 26, y - ifact * 7, ifact * 14, ifact * 14);
+    ellipse(xm - TWO * 26, y - TWO * 7, TWO * 14, TWO * 14);
   }
 
   fill(statistics.getResColor(statistics.mean, resPlayer));
-  rect(xm - ifact * 14, y - ifact * 14, ifact * 14, ifact * 7);
+  rect(xm - TWO * 14, y - TWO * 14, TWO * 14, TWO * 7);
 
   fill(statistics.getResColor(this.resultf, 50.0));
-  rect(xm - ifact * 14, y - ifact * 7, ifact * 14, ifact * 7);
+  rect(xm - TWO * 14, y - TWO * 7, TWO * 14, TWO * 7);
 */
   // if (HEIGHT0 > 96000) {
   //   let evaluationText = getEvaluationText();

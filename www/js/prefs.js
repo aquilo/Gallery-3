@@ -8,8 +8,8 @@ function get1Pref(prefName, defaultValue) {
         if (pref === null) {
             pref = defaultValue;
         }
-        pref = pref.split(',');
-        pref = int(pref);
+        pref = int(pref.split(','));
+        pref = pref.map(v => isNaN(v) ? 0 : v);
         return pref;
     }
     if (pref === 'undefined' || pref === 'null' || pref === null || pref === 'NaN') {
@@ -44,7 +44,7 @@ function getAllPrefs() {
     global_mtime = get1Pref("speed", 400);
     global_resimg = get1Pref('resimg', '---');
     global_auto = get1Pref("auto", 1);
-    global_autostat = get1Pref("autostat", "0,0,0,0,0,0,0,0,0,0,0");
+    global_autostat = get1Pref("autostat", "0,0,0,0,0,0,0,0,0,0,0,0,0");
 }
 
 function setAllPrefs() {
@@ -81,4 +81,4 @@ var global_evaluations = 1000;
 var global_resimg;
 var global_auto = 1;
 var global_show = 1; //TODO
-var global_autostat = new Array(11);
+var global_autostat = new Array(13);

@@ -145,7 +145,12 @@ class CardPile {
     if (this.checkTwinUnderBase(topCard)) return true;
     if (this.checkTwinIsJammed(topCard)) return true;
     if (this.checkTwinAtBottom(topCard)) return true;
+    if (this.checkTwinFinalJam(topCard)) return true;
     return false;
+  }
+
+  findTwin(c) {
+    return cards.find(card => card.isTwin(c));
   }
 
   checkJust1() {
@@ -195,6 +200,20 @@ class CardPile {
           sayAutoReason(this.id, 1, "twin already OK ", topCard.toString());
           return true;
         }
+    }
+    return false;
+  }
+
+  checkTwinFinalJam(topCard) {
+    info("checkTwinFinalJam");
+    if (this.findTwin(topCard) === null) {
+      console.log("!!! checkTwinFinalJam", this.findTwin(topCard));
+      return false;
+    }
+    if (this.findTwin(topCard).jamFinal) {
+      console.log("checkTwinFinalJam", this.findTwin(topCard));
+      sayAutoReason(this.id, 11, "twin finally jammed ", topCard.toString());
+      return true;
     }
     return false;
   }

@@ -129,30 +129,25 @@ class TableauPile extends CardPile {
     if (this.empty())
       return;
     for (let j = 0; j < this.nCards; j++) {
-      let aCard = this.elementAt(j);
-      aCard.jammed = false;
-      aCard.jammer = false;
-      this.setElementAt(aCard, j);
+      const c = this.elementAt(j);
+      c.jammed = c.jammer = false;
     }
     if (this.nCards < 2)
       return;
     let ijam = 0;
     for (let j = 0; j < this.nCards - 1; j++) {
-      let belowCard = this.elementAt(j);
+      const belowCard = this.elementAt(j);
       for (let k = j + 1; k < this.nCards; k++) {
-        let aboveCard = this.elementAt(k);
+        const aboveCard = this.elementAt(k);
         if (aboveCard.suit === belowCard.suit &&
-          (aboveCard.rank > belowCard.rank) &&
-          (aboveCard.rank - belowCard.rank) % 3 === 0) {
+            aboveCard.rank > belowCard.rank &&
+            (aboveCard.rank - belowCard.rank) % 3 === 0) {
           ijam++;
           belowCard.jammed = true;
-          this.setElementAt(belowCard, j);
           aboveCard.jammer = true;
           if (!aboveCard.jamFinal && this.jamCheckTwinOk(aboveCard)) {
-            //TODO console.log(aboveCard + " is directly dead (doJamCheck)");
             this.checkCoverer(aboveCard);
           }
-          this.setElementAt(aboveCard, k);
           fillBelowJam(this.id);
         }
       }
@@ -189,28 +184,16 @@ class TableauPile extends CardPile {
   checkCoverer(c) {
     if (c.jamChecked) return;
     c.jamFinal = true;
+    c.jamChecked = true;
     if (c.rank > 10) return;
 
-    console.log("checking " + c);
-    let twin = cards.filter(card => card.suit === c.suit && card.rank === c.rank && card.id !== c.id);
-
-//    if (twin[0].ok) return;
-    const filteredCards = cards.filter(card => card.suit === c.suit && card.rank === c.rank + 3);
-    // console.log(filteredCards);
-    const countOKs = filteredCards.reduce((count, card) => {
-      return count + (card.ok === true ? 1 : 0);
-     // return count + (card.ok === true || card.jamFinal === true ? 1 : 0);
-    }, 0);
-    //console.log("checkfinal " + countOKs + " (delta " + delta);
-    if (countOKs === 1) {
-      filteredCards.forEach(card => {
-        if (!card.ok && !card.jamFinal) {
-          //TODO console.log(card + " is dead (checkCoverer)")
-          this.checkCoverer(card);
-        }
+    const nextRank = cards.filter(card => card.suit === c.suit && card.rank === c.rank + 3);
+    const okCount = nextRank.reduce((n, card) => n + (card.ok ? 1 : 0), 0);
+    if (okCount === 1) {
+      nextRank.forEach(card => {
+        if (!card.ok && !card.jamFinal) this.checkCoverer(card);
       });
     }
-    c.jamChecked = true;
   }
 
   checkTwinBelow(topCard) {
@@ -284,7 +267,7 @@ class StockPile extends CardPile {
         // Balken als Indikator für last cards
         os.mystroke(180);
         os.myfill(180);
-        os.myrect(0, widthNew, widthNew, 5 * ifact);
+        os.myrect(0, widthNew, widthNew, 5 * TWO);
       }
       return;
     }
@@ -295,25 +278,25 @@ class StockPile extends CardPile {
       xx -= DXSS;
       yy -= DYSS;
       os.myfill(255);
-      os.myrect(xx, yy, ifact * 36, ifact * 51);
+      os.myrect(xx, yy, TWO * 36, TWO * 51);
       if (noMovables() && !cardMoving()) {
         os.myfill3(29, 128, 242);
       } else {
         os.myfill4(255, 127, 0, 80);
       }
-      os.myrect(xx + ifact * 3, yy + ifact * 3, ifact * 30, ifact * 45);
+      os.myrect(xx + TWO * 3, yy + TWO * 3, TWO * 30, TWO * 45);
       os.myfill(0);
     }
     //  textC(nCards + "", xc, yc);
     let mrows = this.nCards / 8;
-    let xl = xx + ifact * 6;
-    let yo = yy + ifact * 10;
-    let dxs = 8 * ifact;
-    let dys = 10 * ifact;
+    let xl = xx + TWO * 6;
+    let yo = yy + TWO * 10;
+    let dxs = 8 * TWO;
+    let dys = 10 * TWO;
     let nrows = 9;
     os.mystroke(0);
     for (let i = 0; i < 3; i++) {
-      xl = xx + ifact * 6;
+      xl = xx + TWO * 6;
       for (let j = 0; j < 3; j++) {
         if (mrows >= nrows) {
           os.myfill(128);

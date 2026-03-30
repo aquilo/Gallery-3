@@ -50,11 +50,11 @@ class My {
     if (!debug) return;
     stroke(255);
     fill(255);
-    rect(XMSG, YMSG, ifact * 200, ifact * 670);
+    rect(XMSG, YMSG, TWO * 200, TWO * 670);
     stroke(0);
     fill(0);
     textFont(myFont, F12);
-    text(txt, XMSG, YMSG, DXMSG, ifact * 200);
+    text(txt, XMSG, YMSG, DXMSG, TWO * 200);
   }
 
   static print(txt) {
