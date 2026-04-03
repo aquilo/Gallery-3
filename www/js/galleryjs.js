@@ -19,7 +19,7 @@
 let isApp = false;
 let jsstoreCon;
 
-let version = "Version 3.1.2"; 
+let version = "Version 3.1.3"; 
 let device = "";
 let mymsg;
 let XSF, YSF, XST, YST, XSA, YSA, XSS, YSS;
@@ -304,7 +304,7 @@ function setup() {
   fever = new FeverCurve(this, 0, YLASTGAMES + 42, widthNew, 150, {
     window: 200, // letzte N Punkte
     padPct: 0.05, // Headroom
-    smooth: 0.4, // Skalen-Easing
+    smooth: 0.4, // Skalen-Easing 04
     title: "EWMA Rating",
     baseline: 1500, // Linie bei 1500
   });
@@ -339,6 +339,23 @@ function doEvaluation(n, alfa) {
     //btnRedo.draw(false);
     statistics.add(evalGame(alfa));
   }
+    setTimeout(() => redraw(), 0);
+
+}
+
+function finalizeEvaluation() {
+  statistics.doStatistics();
+
+  evaluating = false;
+  evaluated = true;
+  evaluationfinished = true;
+
+  statistics.saveResultat(alfa, gameStart);
+
+  mustDraw = true;
+  dirty = true;
+  redraw();
+  loop();
 }
 
 function draw() {
@@ -351,14 +368,15 @@ function draw() {
     if (nrEval >= nEvaluationsEnd) {
       evaltime = My.round2String((millis() - timerstart) / 1000.0, 3) + " sec";
       My.print(evaltime);
-      statistics.doStatistics();
-      statistics.saveResultat(alfa, gameStart);
+      // statistics.doStatistics();
+      //statistics.saveResultat(alfa, gameStart);
       // Ensure fever curve is drawn with final statistics
+      finalizeEvaluation();
       drawProgress(-1, nEvalsEnd0);
       nEvalsEnd0 = 0;
       nEvals0 = 0;
-      evaluating = false;
-      evaluated = true;
+      //evaluating = false;
+      //evaluated = true;
     }
     evaluationfinished = true;
     return;
@@ -807,8 +825,11 @@ function allDraw() {
     fill(statistics.getResColor(statistics.mean, resPlayer));
     drawResult(XSTAT, YSTAT - TWO * 21);
     image(lastGames, 0, YLASTGAMES);
-    if (feverReady) fever.draw();
+    // if (feverReady) fever.draw();
   }
+  
+
+
   btnNew.draw((!gameFinished && stockPile.nCards > 32) || evaluated);
   if (res > 94) {
     mymsg = version;
@@ -854,6 +875,9 @@ function allDraw() {
   // image(lastGames, 0, YLASTGAMES);
   // console.log("image");
   // if (evaluated) fever.draw();
+  if (evaluated && fever) {
+  fever.draw();
+}
 }
 
 function numberOfMovables() {

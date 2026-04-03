@@ -4,14 +4,24 @@ Alles in www/
 
 ## Entwicklung
 Entwickeln mit http://localhost:5503/www/index_dev.html.
+In gallery.js Version setzen.
 
 ## Build
-`./gallery_build.sh`
+<pre>
+Run:
+
+./gallery_build.sh
+</pre>
 
 JavaScript und css werden komprimiert und das aktuelle index.html (in dist/) generiert.
 
 ## Deploy
-`./gallery_deploy.sh`
+<pre>
+Run:
+
+./gallery_deploy.sh
+</pre>
+
 
 ## iPhone
 Im alten Shortcut die Statistik und die Preferences exportieren.

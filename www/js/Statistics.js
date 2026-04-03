@@ -268,14 +268,14 @@ class Statistics {
 
     // Update fever curve synchronously so it's visible immediately
     // (the async doStatTable chain will later rebuild the full dataset)
-    fever.appendPoint({
+ /*    fever.appendPoint({
       x: gameStart,
       y: this.EWMA_Rating,
       y2: ratingState.ewmaPct,
       underMin: !!this.BestResult,
       missedSolvable: (this.Solvable && this.SolvedGivenSolvable === 0)
     });
-
+ */
   }
 
 

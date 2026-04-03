@@ -230,11 +230,11 @@ function calcIndicators(stats) {
       ratingState.ewmaPct = results.length ? results[results.length - 1].EWMA_Percentile : 50;
       ratingState.rollingN = cfg.window_N;
       ratingState.rollingBuf = results.slice(-cfg.window_N).map(r => r.GameRating);
-/* 
-    console.log("stats with ratings");
-    console.log(stats);  
-     */
     res.elo = rebuildFeverFromResults(ratingState.results, true); // EWMA
+    mustDraw = true;
+    dirty = true;
+    redraw();
+    loop();
     return res;
 }
 
