@@ -19,7 +19,7 @@
 let isApp = false;
 let jsstoreCon;
 
-let version = "Version 3.1.3"; 
+let version = "Version 3.1.4"; 
 let device = "";
 let mymsg;
 let XSF, YSF, XST, YST, XSA, YSA, XSS, YSS;
@@ -723,7 +723,7 @@ function drawProgress(part, all) {
     textFont(myFont, F12);
     textC("Tap to continue.", widthNew / 2, YRES - TWO * 48);
     textFont(myFont, F9);
-    text(evaltime, TWO * 3, YRES - TWO * 40);
+    //text(evaltime, TWO * 3, YRES - TWO * 40);
     noStroke();
     let nowImage;
     // resImage = get(0, 0, scaleFactor * widthNew, scaleFactor * widthNew);
