@@ -108,10 +108,6 @@ class CardPile {
     }
   }
 
-  doJamCheck() {
-    return false;
-  }
-
   checkTwinBelow(topCard) {
     return false;
   }

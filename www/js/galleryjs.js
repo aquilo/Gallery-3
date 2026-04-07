@@ -19,7 +19,7 @@
 let isApp = false;
 let jsstoreCon;
 
-let version = "Version 3.1.4"; 
+let version = "Version 3.1.6"; 
 let device = "";
 let mymsg;
 let XSF, YSF, XST, YST, XSA, YSA, XSS, YSS;
@@ -440,8 +440,10 @@ function draw() {
 
   for (let i = 0; i < 34; i++) {
     if (allPiles[i].autoMovable) {
-      if (!humanPlayer || (global_sayAuto == 0 && global_auto == 1)) allPiles[i].doAutoClick();
-      dirty = true;
+      if (!humanPlayer || (global_sayAuto == 0 && global_auto == 1)) {
+        allPiles[i].doAutoClick();
+        dirty = true;
+      }
       return;
     }
   }
@@ -970,11 +972,12 @@ function doUndo() {
   loop();
   if (m.auto) {
     doUndo();
+    return;
   }
-  resetFinalJam();
+  calculateFinalJam();
 }
 
-function resetFinalJam() {
+function calculateFinalJam() {
   for (let i = 0; i < 104; i++) {
     cards[i].jamFinal = false;
     cards[i].jamChecked = false;

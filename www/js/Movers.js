@@ -120,7 +120,9 @@ class MoverCollection {
 
   startUndo(from, to, steps) {
     //    print(fromto(from, to, "U"));
-    to.push(from.pop());
+    let card = from.pop();
+    card.ok = false;
+    to.push(card);
     to.ok = false;
     return;
     /*

@@ -826,18 +826,24 @@ function exportPreferences() {
 
 function importPreferences(prefs) {
     if (!prefs) return;
-    
+
     if (prefs.helplevel !== undefined) set1Pref("helplevel", prefs.helplevel);
     if (prefs.steps !== undefined) set1Pref("steps", prefs.steps);
     if (prefs.speed !== undefined) set1Pref("speed", prefs.speed);
-    if (prefs.cardface !== undefined) global_cardface = prefs.cardface;
+    if (prefs.cardface !== undefined) set1Pref("cardface", prefs.cardface);
     if (prefs.resimg !== undefined) set1Pref("resimg", prefs.resimg);
     if (prefs.auto !== undefined) set1Pref("auto", prefs.auto);
     if (prefs.autostat !== undefined) set1Pref("autostat", prefs.autostat);
     if (prefs.colorblind !== undefined) set1Pref("cardfacecolorblind", prefs.colorblind);
-    
-    // Apply the imported preferences
+
+    // Apply globals and sync UI
     getAllPrefs();
+    const speedrange = document.getElementById("speedrange");
+    if (speedrange) speedrange.value = -global_mtime;
+    const switchdoAutoMoves = document.getElementById("doAutoMoves");
+    if (switchdoAutoMoves) switchdoAutoMoves.checked = global_auto === 1;
+    mustDraw = true;
+    if (typeof allDraw === "function") allDraw();
 }
 
 // Import preferences from a file content (JSON) and apply them
@@ -857,7 +863,10 @@ async function importPreferencesFromFile(fileContent) {
 
 // Handle selection of a preferences file from a file input
 async function handlePreferencesFileSelect(event) {
-    const file = event.target.files && event.target.files[0];
+    const input = event.target;
+    const file = input.files && input.files[0];
+    // Remove the element now that we have the file reference
+    if (input.parentNode) input.parentNode.removeChild(input);
     if (!file) return false;
     try {
         const content = await file.text();
@@ -879,8 +888,11 @@ function openPreferencesFileDialog() {
     input.addEventListener('change', handlePreferencesFileSelect);
     document.body.appendChild(input);
     input.click();
-    // remove after a short delay to allow the change event to fire
-    setTimeout(() => document.body.removeChild(input), 1500);
+    // Fallback cleanup if the user cancels without selecting (focus returns to window)
+    window.addEventListener('focus', function cleanup() {
+        window.removeEventListener('focus', cleanup);
+        setTimeout(() => { if (input.parentNode) input.parentNode.removeChild(input); }, 500);
+    }, { once: true });
 }
 
 // expose globally for inline onclick handlers
