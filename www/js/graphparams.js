@@ -118,6 +118,34 @@ function setGraphParams() {
   DXMSG = TWO * (320 - 2 * 20);
 }
 
+// Recolor pixels in img: pixels where isSource(r,g,b) → replace with toColor (p5 color)
+// Border pixels (1px) are always restored to black.
+function recolorImage(img, isSource, toColor) {
+  img.loadPixels();
+  const px = img.pixels;
+  const w = img.width;
+  const h = img.height;
+  const toR = red(toColor);
+  const toG = green(toColor);
+  const toB = blue(toColor);
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      const i = (y * w + x) * 4;
+      if (px[i + 3] <= 10) continue;
+      if (x === 0 || x === w - 1 || y === 0 || y === h - 1) {
+        px[i] = 0; px[i + 1] = 0; px[i + 2] = 0;
+      } else if (isSource(px[i], px[i + 1], px[i + 2])) {
+        px[i] = toR; px[i + 1] = toG; px[i + 2] = toB;
+      }
+    }
+  }
+  img.updatePixels();
+}
+
+// Suit 2 = Spade (black → blue), Suit 3 = Diamond (red → green)
+const isBlack = (r, g, b) => r < 140 && g < 140 && b < 160;
+const isRed   = (r, g, b) => r > 140 && g < 100 && b < 100;
+
 function setCards() {
   CARDwidthNew = 72;
   CARDHEIGHT = 100;
@@ -139,5 +167,36 @@ function setCards() {
   for (let i = 0; i < 13; i++) {
     numberImages[0][i + 2] = numbcol.get(5 + 34 * i, 74, 12, 15);
     numberImages[1][i + 2] = numbcol.get(5 + 34 * i, 96, 12, 15);
+  }
+
+  if (global_fourcolor) {
+    const colClubs    = color(75, 150, 100);
+    const colHearts   = color(255, 60, 30);
+    const colSpades   = color(55, 55, 55);
+    const colDiamonds = color(100, 120, 245);
+    for (let j = 0; j < 13; j++) {
+      recolorImage(cardImages[0][0][j], isBlack, colClubs);
+      recolorImage(cardImages[1][0][j], isBlack, colClubs);
+      recolorImage(cardImages[2][0][j], isBlack, colClubs);
+      recolorImage(cardImages[0][1][j], isRed,   colHearts);
+      recolorImage(cardImages[1][1][j], isRed,   colHearts);
+      recolorImage(cardImages[2][1][j], isRed,   colHearts);
+      recolorImage(cardImages[0][2][j], isBlack, colSpades);
+      recolorImage(cardImages[1][2][j], isBlack, colSpades);
+      recolorImage(cardImages[2][2][j], isBlack, colSpades);
+      recolorImage(cardImages[0][3][j], isRed,   colDiamonds);
+      recolorImage(cardImages[1][3][j], isRed,   colDiamonds);
+      recolorImage(cardImages[2][3][j], isRed,   colDiamonds);
+    }
+  }
+
+  // Update image references on existing Card objects
+  if (typeof cards !== "undefined") {
+    for (let c of cards) {
+      if (!c) continue;
+      c.img        = cardImages[0][c.suit][c.rank - 1];
+      c.imgOk      = cardImages[1][c.suit][c.rank - 1];
+      c.imgCovered = cardImages[2][c.suit][c.rank - 1];
+    }
   }
 }

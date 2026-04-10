@@ -121,6 +121,16 @@ $(document).ready(function () {
         switchdoAutoMoves.disabled = switchshowAutoMoveReason.checked ? true : false;
     });
 
+    const switchFourColor = document.getElementById("fourColorMode");
+    switchFourColor.checked = global_fourcolor === true;
+    switchFourColor.addEventListener("change", function () {
+        global_fourcolor = switchFourColor.checked;
+        set1Pref("fourcolor", global_fourcolor);
+        setCards();
+        mustDraw = true;
+        allDraw();
+    });
+
     const exportButtonMail = document.getElementById("exportButtonMail");
     if (exportButtonMail) {
         exportButtonMail.addEventListener("click", function () {

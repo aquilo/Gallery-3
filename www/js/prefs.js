@@ -45,13 +45,14 @@ function getAllPrefs() {
     global_resimg = get1Pref('resimg', '---');
     global_auto = get1Pref("auto", 1);
     global_autostat = get1Pref("autostat", "0,0,0,0,0,0,0,0,0,0,0,0,0");
+    global_fourcolor = get1Pref("fourcolor", false);
 }
 
 function setAllPrefs() {
     set1Pref("helplevel", global_helplevel);
     set1Pref("steps", global_steps);
     set1Pref("speed", global_mtime);
-    set1Pref("cardfacecolorblind", global_colorblind);
+    set1Pref("fourcolor", global_fourcolor);
     set1Pref("auto", global_auto);
     set1Pref("autostat", global_autostat.join());
 }
@@ -80,5 +81,6 @@ var screenwidthNew = 500;
 var global_evaluations = 1000;
 var global_resimg;
 var global_auto = 1;
+var global_fourcolor = false;
 var global_show = 1; //TODO
 var global_autostat = new Array(13);

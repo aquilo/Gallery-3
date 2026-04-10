@@ -802,7 +802,7 @@ function exportPreferencesAsJson() {
         resimg: get1Pref('resimg', '---'),
         auto: get1Pref("auto", 1),
         autostat: get1Pref("autostat", ""),
-        colorblind: get1Pref("cardfacecolorblind", false)
+        fourcolor: get1Pref("fourcolor", false)
     };
 }
    
@@ -834,7 +834,7 @@ function importPreferences(prefs) {
     if (prefs.resimg !== undefined) set1Pref("resimg", prefs.resimg);
     if (prefs.auto !== undefined) set1Pref("auto", prefs.auto);
     if (prefs.autostat !== undefined) set1Pref("autostat", prefs.autostat);
-    if (prefs.colorblind !== undefined) set1Pref("cardfacecolorblind", prefs.colorblind);
+    if (prefs.fourcolor !== undefined) set1Pref("fourcolor", prefs.fourcolor);
 
     // Apply globals and sync UI
     getAllPrefs();
@@ -842,6 +842,9 @@ function importPreferences(prefs) {
     if (speedrange) speedrange.value = -global_mtime;
     const switchdoAutoMoves = document.getElementById("doAutoMoves");
     if (switchdoAutoMoves) switchdoAutoMoves.checked = global_auto === 1;
+    const switchFourColor = document.getElementById("fourColorMode");
+    if (switchFourColor) switchFourColor.checked = global_fourcolor === true;
+    if (typeof setCards === "function") setCards();
     mustDraw = true;
     if (typeof allDraw === "function") allDraw();
 }

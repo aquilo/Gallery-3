@@ -72,7 +72,7 @@ class Card {
   }
 
   coverPlot(x,y, type) {
-    if (global_show === 0) return;
+   if (global_show === 0) return;
    if (type === 1) { // jammed
       os.myfill3(0, 130, 0);
       os.mynoStroke();
