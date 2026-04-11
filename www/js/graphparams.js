@@ -143,7 +143,7 @@ function recolorImage(img, isSource, toColor) {
 }
 
 // Suit 2 = Spade (black → blue), Suit 3 = Diamond (red → green)
-const isBlack = (r, g, b) => r < 140 && g < 140 && b < 160;
+const isBlack = (r, g, b) => r < 100 && g < 100 && b < 241;
 const isRed   = (r, g, b) => r > 140 && g < 100 && b < 100;
 
 function setCards() {
@@ -170,10 +170,17 @@ function setCards() {
   }
 
   if (global_fourcolor) {
+/*    
     const colClubs    = color(75, 150, 100);
     const colHearts   = color(255, 60, 30);
     const colSpades   = color(55, 55, 55);
     const colDiamonds = color(100, 120, 245);
+ */    
+    const colClubs    = color(0, 140, 0);
+    const colHearts   = color(255, 0, 0);
+    const colSpades   = color(5, 5, 5);
+    const colDiamonds = color(5, 25, 255);
+
     for (let j = 0; j < 13; j++) {
       recolorImage(cardImages[0][0][j], isBlack, colClubs);
       recolorImage(cardImages[1][0][j], isBlack, colClubs);
