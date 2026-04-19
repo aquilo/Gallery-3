@@ -26,11 +26,13 @@ import re, os
 
 stamp = os.environ['STAMP']
 
-# Version aus galleryjs.js lesen
+# Version + versionText aus galleryjs.js lesen
 with open('js/galleryjs.js', 'r') as f:
     gjs = f.read()
 m = re.search(r'let version\s*=\s*\"([^\"]+)\"', gjs)
 version = m.group(1) if m else 'Version ?'
+m2 = re.search(r'let versionText\s*=\s*\"([^\"]+)\"', gjs)
+vtext = m2.group(1) if m2 else ''
 
 # Datum in dd.mm.yyyy
 from datetime import date
@@ -39,11 +41,14 @@ today = date.today().strftime('%d.%m.%Y')
 with open('index_dev.html', 'r') as f:
     html = f.read()
 
+# \$\$\$newversion\$\$\$ durch versionText ersetzen
+html = html.replace('\$\$\$newversion\$\$\$', vtext)
+
 # Version + Datum in der Infozeile ersetzen
 html = re.sub(
     r'Version [^,]+,',
     version + ', ' + today + ',',
-    html
+    html, count=1
 )
 
 # Replace build:meta block

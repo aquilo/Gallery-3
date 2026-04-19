@@ -176,10 +176,10 @@ function setCards() {
     const colSpades   = color(55, 55, 55);
     const colDiamonds = color(100, 120, 245);
  */    
-    const colClubs    = color(0, 140, 0);
+    const colClubs    = color(5, 25, 255);
     const colHearts   = color(255, 0, 0);
     const colSpades   = color(5, 5, 5);
-    const colDiamonds = color(5, 25, 255);
+    const colDiamonds = color(190, 0, 120);
 
     for (let j = 0; j < 13; j++) {
       recolorImage(cardImages[0][0][j], isBlack, colClubs);

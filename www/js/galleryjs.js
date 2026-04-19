@@ -19,7 +19,8 @@
 let isApp = false;
 let jsstoreCon;
 
-let version = "Version 3.1.7"; 
+let version = "Version 3.1.8";
+let versionText = "13.04.2026, 3.1.8: 4-Farben-Spielfarben-Option";
 let device = "";
 let mymsg;
 let XSF, YSF, XST, YST, XSA, YSA, XSS, YSS;
