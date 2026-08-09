@@ -19,8 +19,8 @@
 let isApp = false;
 let jsstoreCon;
 
-let version = "Version 3.1.8";
-let versionText = "13.04.2026, 3.1.8: 4-Farben-Spielfarben-Option";
+let version = "Version 3.1.13";
+let versionText = "04.08.2026, 3.1.13: Fever curve now smooths the 'better or equal' trend in logit space, so gains and drops react more symmetrically near 0%/100%. Buttons";
 let device = "";
 let mymsg;
 let XSF, YSF, XST, YST, XSA, YSA, XSS, YSS;
@@ -54,7 +54,18 @@ let LANG = "en";
 let withNewCards = true;
 let retina = true;
 let evaluationfinished = false;
+let statsRevealed = false;
 let redoing = false;
+// true from New/Redo until their deal animation settles, so a rapid second
+// click on New/Redo can't fire mid-deal (see doMove()); NOT tied to every
+// in-game move, that caused visible button flicker during normal play.
+let dealBusy = false;
+// Set by sayAutoReason() when it shows a reason; forces one more frame (see
+// its use in the `dirty = cardMoving() || ...` line in draw()) so the
+// drawAutoMovable() highlight - only picked up by the next mustDraw rebuild -
+// reliably catches up with the label, instead of possibly waiting for some
+// unrelated later redraw (e.g. the next card move).
+let needsHighlightRedraw = false;
 // --------------------------------------------------------------
 
 let ndraw = 0;
@@ -153,6 +164,10 @@ let longTxt = [
 ];
 let fever;
 
+const BG_DAY = 248;
+const BG_NIGHT = 25;
+let canvasWasResized = false;
+
 function preload() {
   // My.print("*** p5js: preload at " + new Date().toISOString());
   dataPath = "data/";
@@ -174,6 +189,7 @@ function windowResized() {
   resizeCanvas(scaleFactor * WIDTH0, scaleFactor * HEIGHT0);
   console.log("Canvas: " + round(scaleFactor * WIDTH0) + " / " + round(scaleFactor * HEIGHT0));
   cnv.position(canvasPositionX, canvasPositionY);
+  canvasWasResized = true;
   allDraw();
 }
 
@@ -196,7 +212,7 @@ function setup() {
   //TODO openTranslations(translationStrings);
 
 
-  background(248);
+  background(global_nightmode ? BG_NIGHT : BG_DAY);
   os = new Os();
 
   canvasInit();
@@ -205,7 +221,7 @@ function setup() {
 
   cnv.position(canvasPositionX, canvasPositionY);
   // background(255, 0, 200);
-  background(255);
+  background(global_nightmode ? BG_NIGHT : 255);
 
   // -------
   statistics = new Statistics();
@@ -240,14 +256,12 @@ function setup() {
     allPiles[j++] = tableau[i] =
     new TableauPile(XST + DXSF * i, YST, j - 1, 10);
 
-  let ybtns = YBN + 60;
   let menustart = 10;
-  ybtns -= 40;
-  ybtns = YRES + 12;
+  let ybtns = YRES + 22;
   btnNew = new Button(getTranslation(LANG, "New"), menustart, ybtns, WBN, HBN, 1);
   btnRedo = new Button(getTranslation(LANG, "Redo"), menustart + TWO * 70, ybtns, WBU, HBU, 1);
   btnUndo = new Button(getTranslation(LANG, "Undo"), menustart + TWO * 70, ybtns, WBU, HBU, 1);
-  btnEvaluate = new Button(getTranslation(LANG, "Evaluate"), 245, YRES - 22, WBF, HBF, 1);
+  btnEvaluate = new Button(getTranslation(LANG, "Evaluate"), 265, YRES - 9, WBF, HBF, 1);
 
   for (let i = 2; i < 34; i++) {
     serie[i - 2] = i;
@@ -306,16 +320,8 @@ function setup() {
     window: 200, // letzte N Punkte
     padPct: 0.05, // Headroom
     smooth: 0.4, // Skalen-Easing 04
-    title: "EWMA Rating",
-    baseline: 1500, // Linie bei 1500
+    title: "Besser oder gleich (EWMA %)",
   });
-/*     fever = new FeverCurve(this, 40, height - 300, width - 80, 260, {
-      window: 150,
-      padPct: 0.1,
-      smooth: 0.2,
-      title: "",
-      baseline: 1500 // Linie bei 1500
-    }); */
 }
 
 function drawE() {
@@ -350,6 +356,7 @@ function finalizeEvaluation() {
   evaluating = false;
   evaluated = true;
   evaluationfinished = true;
+  statsRevealed = false;
 
   statistics.saveResultat(alfa, gameStart);
 
@@ -435,7 +442,8 @@ function draw() {
     resPlayer = res;
   }
 
-  dirty = cardMoving();
+  dirty = cardMoving() || needsHighlightRedraw;
+  needsHighlightRedraw = false;
   if (dirty) loop();
   drawGrid();
 
@@ -448,6 +456,10 @@ function draw() {
       return;
     }
   }
+  // Reached only when this frame found no pending auto-move and nothing is
+  // animating: the post-deal cascade (deal + auto-moves like aces-out) has
+  // truly settled, so New/Redo/Undo/Evaluate can safely re-enable.
+  if (dealBusy && !cardMoving()) dealBusy = false;
   allDraw();
   drawGrid();
 
@@ -771,11 +783,11 @@ function drawProgress(part, all) {
 function allDraw() {
   if (mustDraw) {
     osp = true;
-    offScreen.background(248);
-    offScreen.fill(255);
-    offScreen.stroke(255);
+    offScreen.background(global_nightmode ? BG_NIGHT : BG_DAY);
+    offScreen.fill(global_nightmode ? BG_NIGHT : 255);
+    offScreen.stroke(global_nightmode ? BG_NIGHT : 255);
     offScreen.rect(0, TWO * 320, widthNew, 670);
-    offScreen.stroke(224);
+    offScreen.stroke(global_nightmode ? 60 : 224);
     offScreen.line(0, TWO * 320, widthNew, TWO * 320);
     offScreen.stroke(0);
 
@@ -798,9 +810,13 @@ function allDraw() {
     scale(ss);
     image(offScreen, 0, 0);
     scale(1.0 / ss);
+  } else if (canvasWasResized) {
+    background(global_nightmode ? BG_NIGHT : BG_DAY);
+    statistics.drawEvaluationLegend(resPlayer, YRES - TWO * 30, true);
+    canvasWasResized = false;
   } else {
-    stroke(255);
-    fill(255);
+    stroke(global_nightmode ? BG_NIGHT : 255);
+    fill(global_nightmode ? BG_NIGHT : 255);
     rect(0, TWO * 350, widthNew, TWO * 80);
   }
 
@@ -811,29 +827,29 @@ function allDraw() {
     }
   }
 
-  btnRedo.draw(evaluated);
+  let btnsBusy = dealBusy || evaluationfinished;
+  btnRedo.draw(evaluated, btnsBusy);
   if (humanPlayer)
-    btnUndo.draw(moveStack.nMoves > 0 && res != 0);
+    btnUndo.draw(moveStack.nMoves > 0 && res != 0, btnsBusy);
 
-    btnEvaluate.draw(gameFinished);
+    btnEvaluate.draw(gameFinished, btnsBusy);
 
     if (humanPlayer) {
     let nact = moverCollection.draw();
     if (nact == 0) {
       mustDraw = true;
     }
-  } else {
+  } else if (statsRevealed) {
     drawHisto(XSTAT, YHISTO - TWO * 2);
     drawStatistics(XSTAT, YSTAT - TWO * 10);
     fill(statistics.getResColor(statistics.mean, resPlayer));
     drawResult(XSTAT, YSTAT - TWO * 21);
     image(lastGames, 0, YLASTGAMES);
-    // if (feverReady) fever.draw();
   }
   
 
 
-  btnNew.draw((!gameFinished && stockPile.nCards > 32) || evaluated);
+  btnNew.draw((!gameFinished && stockPile.nCards > 32) || evaluated, btnsBusy);
   if (res > 94) {
     mymsg = version;
   }
@@ -841,7 +857,7 @@ function allDraw() {
   if (gameFinished) {
     set1Pref("autostat", global_autostat.join());
   }
-  fill(col_resulttext);
+  fill(global_nightmode ? color(220) : col_resulttext);
 
   if (gameFinished) {
     if (evaluating) {
@@ -849,8 +865,8 @@ function allDraw() {
     }
     if (!evaluated && res != 0) {
       textFont(myFont, F9);
-      fill(0);
-      stroke(0);
+      fill(global_nightmode ? color(220) : 0);
+      stroke(global_nightmode ? color(220) : 0);
       text("The End. Now the evaluation:", 10, YRES + 12);
     }
   }
@@ -877,10 +893,9 @@ function allDraw() {
   }
   // image(lastGames, 0, YLASTGAMES);
   // console.log("image");
-  // if (evaluated) fever.draw();
-  if (evaluated && fever) {
-  fever.draw();
-}
+  if (evaluated && statsRevealed && fever && feverReady) {
+    fever.draw();
+  }
 }
 
 function numberOfMovables() {
@@ -894,11 +909,14 @@ function numberOfMovables() {
 }
 
 function newGame() {
+  dealBusy = true;
+  dealSettleFrames = 0;
   redoing = false;
   humanPlayer = true;
   nrEval = 0;
   nEvaluationsEnd = 0;
   evaluated = false;
+  statsRevealed = false;
   statistics.emptyStat();
   moveStack.clear();
   degreesoffreedom = 0;
@@ -914,11 +932,14 @@ function newGame() {
 }
 
 function redoGame() {
+  dealBusy = true;
+  dealSettleFrames = 0;
   redoing = true;
   humanPlayer = true;
   nrEval = 0;
   nEvaluationsEnd = 0;
   evaluated = false;
+  statsRevealed = false;
   statistics.emptyStat();
   moveStack.clear();
   degreesoffreedom = 0;
@@ -1026,6 +1047,16 @@ function handleTap() {
 
   x /= scaleFactor;
   y /= scaleFactor;
+
+  if (evaluationfinished) {
+    evaluationfinished = false;
+    dirty = true;
+    statsRevealed = true;
+    mustDraw = true;
+    redraw();
+    return;
+  }
+
   for (let i = 0; i < 34; i++) {
     if (allPiles[i].includes(x, y)) {
       allPiles[i].doClick();
@@ -1041,17 +1072,17 @@ function handleTap() {
     btnNew.draw(false);
     btnRedo.draw(false);
     btnUndo.draw(false);
-    fill(255);
+    fill(global_nightmode ? BG_NIGHT : 255);
     rect(5, YRES - 16, 250, 30);
 
-    fill(255);
+    fill(global_nightmode ? BG_NIGHT : 255);
     rect(300, YRES - 70, 40, 40);
 
     statistics.drawEvaluationLegend(resPlayer, YRES - TWO * 30);
 
     if (resPlayer > 0 || (resPlayer == 0 && evaluated)) {
-      fill(0);
-      stroke(0);
+      fill(global_nightmode ? BG_NIGHT : BG_DAY);
+      stroke(global_nightmode ? BG_NIGHT : BG_DAY);
       rect(0, 0, widthNew, widthNew + 1);
     }
     statistics.setResPlayer(resPlayer);
@@ -1071,10 +1102,6 @@ function handleTap() {
     }
     timerstart = millis();
     return;
-  }
-  if (evaluationfinished) {
-    evaluationfinished = false;
-    dirty = true;
   }
 
   if (btnNew.includes(x, y) && !evaluating) newGame();
@@ -1117,12 +1144,35 @@ function sayAutoReasonStat() {
 function sayAutoReason(id, type, what, card) {
   if (global_sayAuto !== 1) global_autostat[type]++;
   if (global_sayAuto !== 1) return;
+  // The pile's autoMovable flag (and the drawAutoMovable() card highlight
+  // tied to it) is only picked up by the NEXT full offscreen rebuild, while
+  // this label is painted immediately. sayAutoReason() runs from inside
+  // draw() (via allAutoMovableChecks()), BEFORE draw() recomputes
+  // `dirty = cardMoving()` a few lines down — so setting dirty/mustDraw
+  // directly here gets clobbered by that reassignment before it can have
+  // any effect. needsHighlightRedraw survives that line (it's OR'd in) and
+  // forces the one extra frame the rebuild actually needs.
+  needsHighlightRedraw = true;
+  mustDraw = true;
   os.myfill4(255, 255, 0, 200);
   os.myrect(allPiles[id].getTopX(), allPiles[id].yc - 13, CARDwidthNew, 26);
   os.mystroke(0);
   os.myfill(0);
-  os.mytextFont(myFont, F10);
-  textC(shortTxt[type], allPiles[id].xc, allPiles[id].yc);
+  os.mytextFont(myFont, F8);
+  // textC()'s CENTER/CENTER alignment centers on SF Pro's font-metric
+  // ascent/descent, which sits visibly low for labels like these (same issue
+  // fixed for Button.js). Measure the actual glyph bounding box instead, and
+  // read from whichever canvas (offscreen buffer or main) is currently
+  // active, matching what os.mytext() would draw to.
+  const label = shortTxt[type];
+  const cx = allPiles[id].xc;
+  const cy = allPiles[id].yc;
+  const ctx = osp ? offScreen.drawingContext : drawingContext;
+  os.mytextAlign2(CENTER, BASELINE);
+  const metrics = ctx.measureText(label);
+  const glyphHeight = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
+  os.mytext(label, cx, cy + metrics.actualBoundingBoxAscent - glyphHeight / 2);
+  os.mytextAlign2(LEFT, BASELINE);
 }
 
 function info(what) {}

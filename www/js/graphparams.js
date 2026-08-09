@@ -48,14 +48,14 @@ function setGraphParams() {
   DXSS = 3;
   DYSS = 0;
 
-  WBN = TWO * 40;
-  HBN = TWO * 20;
+  WBN = TWO * 36;
+  HBN = TWO * 14;
   WBU = WBN;
   HBU = HBN;
   WBE = CARDwidthNew;
   HBE = CARDHEIGHT;
-  WBF = TWO * 75;
-  HBF = TWO * 20;
+  WBF = TWO * 54;
+  HBF = TWO * 14;
 
   XBN = CARDwidthNew * 2;
   YBN = YSS + CARDHEIGHT - HBN; //YBN = YSS + CARDHEIGHT / 2 - 2;
@@ -146,6 +146,26 @@ function recolorImage(img, isSource, toColor) {
 const isBlack = (r, g, b) => r < 100 && g < 100 && b < 241;
 const isRed   = (r, g, b) => r > 140 && g < 100 && b < 100;
 
+// Recolor only the 1px border ring of img, leaving the rest untouched.
+function setImageBorder(img, toColor) {
+  img.loadPixels();
+  const px = img.pixels;
+  const w = img.width;
+  const h = img.height;
+  const toR = red(toColor);
+  const toG = green(toColor);
+  const toB = blue(toColor);
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      if (x !== 0 && x !== w - 1 && y !== 0 && y !== h - 1) continue;
+      const i = (y * w + x) * 4;
+      if (px[i + 3] <= 10) continue;
+      px[i] = toR; px[i + 1] = toG; px[i + 2] = toB;
+    }
+  }
+  img.updatePixels();
+}
+
 function setCards() {
   CARDwidthNew = 72;
   CARDHEIGHT = 100;
@@ -194,6 +214,17 @@ function setCards() {
       recolorImage(cardImages[0][3][j], isRed,   colDiamonds);
       recolorImage(cardImages[1][3][j], isRed,   colDiamonds);
       recolorImage(cardImages[2][3][j], isRed,   colDiamonds);
+    }
+  }
+
+  if (global_nightmode) {
+    const nightBorder = color(210);
+    for (let i = 0; i < 4; i++) {
+      for (let j = 0; j < 13; j++) {
+        setImageBorder(cardImages[0][i][j], nightBorder);
+        setImageBorder(cardImages[1][i][j], nightBorder);
+        setImageBorder(cardImages[2][i][j], nightBorder);
+      }
     }
   }
 

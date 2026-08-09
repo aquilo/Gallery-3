@@ -74,8 +74,8 @@ class Statistics {
     this.draw1Result(resultat, resPlayer);
   }
 
-  drawEvaluationLegendOne(i, myres, iy, evnot) {
-    if (this.histo[i] > 1) return; //CHECK
+  drawEvaluationLegendOne(i, myres, iy, evnot, force) {
+    if (!force && this.histo[i] > 1) return; //CHECK
     if (i != 1 && i != 95) {
       let ix, c, dx, dy;
       if (this.histo[i] > 0) {
@@ -120,7 +120,7 @@ class Statistics {
     }
   }
 
-  drawEvaluationLegend(myres, iy) {
+  drawEvaluationLegend(myres, iy, force) {
     let c;
     let all;
     let jx, dx, dy, drawNext;
@@ -133,7 +133,7 @@ class Statistics {
 
     all = false;
     for (let i = 0; i < 97; i++) {
-      this.drawEvaluationLegendOne(i, myres, iy, false);
+      this.drawEvaluationLegendOne(i, myres, iy, false, force);
     }
   }
 
@@ -236,46 +236,26 @@ class Statistics {
     // 1) Indikatoren aus dem gerade berechneten Statistics-Objekt
     const ind = indicatorsFromStats(this, player);
 
-    // 2) Score-Pipeline
-    const C_raw = computeCRaw(ind, ratingCfg);
-    const C_gated = gateC(C_raw, ind, player, ratingCfg);
-    const C_clipped = clip01(C_gated, ratingCfg);
-    const GameRating = toRating(C_clipped, ratingCfg);
+    // 2) EWMA (logit-geglättet) & Rolling-N des "besser oder gleich"-Perzentils (inkrementell, aus ratingState)
+    const alphaPct = ratingCfg.alpha_ewma_pct;
+    ratingState.ewmaLogit = (1 - alphaPct) * ratingState.ewmaLogit + alphaPct * logit(ind.Percentile_p);
+    ratingState.ewmaPct = sigmoid(ratingState.ewmaLogit) * 100;
 
-    // 3) EWMA & Rolling-N (inkrementell, aus ratingState)
-    ratingState.ewma = (1 - ratingCfg.alpha_ewma) * ratingState.ewma + ratingCfg.alpha_ewma * GameRating;
-    const alphaPct = ratingCfg.alpha_ewma_pct ?? ratingCfg.alpha_ewma;
-    ratingState.ewmaPct = (1 - alphaPct) * ratingState.ewmaPct + alphaPct * (ind.Percentile_p * 100);
-
-    ratingState.buf.push(GameRating);
+    ratingState.buf.push(ind.Percentile_p * 100);
     if (ratingState.buf.length > ratingState.N) ratingState.buf.shift();
-    const RollingN_Rating = ratingState.buf.reduce((a, b) => a + b, 0) / ratingState.buf.length;
+    const RollingN_Percentile = ratingState.buf.reduce((a, b) => a + b, 0) / ratingState.buf.length;
 
-    // 4) An dein Statistics-Objekt anhängen (für UI/Logging)
+    // 3) An dein Statistics-Objekt anhängen (für UI/Logging)
     this.Solvable = ind.Solvable;
     this.SolvedGivenSolvable = ind.SolvedGivenSolvable; // 0/1/null
     this.BetterThanMean = ind.BetterThanMean; // 0/1
     this.Percentile_p = ind.Percentile_p; // 0..1
     this.BestResult = ind.BestResult; // 0/1
 
-    this.C_raw = C_raw;
-    this.C_gated = C_gated;
-    this.C_clipped = C_clipped;
-    this.GameRating = GameRating;
-    this.EWMA_Rating = ratingState.ewma;
-    this.RollingN = RollingN_Rating;
-    this.str_resultnew = My.round2String(resultf2, 3) + " ||| " + round(this.GameRating);
-
-    // Update fever curve synchronously so it's visible immediately
-    // (the async doStatTable chain will later rebuild the full dataset)
- /*    fever.appendPoint({
-      x: gameStart,
-      y: this.EWMA_Rating,
-      y2: ratingState.ewmaPct,
-      underMin: !!this.BestResult,
-      missedSolvable: (this.Solvable && this.SolvedGivenSolvable === 0)
-    });
- */
+    this.EWMA_Percentile = ratingState.ewmaPct;
+    this.RollingN = RollingN_Percentile;
+    this.resultf2 = resultf2;
+    this.str_resultnew = My.round2String(resultf2, 3) + "%";
   }
 
 
@@ -312,14 +292,6 @@ class Statistics {
   }
 }
 
-  function pow01(x, g) {
-    return Math.pow(Math.max(0, Math.min(1, x)), g);
-  }
-
-  function log10(x) {
-    return Math.log(x) / Math.LN10;
-  }
-
   function indicatorsFromStats(stats, player) {
     // stats: hat minimum, mean, gequal, gmore (Prozent), S = lösbar?
     const Solvable = (player === 0) || (stats.minimum === 0);
@@ -328,45 +300,15 @@ class Statistics {
     // gequal/gmore sind bereits Prozentwerte (0..100)
     const Percentile_p = (Number(stats.gequal) + Number(stats.gmore)) / 100;
     const BestResult = player <= stats.minimum ? 1 : 0;
-    const d = (stats.median ?? stats.mean) - player; // >0 gut, <0 schlecht
-    const s = ratingCfg.diff_scale || 8;
-    const DiffScore = 1 / (1 + Math.exp(-d / s)); // (0,1), 0.5 bei d=0
     return {
       Solvable,
       SolvedGivenSolvable,
       BetterThanMean,
       Percentile_p,
-      BestResult,
-      DiffScore
+      BestResult
     };
   }
 
- function computeCRaw(ind, cfg) {
-   const t = ind.SolvedGivenSolvable != null ? ind.SolvedGivenSolvable : 0;
-   const pGamma = Math.pow(Math.max(0, Math.min(1, ind.Percentile_p)), cfg.gamma);
-   return cfg.w_mean * ind.BetterThanMean +
-     cfg.w_solved * t +
-     cfg.w_percentile * pGamma +
-     cfg.w_best * ind.BestResult +
-     (cfg.w_diff || 0) * ind.DiffScore;
- }
-
-  function gateC(x, ind, player, cfg) {
-    if (ind.Solvable && player > 0) return Math.min(x, cfg.cap_solvable_not_solved); // lösbar & NICHT gelöst
-    if (ind.BestResult === 1) return Math.max(x, cfg.floor_under_min); // unter Minimum
-    if (ind.Solvable && player === 0) return Math.max(x, cfg.floor_solved); // lösbar & gelöst
-    return x;
-  }
-
-  function clip01(x, cfg) {
-    return Math.min(cfg.clip_high, Math.max(cfg.clip_low, x));
-  }
-
-  function toRating(c, cfg) {
-    return cfg.rating_mid + cfg.rating_scale * log10(c / (1 - c));
-  }
-
-  
 function drawHisto(x0, y0) {
   let fhisto;
   let x = x0;
@@ -500,12 +442,15 @@ function drawResult(x, y) {
   rect(x, y, statistics.less * 2, dy);
   stroke(0);
   fill(0);
+  textFont(myFont, F10);
   textAlign(LEFT, CENTER);
-  text(("" + statistics.less), x + TWO * 5, yc);
+  My.round2String(this.gless, 2);
+  text(("" + statistics.gless + "%"), x + TWO * 5, yc);
   textAlign(RIGHT, CENTER);
-  text(("" + statistics.more), x + dx - TWO * 5, yc);
+  text(("" + statistics.gmore + "%"), x + dx - TWO * 5, yc);
   textAlign(CENTER, CENTER);
-  text(statistics.str_resultnew, x + dx / 2, yc);
+  // text(statistics.str_resultnew, x + dx / 2, yc);
+  text(statistics.gequal + "%", x + dx / 2, yc);
   textAlign(LEFT, BASELINE);
   noFill();
   rect(x, y, dx, dy);
@@ -572,12 +517,39 @@ function drawStatistics(x0, y0) {
   setStatisticsColor(resPlayer, statistics.modus);
   textR("" + statistics.modus, xr, y);
   setFillStroke(0, 0, 0);
+  textFont(myFont, F10);
   text("" + statistics.scores + " " + getTranslation(LANG, "different scores"), x, y += TWO * 16);
 
-  textFont(myFont, F9);
+  textFont(myFont, F10);
   textR("DF: " + degreesoffreedom, xm - 80, y);
 
-  // text("ELO: " + round(statistics.GameRating, 0), xr + 20, y - TWO * 12);
+  textFont(myFont, F14);
+
+
+  {
+    let badgeText, br, bg, bb;
+    if (statistics.minimum > resPlayer) {
+    textFont(myFont, F12);
+    badgeText = "100%";
+      br = 35; bg = 176; bb = 0;
+    } else if (statistics.resultf2 < 50) {
+      badgeText = nfc(statistics.resultf2, 1) + "%";
+      br = 215; bg = 48; bb = 39;
+    } else {
+      badgeText = nfc(statistics.resultf2, 1) + "%";
+      br = 69; bg = 117; bb = 180;
+    }
+    let bx = xr + 24;
+    let by = y - TWO * 28;
+    let padX = 5;
+    let padY = 3;
+    let tw = textWidth(badgeText);
+    setFillStroke(0, 0, 0);
+    noFill();
+    rect(bx - padX, by - textAscent() - padY, tw + padX * 2, textAscent() + textDescent() + padY * 2, 5);
+    setFillStroke(br, bg, bb);
+    text(badgeText, bx, by);
+  }
 
   setFillStroke(0, 0, 0);
 
@@ -741,10 +713,10 @@ function doStatTableMiniGraph() {
     stroke(col);
     rect(x, y, 10, 10);
   }
-  let yy0 = 571;
+  let yy0 = 583;
   let dxx = 14;
   let dyy = 12;
-  let xx0 = 490 - (len - 1) * dxx;
+  let xx0 = 500 - (len - 1) * dxx;
 
   for (var i = 0; i < len; i++) {
     let s = results[i];
@@ -760,10 +732,6 @@ function doStatTableMiniGraph() {
     yy += dyy;
     compareRect(xx, yy, results[i].avg_more + results[i].avg_equal, good_be);
     yy += dyy;
-    // fcompareRect(xx, yy, s.avg_result, good_meanres);
-    // yy += dyy;
     compareRect(xx, yy, percent(s.hwins, s.n, 2), good_bettermean);
-    yy += dyy;
-    compareRect(xx, yy, results[i].elo, good_elo);
   }
 }

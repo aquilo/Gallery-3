@@ -202,6 +202,7 @@ class CardPile {
 
   checkTwinFinalJam(topCard) {
     info("checkTwinFinalJam");
+    if (topCard.rank < 5) return false;
     if (this.findTwin(topCard) === null) {
       console.log("!!! checkTwinFinalJam", this.findTwin(topCard));
       return false;

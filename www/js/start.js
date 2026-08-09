@@ -131,6 +131,42 @@ $(document).ready(function () {
         allDraw();
     });
 
+    function applyAppearanceChange() {
+        updateNightMode();
+        setCards();
+        mustDraw = true;
+        allDraw();
+    }
+
+    const appearanceRadios = document.getElementsByName("appearanceMode");
+    for (const radio of appearanceRadios) {
+        radio.checked = radio.value === global_appearance;
+        radio.addEventListener("change", function () {
+            if (!this.checked) return;
+            global_appearance = this.value;
+            set1Pref("appearance", global_appearance);
+            applyAppearanceChange();
+        });
+    }
+
+    if (window.matchMedia) {
+        window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", function () {
+            if (global_appearance === "system") applyAppearanceChange();
+        });
+    }
+
+    // iOS standalone home-screen apps often freeze the WebView in the background:
+    // the matchMedia "change" listener above may never fire while suspended, so
+    // re-check the OS setting whenever the app becomes visible/foregrounded again.
+    document.addEventListener("visibilitychange", function () {
+        if (document.visibilityState === "visible" && global_appearance === "system") {
+            applyAppearanceChange();
+        }
+    });
+    window.addEventListener("pageshow", function () {
+        if (global_appearance === "system") applyAppearanceChange();
+    });
+
     const exportButtonMail = document.getElementById("exportButtonMail");
     if (exportButtonMail) {
         exportButtonMail.addEventListener("click", function () {

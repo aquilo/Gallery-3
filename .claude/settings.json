@@ -4,7 +4,11 @@
       "Bash(for f:*)",
       "Bash(do)",
       "Bash(sed -i '' 's/ifact/TWO/g' \"$f\")",
-      "Bash(done)"
+      "Bash(done)",
+      "Bash(grep -n '\\\\$\\\\$\\\\$newversion\\\\$\\\\$\\\\$\\\\|Version History' -A 8 index_dev.html)",
+      "Bash(awk '/^STAMP=\"\\\\$STAMP\" python3 -c \"$/{flag=1; next} flag && /^\"$/{flag=0} flag' gallery_build.sh)",
+      "Read(//private/tmp/**)",
+      "Bash(python3 -c ' *)"
     ]
   }
 }

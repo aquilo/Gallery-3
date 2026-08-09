@@ -12,6 +12,13 @@ function get1Pref(prefName, defaultValue) {
         pref = pref.map(v => isNaN(v) ? 0 : v);
         return pref;
     }
+    if (prefName == "appearance") {
+        if (pref !== "light" && pref !== "dark" && pref !== "system") {
+            pref = defaultValue;
+            window.localStorage.setItem(prefName, pref);
+        }
+        return pref;
+    }
     if (pref === 'undefined' || pref === 'null' || pref === null || pref === 'NaN') {
         pref = defaultValue;
         window.localStorage.setItem(prefName, pref);
@@ -46,6 +53,8 @@ function getAllPrefs() {
     global_auto = get1Pref("auto", 1);
     global_autostat = get1Pref("autostat", "0,0,0,0,0,0,0,0,0,0,0,0,0");
     global_fourcolor = get1Pref("fourcolor", false);
+    global_appearance = get1Pref("appearance", "system");
+    updateNightMode();
 }
 
 function setAllPrefs() {
@@ -53,8 +62,24 @@ function setAllPrefs() {
     set1Pref("steps", global_steps);
     set1Pref("speed", global_mtime);
     set1Pref("fourcolor", global_fourcolor);
+    set1Pref("appearance", global_appearance);
     set1Pref("auto", global_auto);
     set1Pref("autostat", global_autostat.join());
+}
+
+// Appearance: "light" | "dark" | "system" (follows the OS/browser dark-mode setting)
+function systemPrefersDark() {
+    return !!(window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+}
+
+function updateNightMode() {
+    if (global_appearance === "dark") {
+        global_nightmode = true;
+    } else if (global_appearance === "light") {
+        global_nightmode = false;
+    } else {
+        global_nightmode = systemPrefersDark();
+    }
 }
 
 function bufferToBase64(buf) {
@@ -82,5 +107,7 @@ var global_evaluations = 1000;
 var global_resimg;
 var global_auto = 1;
 var global_fourcolor = false;
+var global_appearance = "system";
+var global_nightmode = false;
 var global_show = 1; //TODO
 var global_autostat = new Array(13);

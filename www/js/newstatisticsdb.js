@@ -18,34 +18,18 @@ let good_meanres = 78.7;
 let good_bettermean = 85.7;
 let good_solvable = 31.7;
 let game_time = "1'55\"";
-let good_elo = 1885.5;
 
-// Rating-Config (Option B: Gating)
+// Rating-Config (nur noch "besser oder gleich"-Perzentil)
 const ratingCfg = {
-    w_solved: 0.10,
-    w_mean: 0.05,
-    w_percentile: 0.75,
-    w_best: 0.05,
-    gamma: 1.6,
-    w_diff: 0.05,
-    diff_scale: 8,
-    cap_solvable_not_solved: 0.60,
-    floor_under_min: 0.90,
-    floor_solved: 0.65,
-    clip_low: 0.02,
-    clip_high: 0.98,
-    rating_scale: 800,
-    rating_mid: 1500,
-    alpha_ewma: 0.10,
     alpha_ewma_pct: 0.1,
-    start_ewma: 1500,
+    start_ewma_pct: 50,
     window_N: 20
 };
 
 const ratingState = {
-    ewma: ratingCfg.start_ewma,
-    ewmaPct: 50, // EWMA for percentile (0-100)
-    buf: [], // letzte N GameRatings
+    ewmaLogit: logit(ratingCfg.start_ewma_pct / 100), // Glättung erfolgt in Logit-Raum
+    ewmaPct: ratingCfg.start_ewma_pct, // abgeleiteter Anzeigewert (0-100)
+    buf: [], // letzte N Perzentilwerte
     N: ratingCfg.window_N
 };
 
@@ -159,8 +143,7 @@ function calcIndicators(stats) {
         avg_equal: 0,
         avg_more: 0,
         avg_result: 0,
-        nobetter: 0,
-        elo: 0
+        nobetter: 0
     }
 //    console.log(stats);
     stats.forEach(s => {
@@ -187,25 +170,6 @@ function calcIndicators(stats) {
     res.avg_more /= res.n;
     res.avg_result /= res.n;
 
-    // 4) Config (Beispiel: dein Balanced-Preset)
-    /* const cfg = {
-        w_solved: 0.20,
-        w_mean: 0.25,
-        w_percentile: 0.45,
-        w_best: 0.10,
-        gamma: 1.6,
-        cap_solvable_not_solved: 0.55,
-        floor_under_min: 0.90,
-        floor_solved: 0.80,
-        clip_low: 0.02,
-        clip_high: 0.98,
-        rating_scale: 800,
-        rating_mid: 1500,
-        alpha_ewma: 0.10,
-        start_ewma: 1500, // oder letzter gespeicherter EWMA-Wert
-        window_N: 20,
-    };
- */
     const cfg = ratingCfg;
     // 5) Rechnen
     // angenommen: const stat = [...]  // deine Objekte aus dem Spiel
@@ -214,23 +178,20 @@ function calcIndicators(stats) {
 
     // 6) Ergebnis zurück in deine Objekte mergen (wenn gewünscht)
     results.forEach((r, i) => {
-        stats[i].C_raw = r.C_raw;
-        stats[i].C_gated = r.C_gated;
-        stats[i].C_clipped = r.C_clipped;
-        stats[i].GameRating = r.GameRating;
-        stats[i].EWMA_Rating = r.EWMA_Rating;
-        stats[i].RollingNRating = r.RollingN_Rating;
+        stats[i].Percentile_p = r.Percentile_p;
+        stats[i].EWMA_Percentile = r.EWMA_Percentile;
+        stats[i].RollingN_Percentile = r.RollingN_Percentile;
     });
 
       // 3) State setzen (für schnelle Live-Updates)
       ratingState.cfg = cfg;
       ratingState.rows = rows;
       ratingState.results = results;
-      ratingState.lastEWMA = results.length ? results[results.length - 1].EWMA_Rating : cfg.start_ewma;
-      ratingState.ewmaPct = results.length ? results[results.length - 1].EWMA_Percentile : 50;
+      ratingState.ewmaPct = results.length ? results[results.length - 1].EWMA_Percentile : cfg.start_ewma_pct;
+      ratingState.ewmaLogit = logit(ratingState.ewmaPct / 100);
       ratingState.rollingN = cfg.window_N;
-      ratingState.rollingBuf = results.slice(-cfg.window_N).map(r => r.GameRating);
-    res.elo = rebuildFeverFromResults(ratingState.results, true); // EWMA
+      ratingState.rollingBuf = results.slice(-cfg.window_N).map(r => r.Percentile_p * 100);
+    rebuildFeverFromResults(ratingState.results);
     mustDraw = true;
     dirty = true;
     redraw();
@@ -238,35 +199,16 @@ function calcIndicators(stats) {
     return res;
 }
 
-function rebuildFeverFromResults(results, useEWMA = true) {
+function rebuildFeverFromResults(results) {
     const pts = results.map(r => ({
         x: r.datetime,
-        y: useEWMA ? r.EWMA_Rating : r.GameRating,
-        y2: r.EWMA_Percentile ?? ((r.Percentile_p ?? 0) * 100),
+        y: r.EWMA_Percentile,
         underMin: !!r.BestResult,
         missedSolvable: (r.Solvable && r.SolvedGivenSolvable === 0)
     }));
     fever.setData(pts);
     feverReady = true;
-    console.log("ELO-Mean (" + pts.length + "): " + round_number(fever.meanElo(), 2));
-    return fever.meanElo();
-} 
-
-function buildSeriesFromResults(results) {
-    const main = results.map(r => ({
-        x: r.datetime,
-        y: r.EWMA_Rating, // Hauptkurve = EWMA
-        underMin: !!r.BestResult,
-        missedSolvable: (r.Solvable && r.SolvedGivenSolvable === 0)
-    }));
-    const alt = results.map(r => ({
-        x: r.datetime,
-        y: r.GameRating
-    })); // Zweitkurve
-    return {
-        main,
-        alt
-    };
+    console.log("Besser-oder-gleich-Mean (" + pts.length + "): " + round_number(fever.meanPercent(), 2));
 }
 
 function getConfigFromUIOrDefaults() {
@@ -528,16 +470,6 @@ function updateStats(results) {
         rrr += compareres(percent(s.hwins, s.n, 2), good_bettermean, 'valbetter', 'valworse');
     }
     rrr += '<td class="valcompare">' + good_bettermean + '</td><td>%<td></tr>';
-
-   rrr += '<tr><th>"ELO"</th>';
-    for (var i = 0; i < len; i++) {
-        s = results[i];
-        rrr += compareres(results[i].elo, good_elo, 'valbetter', 'valworse');
-    }
-    rrr += '<td class="valcompare">' + good_elo + '</td><td><td></tr>';
-
-
-
 
     rrr += '</table>';
 
@@ -802,7 +734,8 @@ function exportPreferencesAsJson() {
         resimg: get1Pref('resimg', '---'),
         auto: get1Pref("auto", 1),
         autostat: get1Pref("autostat", ""),
-        fourcolor: get1Pref("fourcolor", false)
+        fourcolor: get1Pref("fourcolor", false),
+        appearance: get1Pref("appearance", "system")
     };
 }
    
@@ -835,6 +768,7 @@ function importPreferences(prefs) {
     if (prefs.auto !== undefined) set1Pref("auto", prefs.auto);
     if (prefs.autostat !== undefined) set1Pref("autostat", prefs.autostat);
     if (prefs.fourcolor !== undefined) set1Pref("fourcolor", prefs.fourcolor);
+    if (prefs.appearance !== undefined) set1Pref("appearance", prefs.appearance);
 
     // Apply globals and sync UI
     getAllPrefs();
@@ -844,6 +778,10 @@ function importPreferences(prefs) {
     if (switchdoAutoMoves) switchdoAutoMoves.checked = global_auto === 1;
     const switchFourColor = document.getElementById("fourColorMode");
     if (switchFourColor) switchFourColor.checked = global_fourcolor === true;
+    const appearanceRadios = document.getElementsByName("appearanceMode");
+    for (const radio of appearanceRadios) {
+        radio.checked = radio.value === global_appearance;
+    }
     if (typeof setCards === "function") setCards();
     mustDraw = true;
     if (typeof allDraw === "function") allDraw();

@@ -9,6 +9,10 @@ mkdir -p dist/old
 # Nur Dateien direkt in dist/ verschieben, nicht in Unterordnern
 find dist -maxdepth 1 -type f -name 'app.*.js' -exec mv {} dist/old/ \;
 
+# 1b) Rest von dist/ leeren (außer dist/old), damit sich kein alter/versehentlich
+#     hineinkopierter Kram (z.B. fremde Ordner) über Builds hinweg ansammelt
+find dist -mindepth 1 -maxdepth 1 ! -name 'old' -exec rm -rf {} +
+
 STAMP=$(date +%Y%m%d%H%M%S)
 
 # 2) JS zusammenziehen & minifizieren
@@ -81,6 +85,18 @@ html = re.sub(
 
 with open('dist/index.html', 'w') as f:
     f.write(html)
+
+# Persist the just-released changelog line into index_dev.html itself, so it
+# isn't lost the next time \$\$\$newversion\$\$\$ gets replaced for a new release.
+with open('index_dev.html', 'r') as f:
+    dev_html = f.read()
+
+marker = '\$\$\$newversion\$\$\$<br>'
+if marker in dev_html and vtext and vtext not in dev_html:
+    dev_html = dev_html.replace(marker, marker + '\n              ' + vtext + '<br>', 1)
+    with open('index_dev.html', 'w') as f:
+        f.write(dev_html)
+    print('index_dev.html: changelog line for ' + version + ' persisted.')
 "
 
 cp manifest.json dist/manifest.json
