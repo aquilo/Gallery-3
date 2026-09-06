@@ -286,7 +286,16 @@ class Statistics {
       scores: this.scores,
       trials: this.n,
       nAuto: nAutoMovesStat,
-      nMoves: nMovesStat
+      nMoves: nMovesStat,
+      // Kartenreihenfolge dieser Vorlage (siehe newGame() in galleryjs.js) -
+      // erlaubt es, dieselbe Vorlage spaeter offline exakt zu reproduzieren.
+      dealOrder: (typeof window !== 'undefined' && window.currentDealOrder) || '',
+      // Ergebnis der im Hintergrund mitgelaufenen KI (PIMC-Agent), falls rechtzeitig fertig.
+      aiScore: (typeof bgEvalResult !== 'undefined' && bgEvalResult && bgEvalResult.pimcScore !== undefined && bgEvalResult.pimcScore !== null)
+        ? bgEvalResult.pimcScore : null,
+      aiPercent: (typeof bgEvalResult !== 'undefined' && bgEvalResult && bgEvalResult.pimcScore !== undefined && bgEvalResult.pimcScore !== null
+        && typeof computePercentileForScore === 'function')
+        ? computePercentileForScore(bgEvalResult.pimcScore) : null
     };
     saveGame(game);
   }
@@ -456,11 +465,70 @@ function drawResult(x, y) {
   rect(x, y, dx, dy);
 }
 
+// --- Prototyp "KI-Version": Score-Kaestchen (You/AI) + Perzentil-Hilfsfunktion ---
+
+function computePercentileForScore(score) {
+  // Gleiche "geschlagen-oder-gleich"-Formel wie Statistics.doStatistics()
+  // (dort resultf2), aber fuer einen BELIEBIGEN Score (z.B. den KI-Score) -
+  // liest nur das schon berechnete Histogramm, ohne resPlayer/ratingState/
+  // die Fever-Kurve anzufassen (die duerfen nur fuer den echten Spieler
+  // einmal pro Partie aktualisiert werden).
+  if (score == null || !statistics || !statistics.n) return null;
+  let more = 0, equal = 0;
+  for (let i = 0; i < 97; i++) {
+    if (i > score) more += statistics.histo[i];
+    if (i === score) equal += statistics.histo[i];
+  }
+  return (100.0 * (more + equal)) / statistics.n;
+}
+
+function drawScoreBox(label, score, pct, boxRight, boxTop, boxWidth, boxHeight) {
+  // Ein Kaestchen mit Label, Score-Zahl und Erfolgs-Prozentsatz - gemeinsames
+  // Layout fuer "You" und "AI" (Prototyp: Vergleich mit dem PIMC-Agenten aus
+  // dem Hintergrund-Worker, s. pimcWorker.js).
+  setFillStroke(0, 0, 0);
+  noFill();
+  boxWidth += 6;
+  boxTop -= 6;
+  rect(boxRight - boxWidth, boxTop, boxWidth, boxHeight, 5);
+  // AI-Replay (Prototyp, js/aiReplay.js): Klickbereich der "AI"-Box merken,
+  // damit ein Klick darauf das Nachspielen der KI-Zuege starten kann.
+  if (label === "AI" && typeof aiBoxRect !== "undefined") {
+    aiBoxRect = { left: boxRight - boxWidth, top: boxTop, width: boxWidth, height: boxHeight };
+  }
+  let cx = boxRight - boxWidth / 2;
+  textAlign(CENTER, CENTER);
+  textFont(myFont, F16);
+  setFillStroke(0, 0, 0);
+  boxTop -= 5;
+  text(label, cx, boxTop + TWO * 12);
+  if (score == null) {
+    textFont(myFont, F12);
+    fill(150);
+    text("...", cx, boxTop + TWO * 30);
+  } else {
+    textFont(myFont, F16);
+    setFillStroke(0, 0, 0);
+    text("" + score, cx, boxTop + TWO * 30);
+    if (pct != null) {
+      let br, bg, bb;
+      if (pct >= 99.95) { br = 35; bg = 176; bb = 0; }
+      else if (pct < 50) { br = 215; bg = 48; bb = 39; }
+      else { br = 69; bg = 117; bb = 180; }
+      textFont(myFont, F12);
+      setFillStroke(br, bg, bb);
+      text(nfc(pct, 1) + "%", cx, boxTop + TWO * 50);
+    }
+  }
+  textAlign(LEFT, BASELINE);
+  setFillStroke(0, 0, 0);
+}
+
 function drawStatistics(x0, y0) {
   textFont(myFont, F12);
   let x = x0;
   let y = y0;
-  let xr = x + TWO * 112;
+  let xr = x + TWO * 88; // war 112 -> 100 -> 70 (zu eng, ueberlappte) -> 88
   let xm = x + TWO * 193;
   let dy = TWO * 125;
   fill(255);
@@ -494,13 +562,23 @@ function drawStatistics(x0, y0) {
   textR("" + statistics.median, xr, y);
   setFillStroke(0, 0, 0);
 
-  textFont(myFont, F16);
   let yyou = y - TWO * 7;
-  textR(getTranslation(LANG, "You"), xm, yyou);
-  textC("" + resPlayer, xm - 29, yyou + TWO * 11);
-  // textR("" + resPlayer, xm, yyou + TWO * 20);
-  noFill();
-  rect(xm - 64, yyou - 33, 70, 83, 5);
+  {
+    // Zwei Kaestchen nebeneinander: "You" (bisherige Position, rechte
+    // Panel-Kante unveraendert) und "AI" (Prototyp: PIMC-Ergebnis aus dem
+    // Hintergrund-Worker, s. startBackgroundEvaluation()/pimcWorker.js).
+    let boxWidth = 62, boxHeight = 83, boxGap = 16; // war 6 - mehr Abstand zwischen AI/You
+    let boxTop = yyou - 33;
+    let youRight = xm + 6; // = alte rechte Kante (xm - 64 + 70)
+    let playerPct = (statistics.minimum > resPlayer) ? 100 : statistics.resultf2;
+    drawScoreBox(getTranslation(LANG, "You"), resPlayer, playerPct, youRight, boxTop, boxWidth, boxHeight);
+
+    let aiScore = (typeof bgEvalResult !== "undefined" && bgEvalResult && bgEvalResult.pimcScore !== undefined)
+      ? bgEvalResult.pimcScore : null;
+    let aiPct = aiScore != null ? computePercentileForScore(aiScore) : null;
+    let aiRight = youRight - boxWidth - boxGap - 4;
+    drawScoreBox("AI", aiScore, aiPct, aiRight, boxTop, boxWidth, boxHeight);
+  }
 
   textFont(myFont, F12);
   setFillStroke(0, 0, 0);
@@ -513,7 +591,7 @@ function drawStatistics(x0, y0) {
   setStatisticsColor(resPlayer, statistics.maximum);
   textR("" + statistics.maximum, xr, y);
   fill(0);
-  text(getTranslation(LANG, "most frequent") + ":", x, y += TWO * 20);
+  text(getTranslation(LANG, "most freq") + ":", x, y += TWO * 20); // gekuerzt (war "most frequent") - Platz fuer engere Zahlenspalte
   setStatisticsColor(resPlayer, statistics.modus);
   textR("" + statistics.modus, xr, y);
   setFillStroke(0, 0, 0);
@@ -524,33 +602,6 @@ function drawStatistics(x0, y0) {
   textR("DF: " + degreesoffreedom, xm - 80, y);
 
   textFont(myFont, F14);
-
-
-  {
-    let badgeText, br, bg, bb;
-    if (statistics.minimum > resPlayer) {
-    textFont(myFont, F12);
-    badgeText = "100%";
-      br = 35; bg = 176; bb = 0;
-    } else if (statistics.resultf2 < 50) {
-      badgeText = nfc(statistics.resultf2, 1) + "%";
-      br = 215; bg = 48; bb = 39;
-    } else {
-      badgeText = nfc(statistics.resultf2, 1) + "%";
-      br = 69; bg = 117; bb = 180;
-    }
-    let bx = xr + 24;
-    let by = y - TWO * 28;
-    let padX = 5;
-    let padY = 3;
-    let tw = textWidth(badgeText);
-    setFillStroke(0, 0, 0);
-    noFill();
-    rect(bx - padX, by - textAscent() - padY, tw + padX * 2, textAscent() + textDescent() + padY * 2, 5);
-    setFillStroke(br, bg, bb);
-    text(badgeText, bx, by);
-  }
-
   setFillStroke(0, 0, 0);
 
   doStatTableMiniGraph();

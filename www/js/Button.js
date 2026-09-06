@@ -47,7 +47,7 @@ class Button {
    //         or waiting for "tap to continue")
    draw(visible, dimmed) {
     this.active = visible && !dimmed;
-    textFont(myFont, F10);
+    textFont(myFont, F13); // war F10 - Knopfschrift mit dem Knopf mitvergroessert
     if (!visible) {
       const eraseColor = global_nightmode ? color(BG_NIGHT) : color(255);
       fill(eraseColor);

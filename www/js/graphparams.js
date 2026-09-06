@@ -48,14 +48,14 @@ function setGraphParams() {
   DXSS = 3;
   DYSS = 0;
 
-  WBN = TWO * 36;
-  HBN = TWO * 14;
+  WBN = TWO * 46; // war 36 - Knopf (New/Redo/Undo) auf Wunsch groesser
+  HBN = TWO * 18; // war 14
   WBU = WBN;
   HBU = HBN;
   WBE = CARDwidthNew;
   HBE = CARDHEIGHT;
-  WBF = TWO * 54;
-  HBF = TWO * 14;
+  WBF = TWO * 66; // war 54 - Evaluate-Knopf ebenfalls groesser
+  HBF = TWO * 18; // war 14
 
   XBN = CARDwidthNew * 2;
   YBN = YSS + CARDHEIGHT - HBN; //YBN = YSS + CARDHEIGHT / 2 - 2;

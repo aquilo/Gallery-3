@@ -183,6 +183,7 @@
               style="padding: 12px 8px 6px 3px"><br>The next deal of the stock leads to a jam situation with a 31% probability, or an irreversible final jam with a 2% probability.</li>
                       </ul>
         <h2>Evaluations</h2>
+        <h3>Random tapping "strategy"</h3>
         <div class="row">
           <div class="col-md-auto"><img src="data/img/eval.png" alt="eval" style="padding: 12px 8px 6px 3px"></div>
           <div class="col col-lg-">
@@ -198,6 +199,19 @@
           </div>
         </div>
         <br>
+        <h3>Artificial Intelligence</h3>
+        <div class="row">
+          <div class="col col-lg-">
+            <p>Next to the random-tapping numbers, a second box labeled <b>AI</b> shows the score of a
+              computer player using a <b>Perfect Information Monte Carlo (PIMC)</b> search: for every possible
+              move, it briefly "peeks" at many random ways the hidden cards could be arranged, plays each one
+              out to the end, and picks the move with the best average outcome. Like you, the AI gets exactly
+              <b>one</b> attempt per deal - its score is never averaged over multiple tries, so it's a fair,
+              single-shot comparison to your own game. Tap the AI box after finishing a game to step through
+              its moves one by one and see exactly how it played your deal.</p>
+          </div>
+        </div>
+
         <h3>Short Trend Indicators</h3>
         <div class="row">
           <div class="col-md-auto"><img src="data/img/trend.jpg" alt="eval" width="100"
@@ -223,7 +237,7 @@
         <div class="rules">
           <div style="text-align: left; margin-top: 23px;">
             <h1>Gallery Solitaire</h1>
-            <p>Version 3.1.1, &copy; 2026, Adrian Herzog<br>
+            <p>Version 3.2, &copy; 2026, Adrian Herzog<br>
               <a href="#" onclick="window.open(encodeURI('https://gallery.mapresso.com'), '_system')">
                 https://gallery.mapresso.com
               </a>
@@ -378,6 +392,7 @@
           <h2>Version History</h2>
           <p>
             $$$newversion$$$<br>
+              06.09.2026, 3.2: First version with a AI evaluation (PIMC) in the background<br>
               04.08.2026, 3.1.13: Fever curve now smooths the 'better or equal' trend in logit space, so gains and drops react more symmetrically near 0%/100%. Buttons<br>
               04.08.2026, 3.1.12: Fever curve now smooths the 'better or equal' trend in logit space, so gains and drops react more symmetrically near 0%/100%.<br>
               13.07.2026, 3.1.12: Fever curve now smooths the 'better or equal' trend in logit space, so gains and drops react more symmetrically near 0%/100%.<br>
@@ -434,7 +449,6 @@
   <script src="./js/rating.js"></script>
   <script src="./js/FeverCurve.js"></script>
   <script src="./js/start.js"></script>
-  <script src="./js/worker.js"></script>
   <script src="./libs/js/jsstore.js"></script>
   <script src="./libs/js/jsstore.worker.js"></script>
   <script src="./js/newstatisticsdb.js"></script>
@@ -448,6 +462,8 @@
   <script src="./js/Movers.js"></script>
   <script src="./js/graphparams.js"></script>
   <script src="./js/My.js"></script>
+  <script src="./js/pimcWorker.js"></script>
+  <script src="./js/aiReplay.js"></script>
   <script src="./js/galleryjs.js"></script>
   <!-- endbuild -->
 

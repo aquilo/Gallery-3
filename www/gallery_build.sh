@@ -133,8 +133,8 @@ else
   echo "Hinweis: Verzeichnis fonts/ existiert nicht, überspringe Kopie."
 fi
 
-# 7) worker.js separat kopieren (wird per new Worker() geladen, nicht gebündelt)
+# 7) pimcWorker.js separat kopieren (wird per new Worker() geladen, nicht gebündelt)
 mkdir -p dist/js
-cp js/worker.js dist/js/worker.js
+cp js/pimcWorker.js dist/js/pimcWorker.js
 
 echo "Build fertig: dist/app.$STAMP.js + dist/gallery.min.css + dist/index.html"

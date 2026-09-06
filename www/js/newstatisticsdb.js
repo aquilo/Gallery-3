@@ -116,6 +116,18 @@ function getDbSchema() {
             nMoves: {
                 notNull: true,
                 dataType: 'number',
+            },
+            dealOrder: {
+                notNull: false,
+                dataType: 'string'
+            },
+            aiScore: {
+                notNull: false,
+                dataType: 'number'
+            },
+            aiPercent: {
+                notNull: false,
+                dataType: 'number'
             }
         }
     }
@@ -143,7 +155,11 @@ function calcIndicators(stats) {
         avg_equal: 0,
         avg_more: 0,
         avg_result: 0,
-        nobetter: 0
+        nobetter: 0,
+        haiBetter: 0,
+        haiEqual: 0,
+        haiWorse: 0,
+        naiscored: 0
     }
 //    console.log(stats);
     stats.forEach(s => {
@@ -162,6 +178,12 @@ function calcIndicators(stats) {
         res.avg_more += s.more;
         res.avg_result += s.result;
         if (s.player <= s.minimum) res.nobetter++;
+        if (s.aiScore !== null && s.aiScore !== undefined && s.aiScore !== '') {
+            res.naiscored++;
+            if (s.player < s.aiScore) res.haiBetter++;
+            else if (s.player == s.aiScore) res.haiEqual++;
+            else res.haiWorse++;
+        }
     });
     res.avg_player /= res.n;
     res.avg_mean /= res.n;
@@ -471,6 +493,13 @@ function updateStats(results) {
     }
     rrr += '<td class="valcompare">' + good_bettermean + '</td><td>%<td></tr>';
 
+    rrr += '<tr><th>Better or equal AI</th>';
+    for (var i = 0; i < len; i++) {
+        s = results[i];
+        rrr += '<td>' + percent(s.haiBetter + s.haiEqual, s.naiscored, 2) + '</td>';
+    }
+    rrr += '<td class="valcompare">&ndash;</td><td>%<td></tr>';
+
     rrr += '</table>';
 
     statText = [
@@ -502,6 +531,10 @@ function updateStats(results) {
         // '<p>Games better than computer\'s best: <strong>' + percent(r.hminwins, r.n, 2) + ' %</strong>.',
         // 'With many attempts, the program will sometimes match or exceed your best play.</p><br>',
 
+        '<h3>Comparison to Artifical Intelligence</h3>',
+
+        '<p><strong>Compared to Perfect Information Monte Carlo search (PIMC)</strong>: In <b>' + percent(r.haiBetter + r.haiEqual, r.naiscored, 2) + '%</b> of the games, you performed at least as well as the PIMC - ',
+        'better <strong>' + percent(r.haiBetter, r.naiscored, 1) + '%</strong>, equal <strong>' + percent(r.haiEqual, r.naiscored, 1) + '%</strong>, worse <strong>' + percent(r.haiWorse, r.naiscored, 1) + '%</strong>; N=' + r.naiscored + '</p>',
 
         '<h3>Other indicators</h3>',
         'Typical game duration: <i>' + game_time + '</i> (including evaluation).<br>',
@@ -648,10 +681,22 @@ async function handleStatisticsFileSelect(event) {
     }
 }
 
+// Fester Spalten-Kanon (s. getDbSchema()), unabhaengig davon, welche
+// Felder die konkrete erste Zeile zufaellig als eigene Keys besitzt -
+// aeltere DB-Eintraege (vor Einfuehrung von aiScore/aiPercent/dealOrder)
+// haben diese Keys schlicht nicht gesetzt. 'sorter' wird erst zur Laufzeit
+// in getIndicators() angehaengt (kein DB-Feld), gehoert aber weiterhin
+// mit an den Schluss, wie bisher.
+const STAT_EXPORT_COLUMNS = [
+    'datetime', 'alpha', 'player', 'result', 'less', 'equal', 'more',
+    'minimum', 'median', 'mean', 'maximum', 'mode', 'scores', 'trials',
+    'nAuto', 'nMoves', 'dealOrder', 'aiScore', 'aiPercent', 'sorter'
+];
+
 function statsToCsv(stats) {
     if (!stats || !stats.length) return "";
 
-    const keys = Object.keys(stats[0]);
+    const keys = STAT_EXPORT_COLUMNS;
 
     const escapeCsv = (val) => {
         if (val === null || val === undefined) return "";
@@ -679,28 +724,93 @@ function statsToCsv(stats) {
     return lines.join("\n");
 }
 
+// Quote-bewusster CSV-Zeilen-Parser (Gegenstueck zu escapeCsv() oben):
+// respektiert "..."-Felder mit eingebetteten Kommas (z.B. dealOrder, das
+// selbst eine kommagetrennte 104-Karten-Liste ist) und "" als Escape fuer
+// ein woertliches Anfuehrungszeichen. Ein naiver split(',') wuerde so ein
+// Feld in Dutzende Einzelwerte zersplittern.
+function parseCsvLine(line) {
+    const values = [];
+    let cur = '';
+    let inQuotes = false;
+    for (let i = 0; i < line.length; i++) {
+        const ch = line[i];
+        if (inQuotes) {
+            if (ch === '"') {
+                if (line[i + 1] === '"') { cur += '"'; i++; }
+                else { inQuotes = false; }
+            } else {
+                cur += ch;
+            }
+        } else {
+            if (ch === '"') {
+                inQuotes = true;
+            } else if (ch === ',') {
+                values.push(cur);
+                cur = '';
+            } else {
+                cur += ch;
+            }
+        }
+    }
+    values.push(cur);
+    return values;
+}
+
 async function importStatisticsFromCsv(csvText) {
     try {
         const lines = csvText.split('\n').filter(line => line.trim());
-        const headers = lines[0].split(',').map(h => h.trim()).filter(h => h !== '$');
+        const headers = parseCsvLine(lines[0]).map(h => h.trim()).filter(h => h !== '$');
         const data = [];
 
         for (let i = 1; i < lines.length; i++) {
             if (!lines[i].trim()) continue;
-            
-            const values = lines[i].split(',').map(v => v.trim()).filter(v => v !== '$');
-            if (values.length !== headers.length) continue;
 
+            const rawValues = parseCsvLine(lines[i]).map(v => v.trim());
+            // Das abschliessende "$"-Zeilenende-Markerfeld verwerfen (immer
+            // genau eines, am Schluss - anders als vorher NICHT global
+            // herausfiltern, sonst wuerde ein "$" mitten in dealOrder,
+            // sollte das je vorkommen, faelschlich mitgenommen).
+            const values = (rawValues.length && rawValues[rawValues.length - 1] === '$')
+                ? rawValues.slice(0, -1) : rawValues;
+
+            // Kompatibilitaets-Fallback fuer Exports einer Zwischenversion,
+            // deren Header-Zeile faelschlich ohne aiScore/aiPercent
+            // geschrieben wurde, obwohl einzelne Datenzeilen (die mit
+            // dealOrder) diese beiden Werte bereits enthielten (direkt nach
+            // dealOrder, vor dem abschliessenden sorter-Zeitstempel).
+            // Erkennbar an genau 2 Werten mehr als Header-Namen. Ohne diesen
+            // Fallback wuerden aiScore/aiPercent solcher Altzeilen sonst
+            // stillschweigend verloren gehen.
+            let rowHeaders = headers;
+            if (values.length === headers.length + 2 &&
+                headers.includes('dealOrder') &&
+                !headers.includes('aiScore') && !headers.includes('aiPercent')) {
+                const idx = headers.indexOf('dealOrder');
+                rowHeaders = headers.slice(0, idx + 1).concat(['aiScore', 'aiPercent'], headers.slice(idx + 1));
+            }
+
+            // Zeilen-zu-Header per NAME zuordnen statt strikter Laengen-
+            // pruefung - so importieren auch aeltere Exports sauber, denen
+            // z.B. aiScore/aiPercent noch fehlen (dann einfach null), statt
+            // die ganze Zeile zu verwerfen.
             const row = {};
-            headers.forEach((header, index) => {
-                // Convert string values to appropriate types based on the schema
+            rowHeaders.forEach((header, index) => {
                 const value = values[index];
-                if (header === 'datetime') {
+                if (value === undefined || value === '') {
+                    row[header] = null;
+                    return;
+                }
+                // dealOrder ist wie datetime ein STRING-Feld (kommagetrennte
+                // Kartenliste) - NICHT parseFloat'en, das wuerde es auf die
+                // erste Zahl vor dem ersten Komma zusammenstutzen.
+                if (header === 'datetime' || header === 'dealOrder') {
                     row[header] = value;
                 } else {
                     row[header] = parseFloat(value);
                 }
             });
+            if (!row.datetime) continue; // Primary Key fehlt/leer - ungueltige Zeile
             data.push(row);
         }
 

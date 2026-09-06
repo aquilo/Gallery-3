@@ -19,8 +19,8 @@
 let isApp = false;
 let jsstoreCon;
 
-let version = "Version 3.1.13";
-let versionText = "04.08.2026, 3.1.13: Fever curve now smooths the 'better or equal' trend in logit space, so gains and drops react more symmetrically near 0%/100%. Buttons";
+let version = "Version 3.2";
+let versionText = "06.09.2026, 3.2: First version with a AI evaluation (PIMC) in the background";
 let device = "";
 let mymsg;
 let XSF, YSF, XST, YST, XSA, YSA, XSS, YSS;
@@ -126,6 +126,61 @@ let nrEval = 0;
 let evaluating = false;
 let evaluated = false;
 let evaltime = 0;
+
+// --- Prototyp: Hintergrund-Auswertung waehrend der Mensch spielt ------
+// (js/pimcWorker.js, Web Worker) - siehe startBackgroundEvaluation() und
+// die Anpassung in doEvaluation() weiter unten. Rein additiv: faellt bei
+// jedem Problem (Worker nicht verfuegbar, noch nicht fertig, dealOrder
+// stimmt nicht ueberein) automatisch auf den bisherigen, synchronen Weg
+// (evalGame()) zurueck - kein Verhalten geht verloren.
+let bgEvalWorker = null;
+let bgEvalResult = null;   // { type:'done', dealOrder, scores, mean, median, minimum, maximum, elapsedMs }
+let bgEvalIndex = 0;
+
+function startBackgroundEvaluation(dealOrder, alphanow) {
+  bgEvalResult = null;
+  bgEvalIndex = 0;
+  if (bgEvalWorker) {
+    try { bgEvalWorker.terminate(); } catch (e) { /* ignore */ }
+    bgEvalWorker = null;
+  }
+  if (typeof Worker === "undefined") return; // z.B. sehr alter Browser
+  try {
+    bgEvalWorker = new Worker("js/pimcWorker.js");
+    bgEvalWorker.onmessage = function (e) {
+      if (e.data && e.data.type === "done" && e.data.dealOrder === dealOrder) {
+        bgEvalResult = e.data;
+        console.log("[bgEval] Hintergrund-Auswertung fertig: mean=" + e.data.mean +
+          " median=" + e.data.median + " minimum=" + e.data.minimum +
+          " (" + e.data.elapsedMs + " ms, " + e.data.scores.length + " Versuche)" +
+          (e.data.pimcScore !== undefined
+            ? " | PIMC(k=" + e.data.pimcNumSamples + ") score=" + e.data.pimcScore +
+              " (" + e.data.pimcElapsedMs + " ms, " + (e.data.pimcMoves ? e.data.pimcMoves.length : "?") +
+              " Zuege, verifiziert=" + e.data.pimcMovesVerified + ")"
+            : ""));
+      }
+    };
+    bgEvalWorker.onerror = function (err) {
+      My.print("Hintergrund-Auswertung fehlgeschlagen: " + (err && err.message));
+      bgEvalWorker = null;
+    };
+    // alfa hier = Live-Konvention "Wahrscheinlichkeit, einen Zug zu versuchen"
+    // (Default 0.99). pimcWorker.js erwartet die komplementaere Grosse
+    // "Wahrscheinlichkeit fuer erzwungenes verfruehtes Stockdealen" - daher 1-alfa.
+    bgEvalWorker.postMessage({
+      dealOrder: dealOrder,
+      n: global_evaluations,
+      alpha: 1 - alphanow,
+      // Prototyp "KI-Version": zusaetzlich einen PIMC-Durchlauf (k=160,
+      // Greedy-Rollout - gleiche Parameter wie im Trainings-Repo
+      // js/eval/analyze_real_games.js) im selben Hintergrund-Worker.
+      pimc: { numSamples: 160, maxRolloutMoves: 300 },
+    });
+  } catch (e) {
+    My.print("Hintergrund-Auswertung nicht verfuegbar: " + e.message);
+    bgEvalWorker = null;
+  }
+}
 
 let rescanvas = "";
 
@@ -302,19 +357,6 @@ function setup() {
   loop();
   // My.print("/setup: " + My.round2String(millis() / 1000.0, 3) + " sec");
 
-  const myWorker = new Worker('./js/worker.js');
-
-  // Define what happens when the worker sends a message back
-  myWorker.onmessage = function (e) {
-    console.log('Result from background task:', e.data);
-  };
-
-  // Start the background task by sending a message to the worker
-  const inputData = 10000000; // For example, sending a large number for the task
-  myWorker.postMessage({
-    gallerytest: 1000
-  });
-
  // fever = new FeverCurve(this, menustart + TWO * 91, YRES - TWO * 30 + TWO * 9, TWO * 223, TWO * 64, {
   fever = new FeverCurve(this, 0, YLASTGAMES + 42, widthNew, 150, {
     window: 200, // letzte N Punkte
@@ -341,10 +383,21 @@ function doEvaluation(n, alfa) {
   humanPlayer = false;
   evaluating = true;
   stroke(0);
+  const bgReady = bgEvalResult &&
+    bgEvalResult.dealOrder === window.currentDealOrder &&
+    Array.isArray(bgEvalResult.scores);
   for (let i = 0; i < n; i++) {
     //btnNew.draw(false);
     //btnRedo.draw(false);
-    statistics.add(evalGame(alfa));
+    let resultat;
+    if (bgReady && bgEvalIndex < bgEvalResult.scores.length) {
+      // Bereits im Hintergrund berechnet (s. startBackgroundEvaluation) -
+      // gleiche Animation/Timing wie bisher, nur ohne die Rechenzeit.
+      resultat = bgEvalResult.scores[bgEvalIndex++];
+    } else {
+      resultat = evalGame(alfa);
+    }
+    statistics.add(resultat);
   }
     setTimeout(() => redraw(), 0);
 
@@ -845,6 +898,7 @@ function allDraw() {
     fill(statistics.getResColor(statistics.mean, resPlayer));
     drawResult(XSTAT, YSTAT - TWO * 21);
     image(lastGames, 0, YLASTGAMES);
+    if (typeof drawAiReplayOverlay === "function") drawAiReplayOverlay();
   }
   
 
@@ -926,6 +980,15 @@ function newGame() {
     shuffleDeck();
     startable = checkStartable();
   }
+  // Vorlage reproduzierbar machen: die tatsaechlich gezogene Kartenreihenfolge
+  // (nicht bloss ein Zufalls-Seed) wird festgehalten, damit dieselbe Vorlage
+  // spaeter offline (z.B. von einem Trainings-/KI-Setup) exakt nachgespielt
+  // werden kann. Kodierung pro Karte: suit*13 + (rank-1), Bereich 0-51.
+  window.currentDealOrder = cards.map(c => c.suit * 13 + (c.rank - 1)).join(',');
+  // Prototyp: 1000-Versuche-Random-Baseline schon jetzt im Hintergrund
+  // starten (Web Worker), damit sie fertig ist, wenn der Mensch mit
+  // Spielen fertig ist und auf "Evaluate" klickt - s. doEvaluation().
+  startBackgroundEvaluation(window.currentDealOrder, alfa);
   windrawloop = -1;
   gameStart = My.simpleDateFormat();
   initLayout();
@@ -1048,6 +1111,22 @@ function handleTap() {
   x /= scaleFactor;
   y /= scaleFactor;
 
+  // AI-Replay (Prototyp): siehe js/aiReplay.js. Solange aktiv, gehen alle
+  // Klicks dorthin (Zug anwenden / Overlay schliessen) - sonst kann ein
+  // Klick auf die "AI"-Box (drawScoreBox in Statistics.js) das Replay starten.
+  if (typeof aiReplay !== "undefined" && aiReplay.active) {
+    aiReplayHandleClick(x, y);
+    redraw();
+    return;
+  }
+  if (statsRevealed && typeof aiBoxRect !== "undefined" && pointInBoxRect(x, y, aiBoxRect)) {
+    startAiReplay();
+    dirty = true;
+    mustDraw = true;
+    redraw();
+    return;
+  }
+
   if (evaluationfinished) {
     evaluationfinished = false;
     dirty = true;
@@ -1069,6 +1148,7 @@ function handleTap() {
     moveStack.clear();
     evaluating = true;
     nrbox = 0;
+    bgEvalIndex = 0; // Prototyp Hintergrund-Auswertung: von vorne durch die vorberechnete Liste
     btnNew.draw(false);
     btnRedo.draw(false);
     btnUndo.draw(false);
