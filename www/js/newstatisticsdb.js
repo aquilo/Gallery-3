@@ -165,7 +165,7 @@ function calcIndicators(stats) {
     stats.forEach(s => {
         res.n++;
         if (s.player < s.mean) res.hwins++;
-        if (s.player == 0 || s.minimum == 0) res.hsolvable++;
+        if (s.player == 0 || s.minimum == 0 || s.aiScore === 0) res.hsolvable++;
         if (s.player < s.minimum) res.hminwins++;
         if (s.player == 0) res.hzeros++;
         if (s.player > s.minimum) res.hcbetter++;

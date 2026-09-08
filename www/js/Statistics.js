@@ -424,6 +424,20 @@ function drawHisto(x0, y0) {
 
   rect(TWO + xx + resPlayer * TWO * 2, y + TWO * 4, TWO * 2 * (96 - resPlayer), dy - TWO * 8);
   strokeWeight(1);
+
+  // Kleiner gruener Balken von oben an der Position des AI-Resultats
+  // (PIMC-Score aus dem Hintergrund-Worker, s. pimcWorker.js), ca. 1/5 der
+  // Diagrammhoehe hoch.
+  {
+    let aiScore = (typeof bgEvalResult !== "undefined" && bgEvalResult && bgEvalResult.pimcScore !== undefined)
+      ? bgEvalResult.pimcScore : null;
+    if (aiScore !== null && aiScore >= 0 && aiScore <= 96) {
+      noStroke();
+      fill(0, 180, 0);
+      let xai = xx + TWO * 2 * aiScore;
+      rect(xai, y + TWO * 4, TWO * 2, dy / 10);
+    }
+  }
 }
 
 function darker(c, f) {
@@ -522,6 +536,57 @@ function drawScoreBox(label, score, pct, boxRight, boxTop, boxWidth, boxHeight) 
   }
   textAlign(LEFT, BASELINE);
   setFillStroke(0, 0, 0);
+}
+
+// --- Debug-/Interessens-Panel unterhalb der Fieberkurve (temporaer, auf
+// Wunsch als "Statistikzeug, das mich im Moment interessiert") ---
+// (1) die 4 Spieler-vs-AI-Vergleichswerte (besser+gleich / besser / gleich /
+//     schlechter) und (2) die Abweichung der 4 "good_*"-Referenzindikatoren
+//     (Solved of solvable, Best result, Better or equal, Better than c's
+//     mean) vom tatsaechlich erreichten Wert, jeweils ueber ALLE Spiele
+//     (global_statistics, s. updateStats() in newstatisticsdb.js).
+function drawAiDebugStats() {
+  if (typeof global_statistics === "undefined" || !global_statistics || !global_statistics.n) return;
+  const s = global_statistics;
+
+  const fmtPct = (val) => (isFinite(val) ? val.toFixed(1) : "-") + "%";
+  const fmtDelta = (val) => (isFinite(val) ? (val >= 0 ? "+" : "") + val.toFixed(1) : "-");
+
+  let y = YLASTGAMES + 42 + 150 + 26;
+  const x = 10;
+
+  textAlign(LEFT, BASELINE);
+  textFont(myFont, F9);
+  // Tag/Nacht-Modus beruecksichtigen (sonst schwarzer Text auf fast
+  // schwarzem Hintergrund bei Nacht) - gleiche Konvention wie sonst im
+  // Code, z.B. galleryjs.js Zeile ~920/928.
+  if (global_nightmode) {
+    setFillStroke(220, 220, 220);
+  } else {
+    setFillStroke(0, 0, 0);
+  }
+
+  if (s.naiscored > 0) {
+    const beAi = 100 * (s.haiBetter + s.haiEqual) / s.naiscored;
+    const better = 100 * s.haiBetter / s.naiscored;
+    const equal = 100 * s.haiEqual / s.naiscored;
+    const worse = 100 * s.haiWorse / s.naiscored;
+    const football = 3 * s.haiBetter + s.haiEqual;
+    const footballai = 3 * s.haiWorse + s.haiEqual;
+    text("AI: >= " + fmtPct(beAi) + "  (" + fmtPct(better) + " / " + fmtPct(equal) +
+      " / " + fmtPct(worse) + "; N=" + s.naiscored + ") --- You " + football + ":" + footballai + "  AI", x, y);
+  } else {
+    text("AI: no data (N=0)", x, y);
+  }
+  y += TWO * 14;
+
+  const devSolvsolv = (s.hsolvable > 0 ? (100 * s.hzeros / s.hsolvable) : NaN) - good_solvsolv;
+  const devBest = (100 * (s.n - s.hcbetter) / s.n) - good_best;
+  const devBe = (s.avg_more + s.avg_equal) - good_be;
+  const devBettermean = (100 * s.hwins / s.n) - good_bettermean;
+
+  text("delta good: s " + fmtDelta(devSolvsolv) + "  b " + fmtDelta(devBest) +
+    " >= " + fmtDelta(devBe) + "  >cm " + fmtDelta(devBettermean), x, y);
 }
 
 function drawStatistics(x0, y0) {

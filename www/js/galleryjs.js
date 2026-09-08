@@ -834,6 +834,12 @@ function drawProgress(part, all) {
 // DRAWING
 
 function allDraw() {
+  // Schutz gegen Aufruf, bevor p5's setup() (und damit setGraphParams(),
+  // das offScreen per createGraphics() anlegt) fertig ist - kann passieren,
+  // wenn "pageshow"/"visibilitychange"/matchMedia in start.js sehr frueh
+  // feuern (s. applyAppearanceChange()). Dann gibt es einfach noch nichts
+  // zu zeichnen.
+  if (typeof offScreen === "undefined" || !offScreen) return;
   if (mustDraw) {
     osp = true;
     offScreen.background(global_nightmode ? BG_NIGHT : BG_DAY);
@@ -949,6 +955,7 @@ function allDraw() {
   // console.log("image");
   if (evaluated && statsRevealed && fever && feverReady) {
     fever.draw();
+    if (typeof drawAiDebugStats === "function") drawAiDebugStats();
   }
 }
 
