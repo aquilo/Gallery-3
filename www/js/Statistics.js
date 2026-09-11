@@ -297,6 +297,20 @@ class Statistics {
         && typeof computePercentileForScore === 'function')
         ? computePercentileForScore(bgEvalResult.pimcScore) : null
     };
+
+    // Fuer ein moegliches spaeteres Nachtragen des AI-Scores merken (falls
+    // die Hintergrund-PIMC-Auswertung erst NACH diesem Speichern fertig
+    // wird - s. startBackgroundEvaluation()/onmessage in galleryjs.js).
+    // Das Histogramm dieser Partie wird dafuer eingefroren (kopiert), weil
+    // computePercentileForScore() sonst bei einer inzwischen begonnenen
+    // neuen Partie ein falsches, ueberschriebenes Histogramm verwenden
+    // wuerde.
+    if (typeof lastSavedGame !== 'undefined') {
+      lastSavedGame = game;
+      lastSavedGameHisto = this.histo.slice();
+      lastSavedGameHistoN = this.n;
+    }
+
     saveGame(game);
   }
 }
@@ -481,29 +495,54 @@ function drawResult(x, y) {
 
 // --- Prototyp "KI-Version": Score-Kaestchen (You/AI) + Perzentil-Hilfsfunktion ---
 
-function computePercentileForScore(score) {
+function computePercentileForScore(score, histo, n) {
   // Gleiche "geschlagen-oder-gleich"-Formel wie Statistics.doStatistics()
   // (dort resultf2), aber fuer einen BELIEBIGEN Score (z.B. den KI-Score) -
-  // liest nur das schon berechnete Histogramm, ohne resPlayer/ratingState/
+  // liest nur ein schon berechnetes Histogramm, ohne resPlayer/ratingState/
   // die Fever-Kurve anzufassen (die duerfen nur fuer den echten Spieler
   // einmal pro Partie aktualisiert werden).
-  if (score == null || !statistics || !statistics.n) return null;
+  // histo/n optional: Standardmaessig das AKTUELLE statistics-Objekt, kann
+  // aber explizit mit einem eingefrorenen Snapshot einer AELTEREN Partie
+  // aufgerufen werden (s. lastSavedGameHisto in galleryjs.js) - noetig,
+  // wenn der PIMC-Hintergrund-Score erst nachtraeglich eintrifft, nachdem
+  // schon eine neue Partie begonnen hat und statistics.histo ueberschrieben
+  // wurde.
+  if (histo === undefined) histo = statistics && statistics.histo;
+  if (n === undefined) n = statistics && statistics.n;
+  if (score == null || !histo || !n) return null;
   let more = 0, equal = 0;
   for (let i = 0; i < 97; i++) {
-    if (i > score) more += statistics.histo[i];
-    if (i === score) equal += statistics.histo[i];
+    if (i > score) more += histo[i];
+    if (i === score) equal += histo[i];
   }
-  return (100.0 * (more + equal)) / statistics.n;
+  return (100.0 * (more + equal)) / n;
 }
 
-function drawScoreBox(label, score, pct, boxRight, boxTop, boxWidth, boxHeight) {
+function drawScoreBox(label, score, pct, boxRight, boxTop, boxWidth, boxHeight, resultTag) {
   // Ein Kaestchen mit Label, Score-Zahl und Erfolgs-Prozentsatz - gemeinsames
   // Layout fuer "You" und "AI" (Prototyp: Vergleich mit dem PIMC-Agenten aus
   // dem Hintergrund-Worker, s. pimcWorker.js).
-  setFillStroke(0, 0, 0);
-  noFill();
   boxWidth += 6;
   boxTop -= 6;
+  // Hintergrundfarbe je nach Vergleich Spieler vs. AI (tieferer Score =
+  // besser): 'win' = blaeulich, 'lose' = roetlich, 'tie' = weiss, sonst
+  // (AI-Score noch nicht bekannt) keine Fuellung - nur der Rahmen.
+  if (resultTag === "win" || resultTag === "lose" || resultTag === "tie") {
+    noStroke();
+    if (resultTag === "win") {
+      fill(190, 190, 245);
+    } else if (resultTag === "lose") {
+      fill(245, 190, 190);
+    } else {
+      fill(255, 255, 255);
+    }
+    rect(boxRight - boxWidth, boxTop, boxWidth, boxHeight, 5);
+  }
+  setFillStroke(0, 0, 0);
+  if (label === "You") {
+    strokeWeight(4);
+  }
+  noFill();
   rect(boxRight - boxWidth, boxTop, boxWidth, boxHeight, 5);
   // AI-Replay (Prototyp, js/aiReplay.js): Klickbereich der "AI"-Box merken,
   // damit ein Klick darauf das Nachspielen der KI-Zuege starten kann.
@@ -514,6 +553,8 @@ function drawScoreBox(label, score, pct, boxRight, boxTop, boxWidth, boxHeight) 
   textAlign(CENTER, CENTER);
   textFont(myFont, F16);
   setFillStroke(0, 0, 0);
+  strokeWeight(1);
+
   boxTop -= 5;
   text(label, cx, boxTop + TWO * 12);
   if (score == null) {
@@ -526,9 +567,11 @@ function drawScoreBox(label, score, pct, boxRight, boxTop, boxWidth, boxHeight) 
     text("" + score, cx, boxTop + TWO * 30);
     if (pct != null) {
       let br, bg, bb;
-      if (pct >= 99.95) { br = 35; bg = 176; bb = 0; }
-      else if (pct < 50) { br = 215; bg = 48; bb = 39; }
-      else { br = 69; bg = 117; bb = 180; }
+      if (pct >= 100) { br = 35; bg = 176; bb = 0; 
+        pct = 100;
+      }
+      else if (pct < 50) { br = 215; bg = 42; bb = 42; }
+      else { br = 90; bg = 90; bb = 180; }
       textFont(myFont, F12);
       setFillStroke(br, bg, bb);
       text(nfc(pct, 1) + "%", cx, boxTop + TWO * 50);
@@ -549,11 +592,20 @@ function drawAiDebugStats() {
   if (typeof global_statistics === "undefined" || !global_statistics || !global_statistics.n) return;
   const s = global_statistics;
 
-  const fmtPct = (val) => (isFinite(val) ? val.toFixed(1) : "-") + "%";
+  const fmtPct = (val) => (isFinite(val) ? val.toFixed(1) : "-") + "";
   const fmtDelta = (val) => (isFinite(val) ? (val >= 0 ? "+" : "") + val.toFixed(1) : "-");
 
   let y = YLASTGAMES + 42 + 150 + 26;
   const x = 10;
+
+  // Diese Zeile zuerst selbst uebermalen: im "evaluated"-Zustand macht
+  // allDraw() kein volles background() mehr (nur ein schmaler Streifen um
+  // die Legende, s. galleryjs.js#allDraw) - dieser Bereich wird also sonst
+  // nie geleert, und jeder neue Text wird einfach auf den alten gemalt
+  // ("Doppelbelichtung"). Daher hier explizit vorher loeschen.
+  noStroke();
+  fill(global_nightmode ? BG_NIGHT : BG_DAY);
+  rect(0, y - TWO * 12, widthNew, TWO * 20);
 
   textAlign(LEFT, BASELINE);
   textFont(myFont, F9);
@@ -573,8 +625,8 @@ function drawAiDebugStats() {
     const worse = 100 * s.haiWorse / s.naiscored;
     const football = 3 * s.haiBetter + s.haiEqual;
     const footballai = 3 * s.haiWorse + s.haiEqual;
-    text("AI: >= " + fmtPct(beAi) + "  (" + fmtPct(better) + " / " + fmtPct(equal) +
-      " / " + fmtPct(worse) + "; N=" + s.naiscored + ") --- You " + football + ":" + footballai + "  AI", x, y);
+    text("You / = / AI [%]: " + fmtPct(better) + " / " + fmtPct(equal) +
+      " / " + fmtPct(worse) + ";  N=" + s.naiscored + " --- " + football + ":" + footballai, x, y);
   } else {
     text("AI: no data (N=0)", x, y);
   }
@@ -585,8 +637,8 @@ function drawAiDebugStats() {
   const devBe = (s.avg_more + s.avg_equal) - good_be;
   const devBettermean = (100 * s.hwins / s.n) - good_bettermean;
 
-  text("delta good: s " + fmtDelta(devSolvsolv) + "  b " + fmtDelta(devBest) +
-    " >= " + fmtDelta(devBe) + "  >cm " + fmtDelta(devBettermean), x, y);
+  // text("delta good: s " + fmtDelta(devSolvsolv) + "  b " + fmtDelta(devBest) +
+  //  " >= " + fmtDelta(devBe) + "  >cm " + fmtDelta(devBettermean), x, y);
 }
 
 function drawStatistics(x0, y0) {
@@ -636,13 +688,30 @@ function drawStatistics(x0, y0) {
     let boxTop = yyou - 33;
     let youRight = xm + 6; // = alte rechte Kante (xm - 64 + 70)
     let playerPct = (statistics.minimum > resPlayer) ? 100 : statistics.resultf2;
-    drawScoreBox(getTranslation(LANG, "You"), resPlayer, playerPct, youRight, boxTop, boxWidth, boxHeight);
 
     let aiScore = (typeof bgEvalResult !== "undefined" && bgEvalResult && bgEvalResult.pimcScore !== undefined)
       ? bgEvalResult.pimcScore : null;
     let aiPct = aiScore != null ? computePercentileForScore(aiScore) : null;
+
+    // Hintergrundfarbe der Kaestchen (s. drawScoreBox): blaeulich fuer den
+    // Sieger, roetlich fuer den Verlierer, weiss bei Gleichstand - nur wenn
+    // der AI-Score schon bekannt ist (tieferer Score = besser).
+    let youTag = null, aiTag = null;
+    if (aiScore != null) {
+      if (resPlayer < aiScore) { youTag = "win"; aiTag = "lose"; }
+      else if (resPlayer > aiScore) { youTag = "lose"; aiTag = "win"; }
+      else { youTag = "tie"; aiTag = "tie"; }
+    }
+    if (aiScore < statistics.minimum) {
+      aiPct = 101;
+    } 
+    if (resPlayer < statistics.minimum) {
+      playerPct = 101;
+    } 
+    drawScoreBox(getTranslation(LANG, "You"), resPlayer, playerPct, youRight, boxTop, boxWidth, boxHeight, youTag);
+
     let aiRight = youRight - boxWidth - boxGap - 4;
-    drawScoreBox("AI", aiScore, aiPct, aiRight, boxTop, boxWidth, boxHeight);
+    drawScoreBox("AI", aiScore, aiPct, aiRight, boxTop, boxWidth, boxHeight, aiTag);
   }
 
   textFont(myFont, F12);
@@ -651,11 +720,15 @@ function drawStatistics(x0, y0) {
   text(getTranslation(LANG, "mean") + ":", x, y += TWO * 13);
   setStatisticsColor(resPlayer, statistics.mean);
   textR(My.round2String(statistics.mean, 3), xr + TWO * 12, y);
-  fill(0);
+  // setStatisticsColor() setzt auch stroke() (s. setFillStroke()) - ein
+  // blosses fill(0) hier liess den farbigen Stroke der Zahl davor stehen,
+  // wodurch das nachfolgende Label leicht rot/blau schimmerte statt
+  // sauber schwarz zu sein. Daher hier ebenfalls stroke mit zuruecksetzen.
+  setFillStroke(0, 0, 0);
   text(getTranslation(LANG, "worst") + ":", x, y += TWO * 16);
   setStatisticsColor(resPlayer, statistics.maximum);
   textR("" + statistics.maximum, xr, y);
-  fill(0);
+  setFillStroke(0, 0, 0);
   text(getTranslation(LANG, "most freq") + ":", x, y += TWO * 20); // gekuerzt (war "most frequent") - Platz fuer engere Zahlenspalte
   setStatisticsColor(resPlayer, statistics.modus);
   textR("" + statistics.modus, xr, y);

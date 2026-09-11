@@ -214,10 +214,14 @@ function calcIndicators(stats) {
       ratingState.rollingN = cfg.window_N;
       ratingState.rollingBuf = results.slice(-cfg.window_N).map(r => r.Percentile_p * 100);
     rebuildFeverFromResults(ratingState.results);
-    mustDraw = true;
-    dirty = true;
-    redraw();
-    loop();
+    // Kein redraw() mehr hier: calcIndicators() wird von doStatTable() bis zu
+    // 3x pro Speicherung aufgerufen (Fenster 100 / 1000 / alle) - jeder
+    // sofortige redraw() zeichnete dabei mit einem jeweils nur teilweise
+    // aktuellen Stand (global_statistics wird erst SPAETER, in updateStats(),
+    // zugewiesen). Die mehrfachen dicht aufeinanderfolgenden redraw()-Aufrufe
+    // fuehrten zu einem sichtbaren "Doppelbelichtungs"-Effekt beim Text unter
+    // der Fieberkurve. Jetzt gibt es genau einen redraw() - am Ende von
+    // updateStats(), nachdem global_statistics final gesetzt ist.
     return res;
 }
 
@@ -333,8 +337,18 @@ async function doStatTable() {
         }
 
         stattable.push(res_all);
-        updateStats(stattable);
+        // WICHTIG: statistcsTable VOR updateStats() aktualisieren, nicht danach!
+        // updateStats() endet mit einem redraw() (s. unten), das synchron einen
+        // verschachtelten draw()-Aufruf ausloest. Dieser laeuft (ueber
+        // drawStatistics() -> doStatTableMiniGraph(), s. Statistics.js) noch
+        // WAEHREND updateStats() bzw. gleich danach im selben Tick und liest
+        // dabei ebenfalls statistcsTable, um global_statistics zu setzen. War
+        // die Zuweisung hier erst NACH updateStats(), sah dieser verschachtelte
+        // Aufruf noch die alte statistcsTable und ueberschrieb den gerade erst
+        // frisch gesetzten global_statistics-Stand sofort wieder mit dem alten
+        // (Symptom: "N" im Debug-Panel blieb um 1 Partie zurueck).
         statistcsTable = stattable;
+        updateStats(stattable);
         return stattable;
     } catch (ex) {
         console.log("ERROR: ", ex.message)
@@ -571,6 +585,18 @@ function updateStats(results) {
 
     var statisticsTextDiv = document.getElementById("statisticstext");
     statisticsTextDiv.innerHTML = statText;
+
+    // global_statistics (s. oben) ist jetzt final aktualisiert. calcIndicators()
+    // stoesst weiter oben zwar auch schon ein redraw() an, aber jeweils VOR
+    // dieser Zuweisung - das im Canvas gezeichnete Debug-Panel
+    // (drawAiDebugStats(), liest global_statistics direkt) wuerde also noch
+    // den alten Stand zeigen, bis irgendein anderes Ereignis (z.B. App
+    // wechseln und zurueckkommen) zufaellig einen weiteren redraw ausloest.
+    // Daher hier nochmal explizit anstossen, jetzt mit den frischen Werten.
+    mustDraw = true;
+    dirty = true;
+    redraw();
+    loop();
 }
 
 function downloadFile(blob, filename) {

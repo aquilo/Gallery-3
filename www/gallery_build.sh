@@ -42,16 +42,30 @@ vtext = m2.group(1) if m2 else ''
 from datetime import date
 today = date.today().strftime('%d.%m.%Y')
 
+# Build-Nummer: bei jedem Build automatisch um 1 erhoehen und in
+# buildnumber.txt persistieren (liegt im Projekt-Root, nicht in dist/, damit
+# sie beim Aufraeumen von dist/ nicht verloren geht). Format in der Infozeile
+# analog zu anderen Apps: Version X.Y (Build N).
+buildnumber_path = 'buildnumber.txt'
+try:
+    with open(buildnumber_path, 'r') as f:
+        buildnumber = int(f.read().strip() or '0')
+except (FileNotFoundError, ValueError):
+    buildnumber = 0
+buildnumber += 1
+with open(buildnumber_path, 'w') as f:
+    f.write(str(buildnumber))
+
 with open('index_dev.html', 'r') as f:
     html = f.read()
 
 # \$\$\$newversion\$\$\$ durch versionText ersetzen
 html = html.replace('\$\$\$newversion\$\$\$', vtext)
 
-# Version + Datum in der Infozeile ersetzen
+# Version + Build-Nummer + Datum in der Infozeile ersetzen
 html = re.sub(
     r'Version [^,]+,',
-    version + ', ' + today + ',',
+    version + ' (Build ' + str(buildnumber) + '), ' + today + ',',
     html, count=1
 )
 

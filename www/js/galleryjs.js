@@ -137,6 +137,18 @@ let bgEvalWorker = null;
 let bgEvalResult = null;   // { type:'done', dealOrder, scores, mean, median, minimum, maximum, elapsedMs }
 let bgEvalIndex = 0;
 
+// Sync-Problem: Partie wird gespeichert, SOBALD die 1000-Random-Tapping-
+// Auswertung fertig ist (finalizeEvaluation()) - der parallel im Hintergrund
+// laufende PIMC-Agent (k=160) kann aber laenger brauchen und ist dann noch
+// nicht fertig, sodass aiScore zunaechst als null gespeichert wird. Diese
+// drei Variablen (in Statistics.js: saveResultat() gesetzt) merken sich die
+// zuletzt gespeicherte Partie + ihr Zufalls-Histogramm, damit der AI-Score
+// nachtraeglich in DIESELBE Zeile geschrieben werden kann, sobald er eintrifft
+// (s. onmessage unten) - sonst bleibt der AI-Vergleich dauerhaft veraltet.
+let lastSavedGame = null;
+let lastSavedGameHisto = null;
+let lastSavedGameHistoN = 0;
+
 function startBackgroundEvaluation(dealOrder, alphanow) {
   bgEvalResult = null;
   bgEvalIndex = 0;
@@ -158,6 +170,23 @@ function startBackgroundEvaluation(dealOrder, alphanow) {
               " (" + e.data.pimcElapsedMs + " ms, " + (e.data.pimcMoves ? e.data.pimcMoves.length : "?") +
               " Zuege, verifiziert=" + e.data.pimcMovesVerified + ")"
             : ""));
+
+        // Nachtragen: falls diese Partie schon (mit aiScore=null, weil PIMC
+        // noch nicht fertig war) gespeichert wurde, jetzt per Upsert
+        // ergaenzen - sonst bleibt der AI-Vergleich fuer diese Partie
+        // dauerhaft veraltet/unvollstaendig.
+        if (e.data.pimcScore !== undefined && e.data.pimcScore !== null &&
+            lastSavedGame && lastSavedGame.dealOrder === dealOrder &&
+            (lastSavedGame.aiScore === null || lastSavedGame.aiScore === undefined)) {
+          lastSavedGame.aiScore = e.data.pimcScore;
+          lastSavedGame.aiPercent = (typeof computePercentileForScore === "function")
+            ? computePercentileForScore(e.data.pimcScore, lastSavedGameHisto, lastSavedGameHistoN)
+            : null;
+          if (typeof saveGame === "function") {
+            saveGame(lastSavedGame); // upsert (gleicher Primary Key 'datetime') + refresht global_statistics
+            My.print("[bgEval] AI-Score nachtraeglich gespeichert: " + e.data.pimcScore);
+          }
+        }
       }
     };
     bgEvalWorker.onerror = function (err) {
@@ -1014,6 +1043,11 @@ function redoGame() {
   moveStack.clear();
   degreesoffreedom = 0;
   resprev = 999;
+  // Gleiche Vorlage (dealOrder unveraendert), aber ein "Redo" ist ein neuer
+  // Versuch - dazu passend auch die AI-Hintergrundauswertung neu anstossen
+  // (statt den alten, u.U. laengst veralteten bgEvalResult weiterzuverwenden),
+  // s. newGame().
+  startBackgroundEvaluation(window.currentDealOrder, alfa);
   windrawloop = -1;
   gameStart = My.simpleDateFormat();
   initLayout();
