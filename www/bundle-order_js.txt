@@ -5,6 +5,7 @@
 ./js/rating.js
 ./js/FeverCurve.js
 ./js/start.js
+./js/versioncheck.js
 ./libs/js/jsstore.js
 ./libs/js/jsstore.worker.js
 ./js/newstatisticsdb.js

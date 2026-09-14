@@ -567,14 +567,16 @@ function drawScoreBox(label, score, pct, boxRight, boxTop, boxWidth, boxHeight, 
     text("" + score, cx, boxTop + TWO * 30);
     if (pct != null) {
       let br, bg, bb;
-      if (pct >= 100) { br = 35; bg = 176; bb = 0; 
+      if (pct > 100) { br = 35; bg = 176; bb = 0; 
         pct = 100;
       }
       else if (pct < 50) { br = 215; bg = 42; bb = 42; }
       else { br = 90; bg = 90; bb = 180; }
       textFont(myFont, F12);
       setFillStroke(br, bg, bb);
-      text(nfc(pct, 1) + "%", cx, boxTop + TWO * 50);
+      let pctStr = nfc(pct, 1) + "%";
+      if (pctStr == "100.0%()") pctStr = "100%";
+      text(pctStr, cx, boxTop + TWO * 50);
     }
   }
   textAlign(LEFT, BASELINE);

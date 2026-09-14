@@ -1014,7 +1014,7 @@ function newGame() {
   let startable = false;
   while (!startable) {
     shuffleDeck();
-    startable = checkStartable();
+    startable = checkStartable() && checkFoundationHasChance();
   }
   // Vorlage reproduzierbar machen: die tatsaechlich gezogene Kartenreihenfolge
   // (nicht bloss ein Zufalls-Seed) wird festgehalten, damit dieselbe Vorlage
@@ -1060,6 +1060,58 @@ function checkStartable() {
     let base = int(i / 8) + 2;
     if (card.rank == base) return true;
   }
+  return false;
+}
+
+// Zweiter Baustein fuer "nicht zu spielende Partien" (neben checkStartable()):
+// Selbst wenn irgendetwas bewegt werden kann, ist eine Partie von Anfang an
+// festgefahren, wenn auf der Foundation weder schon eine Luecke entstanden ist
+// (ein As wird automatisch entfernt) noch die Aussicht auf eine spaetere
+// Luecke besteht (eine "ok"-Karte [Rang = Basis ihrer Reihe] UND irgendwo
+// unter den 24 ausgeteilten Foundation-Karten eine farbgleiche Nachfolgekarte
+// mit Rang Basis+3/+6/+9). Wird beides nicht gefunden, soll neu ausgeteilt
+// werden - s. newGame().
+function checkFoundationHasChance() {
+  // Die 24 Karten, die auf die Foundation ausgeteilt werden, mit ihrer Basis
+  // (gleiche Zuordnung/Reihenfolge wie in checkStartable()).
+  let dealt = [];
+  for (let i = 0; i < 24; i++) {
+    let card = cards[103 - i];
+    let base = int(i / 8) + 2;
+    dealt.push({ card, base });
+  }
+
+  // Bedingung 1: Ein As auf der Foundation wird automatisch entfernt -> Luecke.
+  let aceHit = dealt.find(d => d.card.isAce());
+  if (aceHit) {
+    console.log("[checkFoundationHasChance] OK (As): " + aceHit.card.toString() +
+      " wuerde automatisch von der Foundation entfernt -> Luecke entsteht.");
+    return true;
+  }
+
+  // "ok"-Karten: Rang entspricht der Basis ihrer eigenen Reihe.
+  let okCards = dealt.filter(d => d.card.rank === d.base);
+
+  // Bedingung 2: Zu einer ok-Karte liegt irgendwo unter den 24 Foundation-
+  // Karten eine farbgleiche Karte mit Rang Basis+3, +6 oder +9 (spaeterer
+  // Nachfolger, der irgendwann eine Luecke freispielen koennte).
+  for (let ok of okCards) {
+    for (let d of dealt) {
+      if (d.card === ok.card) continue;
+      let diff = d.card.rank - ok.card.rank;
+      if (d.card.suit === ok.card.suit && (diff === 3 || diff === 6 || diff === 9)) {
+        console.log("[checkFoundationHasChance] OK (Basis+Nachfolger): Basis " +
+          ok.card.toString() + " (Reihe Basis " + ok.base + "), Nachfolger " +
+          d.card.toString() + " (+" + diff + ") liegt schon auf der Foundation.");
+        return true;
+      }
+    }
+  }
+
+  console.log("[checkFoundationHasChance] FAIL: kein As auf der Foundation, und zu " +
+    "keiner der " + okCards.length + " ok-Karte(n) [" +
+    okCards.map(o => o.card.toString()).join(", ") +
+    "] liegt ein Nachfolger (+3/+6/+9, gleiche Farbe) auf der Foundation -> Neustart.");
   return false;
 }
 

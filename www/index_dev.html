@@ -55,6 +55,12 @@
 </head>
 
 <body>
+
+  <div id="updateBanner" class="alert alert-warning" role="status"
+    style="display:none; position:fixed; top:0; left:0; right:0; z-index:2000; margin:0; align-items:center; justify-content:center; gap:12px; padding:.5rem 1rem;">
+    <span>A new version is available.</span>
+    <button type="button" class="btn btn-sm btn-primary" onclick="location.reload()">Reload</button>
+  </div>
   <!-- Content -->
   <div class="container mt-5 post">
 
@@ -448,6 +454,7 @@
   <script src="./js/rating.js"></script>
   <script src="./js/FeverCurve.js"></script>
   <script src="./js/start.js"></script>
+  <script src="./js/versioncheck.js"></script>
   <script src="./libs/js/jsstore.js"></script>
   <script src="./libs/js/jsstore.worker.js"></script>
   <script src="./js/newstatisticsdb.js"></script>

@@ -86,6 +86,7 @@ html = re.sub(
 # Replace build:js-head block (in <head>) with the bundled script tag
 html = re.sub(
     r'<!-- build:js-head \S+ -->.*?<!-- endbuild -->',
+    f'  <script>window.APP_BUILD = \"{stamp}\";</script>\n'
     f'  <script src=\"app.{stamp}.js\"></script>',
     html, flags=re.DOTALL
 )
@@ -114,6 +115,7 @@ if marker in dev_html and vtext and vtext not in dev_html:
 "
 
 cp manifest.json dist/manifest.json
+echo "{\"version\": \"$STAMP\"}" > dist/version.json
 
 # 4) CSS zusammenführen & minifizieren
 concat=/tmp/gallery.concat.css
