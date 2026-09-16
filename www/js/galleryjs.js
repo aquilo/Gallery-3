@@ -281,8 +281,23 @@ function canvasInit() {
   detectDevice();
   widthNew = WIDTH0;
   canvasPositionX = max(0, (windowWidth - widthNew) / 2);
+
+  // Confirmed on-device (iOS 27, iPhone with Dynamic Island): env(safe-area-inset-top) is
+  // unreliable for standalone home-screen web apps (reports 0 even though content renders under
+  // the status bar), so this uses a fixed offset instead. iOS applies its own blur to whatever is
+  // drawn behind the status bar/Dynamic Island there; over the game's card art that reads as
+  // "blurry". window.navigator.standalone is iOS-only and true only when launched from the
+  // home-screen icon. Capped to whatever vertical slack already exists below the board (it's
+  // narrower than the viewport on most phones) so this can never push the board past windowHeight -
+  // an earlier version shrank scaleFactor instead to compensate, which narrowed the whole board and
+  // still didn't fully fix it (likely iOS's well-known jumpy position:fixed-during-scroll behavior,
+  // triggered once the page needs to scroll at all - so the safer rule is: never make it scroll).
+  const desiredTopInset = window.navigator.standalone ? 60 : 0;
+  const slack = max(0, windowHeight - scaleFactor * HEIGHT0);
+  canvasPositionY = min(desiredTopInset, slack);
+
   if (isApp) {
-    canvasPositionY = 60;
+    canvasPositionY += 60;
   }
   actualwidthNew = min(screen.width, 640);
   deviceFactor = actualwidthNew / 320.0;
