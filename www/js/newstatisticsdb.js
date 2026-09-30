@@ -17,6 +17,7 @@ let good_best = 25.4;
 let good_meanres = 78.7;
 let good_bettermean = 85.7;
 let good_solvable = 31.7;
+let good_ai = 48.7;
 let game_time = "1'55\"";
 
 // Rating-Config (nur noch "besser oder gleich"-Perzentil)
@@ -510,9 +511,9 @@ function updateStats(results) {
     rrr += '<tr><th>Better or equal AI</th>';
     for (var i = 0; i < len; i++) {
         s = results[i];
-        rrr += '<td>' + percent(s.haiBetter + s.haiEqual, s.naiscored, 2) + '</td>';
+        rrr += compareres(percent(s.haiBetter + s.haiEqual, s.naiscored, 2), good_ai, 'valbetter', 'valworse');
     }
-    rrr += '<td class="valcompare">&ndash;</td><td>%<td></tr>';
+    rrr += '<td class="valcompare">' + good_ai + '</td><td>%<td></tr>';
 
     rrr += '</table>';
 

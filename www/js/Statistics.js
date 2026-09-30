@@ -913,9 +913,9 @@ function doStatTableMiniGraph() {
     let s = results[i];
     let yy = yy0;
     let xx = xx0 + i * dxx;
-    compareRectEmpty(xx, yy, good_mean, results[i].avg_player);
-    yy += dyy;
-    compareRectEmpty(xx, yy, percent(s.hzeros, s.n, 2), good_zeros);
+  //  compareRectEmpty(xx, yy, good_mean, results[i].avg_player);
+   // yy += dyy;
+   // compareRectEmpty(xx, yy, percent(s.hzeros, s.n, 2), good_zeros);
     yy += dyy;
     compareRect(xx, yy, percent(s.hzeros, s.hsolvable, 2), good_solvsolv);
     yy += dyy;
@@ -924,5 +924,7 @@ function doStatTableMiniGraph() {
     compareRect(xx, yy, results[i].avg_more + results[i].avg_equal, good_be);
     yy += dyy;
     compareRect(xx, yy, percent(s.hwins, s.n, 2), good_bettermean);
+    yy += dyy;
+    compareRect(xx, yy, percent(s.haiBetter + s.haiEqual, s.naiscored, 2), good_ai);
   }
-}
+}       
