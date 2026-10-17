@@ -19,8 +19,8 @@
 let isApp = false;
 let jsstoreCon;
 
-let version = "Version 3.2";
-let versionText = "06.09.2026, 3.2: First version with a AI evaluation (PIMC) in the background";
+let version = "Version 3.2.1";
+let versionText = "17.10.2026, 3.2.1: Stronger AI evaluation (PIMC): all candidate moves are compared on the same simulated stock orders, equivalent moves are evaluated only once";
 let device = "";
 let mymsg;
 let XSF, YSF, XST, YST, XSA, YSA, XSS, YSS;
