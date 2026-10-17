@@ -1070,19 +1070,38 @@ function uselessCompletionPenalty(game, action) {
   return USELESS_COMPLETION_PENALTY;
 }
 
+// Verbesserte Variante (14.10.2026, s. docs/pimc-verbesserung.md, im Benchmark
+// "crn": +2 Pp "besser+gleich", 63 vs. 30 Lagen besser):
+//  - Dedupe: Zuege derselben Karte auf Slots mit identischem Inhalt (z.B. zwei
+//    leere Slots) sind gleichwertig und werden nur einmal bewertet.
+//  - Common Random Numbers: alle Kandidaten werden auf denselben Stock-
+//    Mischungen/Rollout-Zufallszahlen bewertet -> Unterschiede zwischen den
+//    Kandidaten sind weniger vom Zufall verrauscht.
 function pimcChooseMove(game, rng, numSamples, maxRolloutMoves) {
-  const candidates = game.getLegalMoves();
-  if (candidates.length === 0) return null;
+  let candidates = game.getLegalMoves();
+  if (candidates.length <= 1) return candidates[0] || null;
+
+  const seen = new Set();
+  candidates = candidates.filter((a) => {
+    if (a.type !== "move_card") return true;
+    const p = game._parseLoc(a.to);
+    const key = a.from + "|" + JSON.stringify(game.f[p.row][p.slot]);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
   if (candidates.length === 1) return candidates[0];
 
+  const seeds = Array.from({ length: numSamples }, () => (rng() * 2 ** 32) >>> 0);
   let best = null;
   let bestMean = Infinity;
   for (const action of candidates) {
     let total = 0;
     for (let i = 0; i < numSamples; i++) {
-      const hypothesis = determinize(game, rng);
+      const r = mulberry32(seeds[i]);
+      const hypothesis = determinize(game, r);
       hypothesis.executeMove(action, { undoable: false });
-      total += rolloutScore(hypothesis, rng, maxRolloutMoves);
+      total += rolloutScore(hypothesis, r, maxRolloutMoves);
     }
     const mean = total / numSamples + uselessCompletionPenalty(game, action);
     if (mean < bestMean) {
@@ -1197,5 +1216,6 @@ if (typeof module !== "undefined") {
     GallerySolitaire, runEvaluation, playOneRandomGame, mulberry32,
     runFullEvaluation, playOnePimcGame, pimcChooseMove, greedyChooseMove,
     peekCardAt, replayMoves,
+    determinize, rolloutScore, uselessCompletionPenalty,
   };
 }
