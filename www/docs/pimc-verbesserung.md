@@ -167,3 +167,12 @@ Mögliche nächste Schritte:
 - Auswahleffekt prüfen: Stufe 2 mit frischen Seeds (nicht die 16 aus Stufe 1 wiederverwenden), mehr Samples für die Finalisten, oder die gewählte Stellung gegen die beste fertig gespielte vergleichen.
 - Mit dem Zeitbudget: mehr Samples / grösserer Finalisten-Anteil; heuristischer Rollout nach dem Austeilen (jetzt evtl. wirksamer, da die Phase selbst nicht mehr zufällig gespielt wird).
 - Übernahme in pimcWorker.js (Web-Worker-Zeit im Browser prüfen; grosse Phasen ggf. mit Obergrenze).
+
+### Auswahleffekt geprüft – 19.10.2026
+`crn-phase-fresh`: Finalisten nur auf 160 frischen Mischungen bewertet (ohne die 16 aus Stufe 1). Gepaart vs. crn-phase: **+0.0 ± 0.5**, Lagen 38/18/43, ≤ Min −0.8 Pp → kein Auswahleffekt; das frühe Austeilen (weiterhin 4.2/Partie) ist echt.
+
+### Was wird beim frühen Austeilen liegen gelassen? (Lagen 0–13, je 1 Partie crn-phase)
+Erfahrung Adi: Bildkarten, die tief unten in einer Kolonne liegen, sind „parkiert“ und sicher, sie können in der Endphase gespielt werden. Gefährlich ist ihr Zwilling, weil er später etwas zudeckt. Wird der Platz jetzt mit der parkierten Karte belegt, muss der Zwilling warten und blockiert seine Kolonne.
+Die KI tut genau das, ohne dass es ihr gesagt wurde. Häufigster Fall: **J/Q/K mit 0–3 Karten darunter, Zwilling noch im Stock** (z. B. Lage 2: ♥Q, ♦J, ♥J je zuunterst; Lage 13: ♦K über drei Phasen liegen gelassen; Lage 4: ♣Q mit 4 Karten darunter, Zwilling auf T1 unter 2 Karten).
+Daneben einige Basiskarten (2/3/4), deren Zwilling schon gespielt ist (z. B. Lage 6: ♣2 mit 5 Karten darunter über zwei Phasen). Diese wirken weniger einleuchtend: vielleicht ist die Karte darunter unwichtig, vielleicht sind die beiden Stellungen fast gleichwertig → bei Bedarf Zug für Zug ansehen.
+Analyseskript: `onChoice`-Hook in `phasePlan`; pimc-bench.js exportiert bei `require()` `makeDeal`, `playPhase`, `VARIANTS`.

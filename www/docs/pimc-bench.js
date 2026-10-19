@@ -397,9 +397,17 @@ function phasePlan(g, rng, samples, o) {
   const cmp = (x, y) => x.sum - y.sum || x.score - y.score;
   states.sort(cmp);
   const top = states.slice(0, Math.max(8, Math.ceil(states.length / 10)));
-  for (const st of top) for (let i = o.s1; i < samples; i++) st.sum += phaseSample(st, seeds[i]);
+  if (o.fresh) {
+    // Finalisten nur auf frischen Mischungen bewerten: Stufe 1 hat sie gerade
+    // wegen (teils zufaellig) guter Werte ausgewaehlt -> diese nicht mitzaehlen
+    const fresh = Array.from({ length: samples }, () => (rng() * 2 ** 32) >>> 0);
+    for (const st of top) { st.sum = 0; for (const sd of fresh) st.sum += phaseSample(st, sd); }
+  } else {
+    for (const st of top) for (let i = o.s1; i < samples; i++) st.sum += phaseSample(st, seeds[i]);
+  }
   top.sort(cmp);
   if (!top[0].leaf) phaseStats.early++;
+  if (o.onChoice) o.onChoice(g, top[0], top);
   return top[0].path;
 }
 function playPhase(deal, samples, rng, o) {
@@ -458,6 +466,8 @@ const VARIANTS = {
   "crn-endxr": (deal, samples, rng) => playEndx(deal, samples, rng, 2e6, (h, r) => endxRolloutScore(h, r, 1e5)),
   // Phasenweise: beste Austeil-Stellung unter allen in der Phase erreichbaren
   "crn-phase": (deal, samples, rng) => playPhase(deal, samples, rng, { s1: 16, maxStates: 20000 }),
+  // wie crn-phase, Finalisten auf frischen Mischungen (ohne die 16 aus Stufe 1)
+  "crn-phase-fresh": (deal, samples, rng) => playPhase(deal, samples, rng, { s1: 16, maxStates: 20000, fresh: true }),
   "crn-heur": (deal, samples, rng) => playWith(
     (g, r, n) => crnChooseMove(g, r, n, (h, rr) => heurRolloutScore(h, rr, 300, 0)), deal, samples, rng),
   "crn-heur20": (deal, samples, rng) => playWith(
@@ -482,6 +492,11 @@ if (!isMainThread) {
 }
 
 // ---------------------------------------------------------------- Haupt-Thread
+// per require() eingebunden (Analyse-Skripte): nur Funktionen bereitstellen
+if (require.main !== module) {
+  module.exports = { makeDeal, playPhase, VARIANTS };
+  return;
+}
 function arg(name, def) {
   const i = process.argv.indexOf("--" + name);
   return i >= 0 ? process.argv[i + 1] : def;
