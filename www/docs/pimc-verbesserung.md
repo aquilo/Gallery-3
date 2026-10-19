@@ -135,3 +135,35 @@ Gepaart: +1.5 ± 2.2 (n. s.), Lagen besser/gleich/schlechter 25/7/17, höhere Si
 `pimcChooseMove()` in `js/pimcWorker.js` = crn (Dedupe + Common Random Numbers, J/Q/K-Penalty bleibt). Geprüft: Benchmark-Variante `worker` (= aktueller Worker via `playOnePimcGame`) reproduziert `ref-crn-100x6.json` exakt (Lagen 0–5, je 2 Partien), Replay-Gegenprobe ok.
 Die alte Version ist in pimc-bench.js als `legacyChooseMove` (Variante `current`) erhalten → `ref-current-100x6.json` bleibt reproduzierbar.
 Neue Basis für weitere Vergleiche: `ref-crn-100x6.json`.
+
+## Schritt 4: Exakte Endphase (Stock leer) – 19.10.2026
+Bei leerem Stock senkt jeder Kartenzug den Score um genau 1 und ist unumkehrbar → bester Endscore = längste Zugfolge, exakt per Tiefensuche mit Memo (`endxSolve` in pimc-bench.js; Zustand = Stapelhöhen + sortierte Reiheninhalte, AutoMoves laufen mit). Fair gegenüber dem Menschen, da Undo innerhalb einer Phase erlaubt ist.
+- `crn-endx`: crn, aber bei leerem Stock exakt.
+- `crn-endxr`: zusätzlich jeder Rollout ab leerem Stock exakt zu Ende gerechnet.
+
+| Variante (vs. crn, 99 × 6) | b+g % | Diff | Lagen +/=/− | ≤ Min | s/Partie |
+|---|---|---|---|---|---|
+| crn-endx | 88.3 | +0.0 ± 0.0 | 1/98/0 | +0.2 Pp | 9.9 |
+| crn-endxr | 88.8 | +0.5 ± 0.9 | 36/16/47 | +2.4 Pp | 25.2 |
+
+→ **Kein Gewinn.** Endphase klein (2.1 Suchen/Partie, Ø 48 Knoten); crn wählt dort zwar 0.7×/Partie einen anderen Zug, aber mit gleichem Ergebnis → crn spielt die Endphase bereits optimal. Exakter Rollout-Schluss: n. s. (Vorzeichen eher negativ), 2.5× Zeit.
+Folgerung: Die Verluste entstehen früher, vor dem letzten Austeilen.
+
+## Schritt 5: Phasenweise Entscheidung (Austeil-Stellung wählen) – 19.10.2026
+Idee (Adi): Innerhalb einer Phase (zwischen zwei Austeilungen) ist Undo erlaubt und alles bekannt → die eigentliche Entscheidung ist, **in welcher erreichbaren Stellung ausgeteilt wird** (frühes Austeilen inbegriffen).
+Variante `crn-phase` (`playPhase`/`phasePlan` in pimc-bench.js): am Phasenanfang alle erreichbaren Stellungen aufzählen (wie endx), jede per CRN bewerten (Stock mischen, austeilen, Zufalls-Rollout), zweistufig: alle mit 16 Samples, die besten max(8, 10 %) mit 160. Weg zur besten Stellung nachspielen, austeilen. Stock leer → endx. Gleichstand → tieferer aktueller Score.
+Stellungen pro Phase (21 crn-Partien gezählt): Median ~20, 90 %-Quantil ~800, max ~5500; im Benchmark Ø 229.
+
+| Variante (vs. crn, 99 × 6) | b+g % | Diff | Lagen +/=/− | ≤ Min | Siege | s/Partie |
+|---|---|---|---|---|---|---|
+| crn | 88.3 | – | – | 30.1 % | 15.5 % | 9.7 |
+| **crn-phase** | **92.8** (Median 97.2) | **+4.5 ± 1.0** | **62/7/30** | **40.9 %** | **20.7 %** | 29.3 |
+
+→ **Deutlicher Gewinn** (> 4 SE, grösster Schritt bisher), Eigenstreuung sd 4.9 → 4.2. Zeit 29 s/Partie, im Budget (~120 s).
+Auffällig: 4.2 von 9 Phasen enden mit frühem Austeilen (spielbare Tableau-Karte wird zugedeckt; falsche F-Karten zählen nicht, da sie nicht zugedeckt werden). Ob echt oder Auswahleffekt (bestes von ~229 verrauschten Schätzungen) ist offen.
+Rohdaten: `docs/results/bench-crn-phase-2026-10-19T19-13-31.json`.
+
+Mögliche nächste Schritte:
+- Auswahleffekt prüfen: Stufe 2 mit frischen Seeds (nicht die 16 aus Stufe 1 wiederverwenden), mehr Samples für die Finalisten, oder die gewählte Stellung gegen die beste fertig gespielte vergleichen.
+- Mit dem Zeitbudget: mehr Samples / grösserer Finalisten-Anteil; heuristischer Rollout nach dem Austeilen (jetzt evtl. wirksamer, da die Phase selbst nicht mehr zufällig gespielt wird).
+- Übernahme in pimcWorker.js (Web-Worker-Zeit im Browser prüfen; grosse Phasen ggf. mit Obergrenze).
