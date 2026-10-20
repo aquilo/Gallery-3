@@ -59,8 +59,13 @@ with open(buildnumber_path, 'w') as f:
 with open('index_dev.html', 'r') as f:
     html = f.read()
 
-# \$\$\$newversion\$\$\$ durch versionText ersetzen
-html = html.replace('\$\$\$newversion\$\$\$', vtext)
+# \$\$\$newversion\$\$\$ durch versionText ersetzen - ausser die Zeile ist schon
+# fest in index_dev.html eingetragen (erneuter Build derselben Version), dann
+# nur den Platzhalter entfernen, sonst stuende sie doppelt in der History
+if vtext and vtext in html:
+    html = re.sub(r'[ \t]*\\\$\\\$\\\$newversion\\\$\\\$\\\$<br>\n?', '', html, count=1)
+else:
+    html = html.replace('\$\$\$newversion\$\$\$', vtext)
 
 # Version + Build-Nummer + Datum in der Infozeile ersetzen
 html = re.sub(
