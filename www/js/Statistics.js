@@ -607,7 +607,7 @@ function drawAiDebugStats() {
   // ("Doppelbelichtung"). Daher hier explizit vorher loeschen.
   noStroke();
   fill(global_nightmode ? BG_NIGHT : BG_DAY);
-  rect(0, y - TWO * 12, widthNew, TWO * 20);
+  rect(0, y - TWO * 12, widthNew, TWO * 34); // 2 Zeilen: Vergleich + AI-Rechenzeit
 
   textAlign(LEFT, BASELINE);
   textFont(myFont, F9);
@@ -633,6 +633,13 @@ function drawAiDebugStats() {
     text("AI: no data (N=0)", x, y);
   }
   y += TWO * 14;
+
+  // Rechenzeit der PIMC-Auswertung (Hintergrund-Worker) fuer die aktuelle Partie
+  if (typeof bgEvalResult !== "undefined" && bgEvalResult && bgEvalResult.pimcElapsedMs !== undefined) {
+    text("AI evaluation this game: " + (bgEvalResult.pimcElapsedMs / 1000).toFixed(1) + " s", x, y);
+  } else if (typeof bgEvalWorker !== "undefined" && bgEvalWorker) {
+    text("AI evaluation this game: running ...", x, y);
+  }
 
   const devSolvsolv = (s.hsolvable > 0 ? (100 * s.hzeros / s.hsolvable) : NaN) - good_solvsolv;
   const devBest = (100 * (s.n - s.hcbetter) / s.n) - good_best;
