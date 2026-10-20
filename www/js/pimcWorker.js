@@ -1112,6 +1112,136 @@ function pimcChooseMove(game, rng, numSamples, maxRolloutMoves) {
   return best;
 }
 
+// ----------------------------------------------------------------------------
+// Phasenweise Entscheidung (20.10.2026, s. docs/pimc-verbesserung.md Schritt 5,
+// im Benchmark "crn-phase": +4.5 Pp "besser+gleich" gegenueber crn, 62 vs. 30
+// Lagen besser). Innerhalb einer Phase (zwischen zwei Austeilungen) ist alles
+// bekannt und Undo erlaubt -> die eigentliche Entscheidung ist, in WELCHER
+// erreichbaren Stellung ausgeteilt wird (fruehes Austeilen inbegriffen, z.B.
+// "parkierte" Bildkarten tief in einer Kolonne liegen lassen).
+//  - Am Phasenanfang alle erreichbaren Stellungen aufzaehlen.
+//  - Jede per CRN bewerten (Stock mischen, austeilen, Zufalls-Rollout),
+//    zweistufig: alle mit 16 Samples, die besten max(8, 10 %) mit numSamples.
+//  - Den Weg zur besten Stellung nachspielen, dann austeilen.
+//  - Stock leer: exakte Suche (jeder Kartenzug senkt den Score um genau 1,
+//    bester Endscore = laengste Zugfolge).
+//  - Obergrenze: Stufe 1 hoechstens PHASE_BUDGET1 Rollouts (bei vielen
+//    Stellungen weniger Samples, mind. 2), hoechstens PHASE_MAX_TOP Finalisten
+//    (Benchmark "crn-phase-cap": max. Zeit/Partie 254 s -> 20 s, Qualitaet
+//    -0.8 +- 0.5 Pp, n. s.).
+//  - Zu viele Stellungen -> fuer diese Entscheidung pimcChooseMove (crn).
+// Zustand kanonisch: Stapelhoehen (innerhalb einer Phase wird nur abgetragen)
+// + je Reihe die sortierten Slot-Inhalte (Slot-Position ist fuer die Regeln
+// egal; alle legalen Ziele einer Karte haben denselben Inhalt -> Zug = Quelle).
+// ----------------------------------------------------------------------------
+const PHASE_ABORT = new Error("phase: Limit");
+const PHASE_FIRST_SAMPLES = 16;
+const PHASE_MAX_STATES = 20000;
+const PHASE_BUDGET1 = 4800; // = 16 Samples x 300 Stellungen
+const PHASE_MAX_TOP = 30;
+const PHASE_MAX_ENDGAME_NODES = 2e6;
+const phaseDummyStats = {};
+
+// Schneller Klon ohne Konstruktor (der baut/mischt jedes Mal ein ganzes Deck).
+// Karten werden nie veraendert, nur verschoben -> flache Kopien genuegen.
+function phaseClone(g) {
+  const c = Object.create(GallerySolitaire.prototype);
+  c.seed = g.seed; c.rng = g.rng; c.history = []; c.autoMoveStats = phaseDummyStats;
+  c.t = g.t.map((p) => p.slice()); c.f = g.f.map((r) => r.slice()); c.stock = g.stock.slice();
+  return c;
+}
+function phaseKey(g) {
+  let k = g.t.map((p) => p.length).join(",");
+  for (let row = 0; row < 3; row++) {
+    k += "|" + g.f[row].map((c) => (c ? (c.r + 13) * 4 + c.s : -1)).sort((x, y) => x - y).join(",");
+  }
+  return k;
+}
+function phaseCardMoves(g) {
+  const seen = new Set();
+  return g.getLegalMoves().filter((a) => a.type === "move_card" && !seen.has(a.from) && seen.add(a.from));
+}
+
+// bestmoeglicher Endscore ab g bei leerem Stock (Tiefensuche mit Memo)
+function phaseSolve(g, memo, budget) {
+  const key = phaseKey(g);
+  const hit = memo.get(key);
+  if (hit !== undefined) return hit;
+  if (--budget.nodes < 0) throw PHASE_ABORT;
+  let best = g.calculateCurrentScore();
+  // Schranke: hoechstens jede Tableau-Karte und jede falsche F-Karte wird noch abgelegt
+  let open = 0;
+  for (const p of g.t) open += p.length;
+  for (const row of g.f) for (const c of row) if (c && c.r < 0) open++;
+  const bound = Math.max(0, best - open);
+  for (const a of phaseCardMoves(g)) {
+    if (best === bound) break;
+    const h = phaseClone(g);
+    h.executeMove(a, { undoable: false });
+    best = Math.min(best, phaseSolve(h, memo, budget));
+  }
+  memo.set(key, best);
+  return best;
+}
+function endgameChooseMove(g) {
+  const moves = phaseCardMoves(g);
+  if (moves.length <= 1) return moves[0] || null;
+  const memo = new Map(), budget = { nodes: PHASE_MAX_ENDGAME_NODES };
+  try {
+    let best = null, bestScore = Infinity;
+    for (const a of moves) {
+      const h = phaseClone(g);
+      h.executeMove(a, { undoable: false });
+      const s = phaseSolve(h, memo, budget);
+      if (s < bestScore) { bestScore = s; best = a; }
+    }
+    return best;
+  } catch (e) {
+    if (e !== PHASE_ABORT) throw e;
+    return null;
+  }
+}
+
+function phaseEnumerate(g) {
+  const out = new Map();
+  (function rec(h, path) {
+    const k = phaseKey(h);
+    if (out.has(k)) return;
+    if (out.size >= PHASE_MAX_STATES) throw PHASE_ABORT;
+    out.set(k, { g: h, path, score: h.calculateCurrentScore() });
+    for (const a of phaseCardMoves(h)) {
+      const h2 = phaseClone(h);
+      h2.executeMove(a, { undoable: false });
+      rec(h2, path.concat([a]));
+    }
+  })(phaseClone(g), []);
+  return [...out.values()];
+}
+function phaseSample(st, seed, maxRolloutMoves) {
+  const r = mulberry32(seed);
+  const h = phaseClone(st.g);
+  const s = h.stock;
+  for (let i = s.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); const t = s[i]; s[i] = s[j]; s[j] = t; }
+  h.executeMove({ type: "deal_stock" }, { undoable: false });
+  return rolloutScore(h, r, maxRolloutMoves);
+}
+// liefert die Zugfolge bis zur besten Austeil-Stellung oder null (zu viele Stellungen)
+function phasePlan(g, rng, numSamples, maxRolloutMoves) {
+  let states;
+  try { states = phaseEnumerate(g); } catch (e) { if (e !== PHASE_ABORT) throw e; return null; }
+  if (states.length === 1) return [];
+  const s1 = Math.max(2, Math.min(PHASE_FIRST_SAMPLES, numSamples, Math.floor(PHASE_BUDGET1 / states.length)));
+  const seeds = Array.from({ length: numSamples }, () => (rng() * 2 ** 32) >>> 0);
+  for (const st of states) { st.sum = 0; for (let i = 0; i < s1; i++) st.sum += phaseSample(st, seeds[i], maxRolloutMoves); }
+  // Gleichstand -> mehr abgelegte Karten bevorzugen
+  const cmp = (x, y) => x.sum - y.sum || x.score - y.score;
+  states.sort(cmp);
+  const top = states.slice(0, Math.min(PHASE_MAX_TOP, Math.max(8, Math.ceil(states.length / 10))));
+  for (const st of top) for (let i = s1; i < numSamples; i++) st.sum += phaseSample(st, seeds[i], maxRolloutMoves);
+  top.sort(cmp);
+  return top[0].path;
+}
+
 // Liest die Karte, die an dieser Position aktuell oben liegt (fuer T)
 // bzw. dort abgelegt ist (fuer F) - ohne den Spielzustand zu veraendern.
 // Wird nur fuer move_card-Aktionen gebraucht (deal_stock betrifft keine
@@ -1151,9 +1281,21 @@ function replayMoves(dealOrder, moves) {
 function playOnePimcGame(dealOrder, numSamples, maxRolloutMoves, rng) {
   const game = GallerySolitaire.fromDealOrder(dealOrder);
   const moves = [];
+  let plan = null, planIdx = 0;
+  const chooseMove = () => {
+    if (game.isWon()) return null;
+    if (game.stock.length === 0) {
+      return endgameChooseMove(game) || pimcChooseMove(game, rng, numSamples, maxRolloutMoves);
+    }
+    if (!plan) { plan = phasePlan(game, rng, numSamples, maxRolloutMoves); planIdx = 0; }
+    if (!plan) return pimcChooseMove(game, rng, numSamples, maxRolloutMoves); // zu viele Stellungen
+    if (planIdx < plan.length) return plan[planIdx++];
+    plan = null;
+    return { type: "deal_stock" };
+  };
   let guard = 0;
   while (guard++ < 300) {
-    const action = pimcChooseMove(game, rng, numSamples, maxRolloutMoves);
+    const action = chooseMove();
     if (!action) break;
     const card = action.type === "move_card" ? peekCardAt(game, action.from) : null;
     game.executeMove(action, { undoable: false });

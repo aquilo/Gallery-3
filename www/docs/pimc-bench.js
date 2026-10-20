@@ -392,18 +392,21 @@ function phasePlan(g, rng, samples, o) {
   phaseStats.phases++; phaseStats.states += states.length;
   if (states.length === 1) return [];
   const seeds = Array.from({ length: samples }, () => (rng() * 2 ** 32) >>> 0);
-  for (const st of states) { st.sum = 0; for (let i = 0; i < o.s1; i++) st.sum += phaseSample(st, seeds[i]); }
+  // Obergrenze (o.budget1, o.maxTop): bei vielen Stellungen weniger Samples in
+  // Stufe 1 (mind. 2) und hoechstens maxTop Finalisten -> Rechenzeit beschraenkt
+  const s1 = o.budget1 ? Math.max(2, Math.min(o.s1, Math.floor(o.budget1 / states.length))) : o.s1;
+  for (const st of states) { st.sum = 0; for (let i = 0; i < s1; i++) st.sum += phaseSample(st, seeds[i]); }
   // Gleichstand -> mehr abgelegte Karten bevorzugen
   const cmp = (x, y) => x.sum - y.sum || x.score - y.score;
   states.sort(cmp);
-  const top = states.slice(0, Math.max(8, Math.ceil(states.length / 10)));
+  const top = states.slice(0, Math.min(o.maxTop || Infinity, Math.max(8, Math.ceil(states.length / 10))));
   if (o.fresh) {
     // Finalisten nur auf frischen Mischungen bewerten: Stufe 1 hat sie gerade
     // wegen (teils zufaellig) guter Werte ausgewaehlt -> diese nicht mitzaehlen
     const fresh = Array.from({ length: samples }, () => (rng() * 2 ** 32) >>> 0);
     for (const st of top) { st.sum = 0; for (const sd of fresh) st.sum += phaseSample(st, sd); }
   } else {
-    for (const st of top) for (let i = o.s1; i < samples; i++) st.sum += phaseSample(st, seeds[i]);
+    for (const st of top) for (let i = s1; i < samples; i++) st.sum += phaseSample(st, seeds[i]);
   }
   top.sort(cmp);
   if (!top[0].leaf) phaseStats.early++;
@@ -468,6 +471,9 @@ const VARIANTS = {
   "crn-phase": (deal, samples, rng) => playPhase(deal, samples, rng, { s1: 16, maxStates: 20000 }),
   // wie crn-phase, Finalisten auf frischen Mischungen (ohne die 16 aus Stufe 1)
   "crn-phase-fresh": (deal, samples, rng) => playPhase(deal, samples, rng, { s1: 16, maxStates: 20000, fresh: true }),
+  // wie crn-phase, mit Obergrenze: Stufe 1 hoechstens 4800 Rollouts (= 16 x 300
+  // Stellungen), hoechstens 30 Finalisten -> Phasen bis 300 Stellungen unveraendert
+  "crn-phase-cap": (deal, samples, rng) => playPhase(deal, samples, rng, { s1: 16, maxStates: 20000, budget1: 4800, maxTop: 30 }),
   "crn-heur": (deal, samples, rng) => playWith(
     (g, r, n) => crnChooseMove(g, r, n, (h, rr) => heurRolloutScore(h, rr, 300, 0)), deal, samples, rng),
   "crn-heur20": (deal, samples, rng) => playWith(

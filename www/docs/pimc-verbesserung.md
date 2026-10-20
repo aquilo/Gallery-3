@@ -176,3 +176,17 @@ Erfahrung Adi: Bildkarten, die tief unten in einer Kolonne liegen, sind „parki
 Die KI tut genau das, ohne dass es ihr gesagt wurde. Häufigster Fall: **J/Q/K mit 0–3 Karten darunter, Zwilling noch im Stock** (z. B. Lage 2: ♥Q, ♦J, ♥J je zuunterst; Lage 13: ♦K über drei Phasen liegen gelassen; Lage 4: ♣Q mit 4 Karten darunter, Zwilling auf T1 unter 2 Karten).
 Daneben einige Basiskarten (2/3/4), deren Zwilling schon gespielt ist (z. B. Lage 6: ♣2 mit 5 Karten darunter über zwei Phasen). Diese wirken weniger einleuchtend: vielleicht ist die Karte darunter unwichtig, vielleicht sind die beiden Stellungen fast gleichwertig → bei Bedarf Zug für Zug ansehen.
 Analyseskript: `onChoice`-Hook in `phasePlan`; pimc-bench.js exportiert bei `require()` `makeDeal`, `playPhase`, `VARIANTS`.
+
+## Obergrenze und Übernahme in pimcWorker.js – 20.10.2026
+Ohne Grenze lange Ausreisser: Zeit/Lage (Benchmark, 7 Threads) Median 16.7 s, 90 % 60 s, **max 254 s**.
+`crn-phase-cap`: Stufe 1 höchstens 4800 Rollouts/Phase (= 16 × 300 Stellungen; bei mehr Stellungen weniger Samples, mind. 2), höchstens 30 Finalisten → Phasen bis 300 Stellungen unverändert.
+
+| Variante (99 × 6) | b+g % | Diff | Lagen +/=/− | ≤ Min | Siege | Zeit/Lage Median / 90 % / max |
+|---|---|---|---|---|---|---|
+| crn-phase | 92.8 | – | – | 40.9 % | 20.7 % | 16.7 / 60 / 254 s |
+| **crn-phase-cap** | 92.0 | −0.8 ± 0.5 (vs. crn-phase) | 19/51/29 | 41.1 % | 20.2 % | **7.9 / 11.2 / 19.9 s** |
+
+→ Kein signifikanter Verlust, gegenüber crn weiterhin ~+3.7 Pp; Ausreisser beseitigt.
+**Übernommen** in `js/pimcWorker.js` (`phasePlan`, `endgameChooseMove`, Konstanten `PHASE_*`; `pimcChooseMove` = crn bleibt Rückfall). Gegenprobe: Benchmark-Variante `worker` reproduziert `crn-phase-cap` exakt (Lagen 0–13 × 2), Replay ok.
+Browser (headless Chrome, M3, Worker-Nachricht wie galleryjs.js: 1000 Random + 1 PIMC): PIMC-Partie 1.6–3.5 s (Lagen 0–4), 5.5–10.9 s bei den drei langsamsten Lagen (29, 43, 73). Vorher (crn) 2.5–4.9 s. iPhone/Safari nicht gemessen.
+Neue Referenz für weitere Vergleiche: `docs/results/bench-crn-phase-cap-2026-10-19T22-11-38.json`.
