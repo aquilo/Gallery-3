@@ -19,8 +19,8 @@
 let isApp = false;
 let jsstoreCon;
 
-let version = "Version 3.2.1";
-let versionText = "17.10.2026, 3.2.1: Stronger AI evaluation (PIMC): all candidate moves are compared on the same simulated stock orders, equivalent moves are evaluated only once";
+let version = "Version 3.2.2";
+let versionText = "20.10.2026, 3.2.2: Stronger AI evaluation: within each phase between two stock deals, the AI now compares all reachable positions and picks the best one to deal from (often leaving well-parked cards on the tableau); once the stock is empty, it plays the rest perfectly";
 let device = "";
 let mymsg;
 let XSF, YSF, XST, YST, XSA, YSA, XSS, YSS;
