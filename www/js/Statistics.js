@@ -295,7 +295,12 @@ class Statistics {
         ? bgEvalResult.pimcScore : null,
       aiPercent: (typeof bgEvalResult !== 'undefined' && bgEvalResult && bgEvalResult.pimcScore !== undefined && bgEvalResult.pimcScore !== null
         && typeof computePercentileForScore === 'function')
-        ? computePercentileForScore(bgEvalResult.pimcScore) : null
+        ? computePercentileForScore(bgEvalResult.pimcScore) : null,
+      // Freiheitsgrad der KI-Partie (s. freedomBits()), ebenfalls nur falls rechtzeitig fertig
+      aiBits: (typeof bgEvalResult !== 'undefined' && bgEvalResult && bgEvalResult.pimcPhaseStates)
+        ? freedomBits(bgEvalResult.pimcPhaseStates) : null,
+      aiPhases: (typeof bgEvalResult !== 'undefined' && bgEvalResult && bgEvalResult.pimcPhaseStates)
+        ? bgEvalResult.pimcPhaseStates.join(" ") : null
     };
 
     // Fuer ein moegliches spaeteres Nachtragen des AI-Scores merken (falls
@@ -495,6 +500,14 @@ function drawResult(x, y) {
 
 // --- Prototyp "KI-Version": Score-Kaestchen (You/AI) + Perzentil-Hilfsfunktion ---
 
+// Freiheitsgrad einer KI-Partie: Summe log2(erreichbare Stellungen) ueber alle
+// Phasen (pimcPhaseStates aus pimcWorker.js). -1 = Aufzaehlung abgebrochen
+// (mehr als 20000 Stellungen) -> mit 20000 gerechnet, Summe ist dann Untergrenze.
+function freedomBits(phaseStates) {
+  const bits = phaseStates.reduce((sum, n) => sum + Math.log2(n < 0 ? 20000 : n), 0);
+  return Math.round(bits * 100) / 100;
+}
+
 function computePercentileForScore(score, histo, n) {
   // Gleiche "geschlagen-oder-gleich"-Formel wie Statistics.doStatistics()
   // (dort resultf2), aber fuer einen BELIEBIGEN Score (z.B. den KI-Score) -
@@ -607,7 +620,7 @@ function drawAiDebugStats() {
   // ("Doppelbelichtung"). Daher hier explizit vorher loeschen.
   noStroke();
   fill(global_nightmode ? BG_NIGHT : BG_DAY);
-  rect(0, y - TWO * 12, widthNew, TWO * 34); // 2 Zeilen: Vergleich + AI-Rechenzeit
+  rect(0, y - TWO * 12, widthNew, TWO * 48); // 3 Zeilen: Vergleich + AI-Rechenzeit + Freiheitsgrad
 
   textAlign(LEFT, BASELINE);
   textFont(myFont, F9);
@@ -639,6 +652,15 @@ function drawAiDebugStats() {
     text("AI evaluation this game: " + (bgEvalResult.pimcElapsedMs / 1000).toFixed(1) + " s", x, y);
   } else if (typeof bgEvalWorker !== "undefined" && bgEvalWorker) {
     text("AI evaluation this game: running ...", x, y);
+  }
+  y += TWO * 14;
+
+  // Freiheitsgrad (s. freedomBits()); abgebrochene Phase -> ">", Summe als Untergrenze
+  if (typeof bgEvalResult !== "undefined" && bgEvalResult && bgEvalResult.pimcPhaseStates) {
+    const ns = bgEvalResult.pimcPhaseStates;
+    const capped = ns.some((n) => n < 0);
+    text("Freedom: " + (capped ? ">" : "") + freedomBits(ns).toFixed(1) + " bit  [" +
+      ns.map((n) => (n < 0 ? ">20k" : n)).join(" ") + "]", x, y);
   }
 
   const devSolvsolv = (s.hsolvable > 0 ? (100 * s.hzeros / s.hsolvable) : NaN) - good_solvsolv;

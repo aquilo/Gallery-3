@@ -1225,10 +1225,16 @@ function phaseSample(st, seed, maxRolloutMoves) {
   h.executeMove({ type: "deal_stock" }, { undoable: false });
   return rolloutScore(h, r, maxRolloutMoves);
 }
-// liefert die Zugfolge bis zur besten Austeil-Stellung oder null (zu viele Stellungen)
-function phasePlan(g, rng, numSamples, maxRolloutMoves) {
+// liefert die Zugfolge bis zur besten Austeil-Stellung oder null (zu viele Stellungen);
+// info (optional) erhaelt die Anzahl erreichbarer Stellungen (-1 = mehr als PHASE_MAX_STATES)
+function phasePlan(g, rng, numSamples, maxRolloutMoves, info) {
   let states;
-  try { states = phaseEnumerate(g); } catch (e) { if (e !== PHASE_ABORT) throw e; return null; }
+  try { states = phaseEnumerate(g); } catch (e) {
+    if (e !== PHASE_ABORT) throw e;
+    if (info) info.states = -1;
+    return null;
+  }
+  if (info) info.states = states.length;
   if (states.length === 1) return [];
   const s1 = Math.max(2, Math.min(PHASE_FIRST_SAMPLES, numSamples, Math.floor(PHASE_BUDGET1 / states.length)));
   const seeds = Array.from({ length: numSamples }, () => (rng() * 2 ** 32) >>> 0);
@@ -1282,12 +1288,20 @@ function playOnePimcGame(dealOrder, numSamples, maxRolloutMoves, rng) {
   const game = GallerySolitaire.fromDealOrder(dealOrder);
   const moves = [];
   let plan = null, planIdx = 0;
+  // Freiheitsgrad: je Phase (vor jedem Austeilen) die Anzahl erreichbarer Stellungen
+  const phaseStates = [];
+  let phaseStock = -1;
   const chooseMove = () => {
     if (game.isWon()) return null;
     if (game.stock.length === 0) {
       return endgameChooseMove(game) || pimcChooseMove(game, rng, numSamples, maxRolloutMoves);
     }
-    if (!plan) { plan = phasePlan(game, rng, numSamples, maxRolloutMoves); planIdx = 0; }
+    if (!plan) {
+      const info = {};
+      plan = phasePlan(game, rng, numSamples, maxRolloutMoves, info);
+      planIdx = 0;
+      if (game.stock.length !== phaseStock) { phaseStock = game.stock.length; phaseStates.push(info.states); }
+    }
     if (!plan) return pimcChooseMove(game, rng, numSamples, maxRolloutMoves); // zu viele Stellungen
     if (planIdx < plan.length) return plan[planIdx++];
     plan = null;
@@ -1313,7 +1327,7 @@ function playOnePimcGame(dealOrder, numSamples, maxRolloutMoves, rng) {
     movesVerified = false;
   }
 
-  return { score, moves, movesVerified };
+  return { score, moves, movesVerified, phaseStates };
 }
 
 function runFullEvaluation(dealOrder, n, alpha, pimcOpts, postProgress) {
@@ -1332,6 +1346,7 @@ function runFullEvaluation(dealOrder, n, alpha, pimcOpts, postProgress) {
     pimcNumSamples: numSamples,
     pimcMoves: pimcResult.moves,
     pimcMovesVerified: pimcResult.movesVerified,
+    pimcPhaseStates: pimcResult.phaseStates,
   });
 }
 

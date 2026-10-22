@@ -182,6 +182,10 @@ function startBackgroundEvaluation(dealOrder, alphanow) {
           lastSavedGame.aiPercent = (typeof computePercentileForScore === "function")
             ? computePercentileForScore(e.data.pimcScore, lastSavedGameHisto, lastSavedGameHistoN)
             : null;
+          if (e.data.pimcPhaseStates && typeof freedomBits === "function") {
+            lastSavedGame.aiBits = freedomBits(e.data.pimcPhaseStates);
+            lastSavedGame.aiPhases = e.data.pimcPhaseStates.join(" ");
+          }
           if (typeof saveGame === "function") {
             saveGame(lastSavedGame); // upsert (gleicher Primary Key 'datetime') + refresht global_statistics
             My.print("[bgEval] AI-Score nachtraeglich gespeichert: " + e.data.pimcScore);

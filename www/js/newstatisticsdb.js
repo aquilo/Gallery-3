@@ -129,6 +129,17 @@ function getDbSchema() {
             aiPercent: {
                 notNull: false,
                 dataType: 'number'
+            },
+            // Freiheitsgrad der KI-Partie: Summe log2 und erreichbare Stellungen
+            // pro Phase, leerzeichengetrennt (-1 = mehr als 20000). Nicht
+            // indexiert -> aeltere DBs brauchen keine neue Schema-Version.
+            aiBits: {
+                notNull: false,
+                dataType: 'number'
+            },
+            aiPhases: {
+                notNull: false,
+                dataType: 'string'
             }
         }
     }
@@ -717,7 +728,7 @@ async function handleStatisticsFileSelect(event) {
 const STAT_EXPORT_COLUMNS = [
     'datetime', 'alpha', 'player', 'result', 'less', 'equal', 'more',
     'minimum', 'median', 'mean', 'maximum', 'mode', 'scores', 'trials',
-    'nAuto', 'nMoves', 'dealOrder', 'aiScore', 'aiPercent', 'sorter'
+    'nAuto', 'nMoves', 'dealOrder', 'aiScore', 'aiPercent', 'aiBits', 'aiPhases', 'sorter'
 ];
 
 function statsToCsv(stats) {
@@ -830,8 +841,9 @@ async function importStatisticsFromCsv(csvText) {
                 }
                 // dealOrder ist wie datetime ein STRING-Feld (kommagetrennte
                 // Kartenliste) - NICHT parseFloat'en, das wuerde es auf die
-                // erste Zahl vor dem ersten Komma zusammenstutzen.
-                if (header === 'datetime' || header === 'dealOrder') {
+                // erste Zahl vor dem ersten Komma zusammenstutzen. Ebenso
+                // aiPhases (leerzeichengetrennte Liste).
+                if (header === 'datetime' || header === 'dealOrder' || header === 'aiPhases') {
                     row[header] = value;
                 } else {
                     row[header] = parseFloat(value);

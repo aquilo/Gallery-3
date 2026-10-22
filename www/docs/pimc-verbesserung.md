@@ -190,3 +190,30 @@ Ohne Grenze lange Ausreisser: Zeit/Lage (Benchmark, 7 Threads) Median 16.7 s, 90
 **Übernommen** in `js/pimcWorker.js` (`phasePlan`, `endgameChooseMove`, Konstanten `PHASE_*`; `pimcChooseMove` = crn bleibt Rückfall). Gegenprobe: Benchmark-Variante `worker` reproduziert `crn-phase-cap` exakt (Lagen 0–13 × 2), Replay ok.
 Browser (headless Chrome, M3, Worker-Nachricht wie galleryjs.js: 1000 Random + 1 PIMC): PIMC-Partie 1.6–3.5 s (Lagen 0–4), 5.5–10.9 s bei den drei langsamsten Lagen (29, 43, 73). Vorher (crn) 2.5–4.9 s. iPhone/Safari nicht gemessen.
 Neue Referenz für weitere Vergleiche: `docs/results/bench-crn-phase-cap-2026-10-19T22-11-38.json`.
+
+## Freiheitsgrad: erreichbare Stellungen pro Phase – 22.10.2026
+Frage (Adi): Wovon hängt die PIMC-Zeit ab, und misst sie eine Art Komplexität?
+Die Zeit ist im Wesentlichen Rollouts × Rollout-Länge. Die Zahl der Rollouts pro Phase hängt von N ab, der Zahl der verschiedenen Stellungen, die vor dem nächsten Austeilen erreichbar sind (`phaseEnumerate`; Foundation-Slots innerhalb einer Reihe sind schon über `phaseKey` zusammengefasst). Wegen der Obergrenze wächst sie nur bis N ≈ 300 deutlich, ab N > 20 000 folgt der Rückfall auf `pimcChooseMove`.
+Als Kennzahl, die nicht von Obergrenze und Gerät abhängt: **Freiheit = Σ log₂ N über die 9 Phasen** (bit). `playOnePimcGame` liefert jetzt `phaseStates` (N je Phase, −1 = über 20 000, dann mit 20 000 gerechnet → Untergrenze), der Worker schickt sie als `pimcPhaseStates`.
+
+Lauf `docs/pimc-freedom.js`: Lagen 0–999 (wie pimc-bench.js), je 1 PIMC-Partie (160 Samples) + 1000 Random-Partien (α 0.01), 7 Threads, 23 min. 1 tote Lage, 13 Lagen mit einer Phase > 20 000, keine Replay-Fehler, PIMC 194 Siege. Freiheit Min/Median/Max 4.0 / 44.7 / 63.0 bit.
+
+| Freiheit [bit] (Fünftel) | PIMC | Random-Mittel | Random-sd | Vorsprung PIMC | b+g % | s/Partie |
+|---|---|---|---|---|---|---|
+| 4.0 – 39.4 | 24.0 | 37.7 | 7.7 | 13.6 | 89.7 | 5.9 |
+| 39.4 – 43.0 | 14.8 | 30.8 | 7.6 | 16.0 | 93.7 | 7.7 |
+| 43.0 – 46.0 | 15.7 | 30.4 | 8.0 | 14.7 | 90.0 | 9.0 |
+| 46.0 – 49.3 | 13.3 | 28.4 | 7.5 | 15.1 | 92.5 | 10.5 |
+| 49.3 – 63.0 | 12.1 | 26.5 | 7.3 | 14.4 | 91.4 | 12.6 |
+
+Korrelation mit der Freiheit: PIMC-Score −0.38, Random-Mittel −0.36, Random-sd −0.02, Vorsprung (Random-Mittel − PIMC) 0.00, b+g % −0.02, Rechenzeit +0.65. PIMC-Score vs. Random-Mittel +0.62.
+
+Erkenntnisse:
+- **Freiheit misst Leichtigkeit:** mehr Freiheit → beide spielen besser; am stärksten im untersten Fünftel (Lagen, die früh blockieren).
+- **Freiheit sagt nicht, ob kluges Spiel zählt:** der Vorsprung von PIMC bleibt in allen Fünfteln bei ~14–16 Punkten. (Der Probelauf mit 14 Lagen hatte das Gegenteil angedeutet.)
+- **Zeit ist nur ein grobes Mass für Freiheit** (+0.65): Obergrenze, Rollout-Länge und Rückfall verzerren sie.
+- **Teilweise zirkulär:** N in späteren Phasen hängt von PIMCs eigenen früheren Entscheidungen ab. Eigenschaft der Lage selbst ist nur **Phase 1** (noch nichts entschieden): log₂ N₁ korreliert mit Random-Mittel −0.50, PIMC −0.34, Vorsprung −0.20 → bei viel Anfangsfreiheit kommt auch der Zufallsspieler weit, kluges Spiel bringt etwas weniger.
+
+In der App: Statistik-Tab zeigt unter der Rechenzeit `Freedom: x bit [N₁ … N₉]`. Gespeichert pro Partie als `aiBits` (Summe) und `aiPhases` (N je Phase, leerzeichengetrennt, −1 = über 20 000), auch im CSV-Export/-Import; wie `aiScore` nachgetragen, falls PIMC beim Speichern noch nicht fertig war. Nicht indexierte Spalten → keine neue DB-Version nötig.
+Offen: Bei N > 20 000 ruft `playOnePimcGame` `phasePlan` vor jedem Zug der Phase neu auf (zählt jedes Mal bis zur Grenze) – Merker pro Phase würde Zeit sparen.
+Rohdaten: `docs/results/freedom-2026-10-22T12-21-54.json`.
