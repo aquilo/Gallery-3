@@ -301,7 +301,7 @@ class Statistics {
         ? freedomBits(bgEvalResult.pimcPhaseStates) : null,
       aiPhases: (typeof bgEvalResult !== 'undefined' && bgEvalResult && bgEvalResult.pimcPhaseStates)
         ? bgEvalResult.pimcPhaseStates.join(" ") : null,
-      // Loesbarkeit bei bekanntem Stock (s. startBackgroundSolve()): 1 / 0 / -1, falls schon fertig
+      // Loesbarkeit bei bekanntem Stock (s. startBackgroundSolve()): 1 ja / 0 nein / -1 eventuell, falls schon fertig
       solvable: (typeof bgSolveResult !== 'undefined' && bgSolveResult) ? bgSolveResult.solvable : null
     };
 
@@ -536,10 +536,10 @@ function computePercentileForScore(score, histo, n) {
 // Ampel zur Loesbarkeit der Vorlage bei bekanntem Stock (bgSolveResult, s.
 // startBackgroundSolve() in galleryjs.js): gruen = Sieg gefunden, orange =
 // keiner gefunden, rot = sicher unloesbar; grauer Ring, solange die Pruefung laeuft.
-const SOLVABLE_COLORS = { "1": [35, 176, 0], "0": [245, 150, 0], "-1": [215, 42, 42] };
-const SOLVABLE_TEXT = { "1": "solvable", "0": "no win found", "-1": "unsolvable" };
+const SOLVABLE_COLORS = { "1": [35, 176, 0], "0": [215, 42, 42], "-1": [245, 150, 0] };
+const SOLVABLE_TEXT = { "1": "solvable", "0": "unsolvable", "-1": "no win found" };
 
-// 1 / 0 / -1 oder null (Pruefung laeuft noch). Hat der Spieler, die Random-
+// 1 ja / 0 nein / -1 eventuell oder null (Pruefung laeuft noch). Hat der Spieler, die Random-
 // Auswertung oder die KI die Vorlage geloest, ist sie ebenfalls sicher loesbar.
 function getSolvableState() {
   const aiScore = (typeof bgEvalResult !== "undefined" && bgEvalResult) ? bgEvalResult.pimcScore : null;

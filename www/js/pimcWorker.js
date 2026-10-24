@@ -1361,8 +1361,8 @@ function runFullEvaluation(dealOrder, n, alpha, pimcOpts, postProgress) {
 //      Unloesbarkeit beweisen.
 //   2. Strahlsuche (solvBeam): pro Phase die besten B Austeil-Stellungen,
 //      bewertet mit dem besten von K Zufalls-Rollouts auf dem echten Stock.
-// Ergebnis: 1 = Sieg gefunden (gruen), -1 = sicher unloesbar (rot),
-// 0 = innert Zeitlimit kein Sieg gefunden (orange).
+// Ergebnis: 1 = Sieg gefunden (gruen), 0 = sicher unloesbar (rot),
+// -1 = innert Zeitlimit kein Sieg gefunden, eventuell loesbar (orange).
 // Messung und Herleitung: docs/pimc-optimum.js, docs/pimc-verbesserung.md.
 // ----------------------------------------------------------------------------
 const SOLVE_MS = 8000;
@@ -1581,7 +1581,7 @@ function solvBeam(g0, B, K, deadline) {
   return { score: best, path: bestPath };
 }
 
-// opts: { timeMs, beam, k, maxNodes } -> { solvable: 1|0|-1, solveMs, solveVia, solveMoves }
+// opts: { timeMs, beam, k, maxNodes } -> { solvable: 1 ja | 0 nein | -1 eventuell, solveMs, solveVia, solveMoves }
 // solveVia: "beam" | "search" (Sieg gefunden), "check" | "search" (unloesbar), "timeout"
 function checkSolvable(dealOrder, opts) {
   opts = opts || {};
@@ -1591,11 +1591,11 @@ function checkSolvable(dealOrder, opts) {
   const done = (solvable, solveVia, moves) =>
     ({ solvable, solveVia, solveMs: Date.now() - t0, solveMoves: moves || null });
   const g = GallerySolitaire.fromDealOrder(dealOrder);
-  if (!solvWinCheck(g)) return done(-1, "check");
+  if (!solvWinCheck(g)) return done(0, "check");
   // Tiefensuche findet Siege schnell oder gar nicht -> zuerst, mit kurzem Limit
   const ctx = { nodes: 0, maxNodes: opts.maxNodes || Infinity, deadline: t0 + timeMs * SOLVE_SEARCH_SHARE, memo: new Map() };
   try {
-    return solvWin(g, ctx) ? done(1, "search") : done(-1, "search");
+    return solvWin(g, ctx) ? done(1, "search") : done(0, "search");
   } catch (e) {
     if (e !== PHASE_ABORT) throw e;
   }
@@ -1605,7 +1605,7 @@ function checkSolvable(dealOrder, opts) {
     const bm = solvBeam(g, B, K, deadline);
     if (bm.score === 0 && replayMoves(dealOrder, bm.path) === 0) return done(1, "beam", bm.path);
   }
-  return done(0, "timeout");
+  return done(-1, "timeout");
 }
 
 if (typeof self !== "undefined" && typeof self.postMessage === "function" && typeof window === "undefined") {

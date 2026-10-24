@@ -152,7 +152,7 @@ let lastSavedGameHistoN = 0;
 // Loesbarkeit der Vorlage bei bekanntem Stock ("Ampel", checkSolvable() in
 // pimcWorker.js): eigener Worker, laeuft parallel zur Auswertung oben und
 // bricht nach SOLVE_TIME_MS ab. bgSolveResult.solvable: 1 = Sieg gefunden,
-// 0 = keiner gefunden, -1 = sicher unloesbar.
+// 0 = sicher unloesbar, -1 = keiner gefunden (eventuell loesbar).
 // Messung (100 Lagen, Node, M3): 8 s -> 54, 15 s -> 60 von 70 loesbaren Lagen gruen.
 const SOLVE_TIME_MS = 15000;
 let bgSolveWorker = null;

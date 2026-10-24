@@ -141,8 +141,8 @@ function getDbSchema() {
                 notNull: false,
                 dataType: 'string'
             },
-            // Loesbarkeit bei bekanntem Stock: 1 = Sieg gefunden, 0 = keiner
-            // gefunden (Zeitlimit), -1 = sicher unloesbar. Nicht indexiert.
+            // Loesbarkeit bei bekanntem Stock: 1 = Sieg gefunden (ja), 0 = sicher
+            // unloesbar (nein), -1 = keiner gefunden im Zeitlimit (eventuell). Nicht indexiert.
             solvable: {
                 notNull: false,
                 dataType: 'number'

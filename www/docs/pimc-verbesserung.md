@@ -257,4 +257,4 @@ Lauf `optimum-2026-10-24T11-00-35.json` (Lagen 0–99, Strahl B=200/K=8, Tiefens
 | **15 s** (App) | **60 (+2)** | 36 | 2 |
 
 Zum Vergleich: alte Reihenfolge (Strahlsuche zuerst) bei 8 s nur 44 grün. Zeit bis grün (15 s): Median 2.3 s, 90 % 6.5 s. Headless Chrome reproduziert die Node-Resultate (Lagen 3, 14, 32, 0, 12).
-Anzeige: Punkt unten rechts im Statistik-Panel (grün = Sieg gefunden, orange = kein Sieg gefunden, rot = sicher unlösbar, grauer Ring = läuft), Textzeile `Known stock: …` unter Freedom. Erst nach der Partie sichtbar (kein Spoiler). Gespeichert als `solvable` (1 / 0 / −1, ohne die Random/PIMC-Abkürzung), nachgetragen wie `aiScore`, auch im CSV. Nicht indexiert → keine neue DB-Version.
+Anzeige: Punkt unten rechts im Statistik-Panel (grün = Sieg gefunden, orange = kein Sieg gefunden, rot = sicher unlösbar, grauer Ring = läuft), Textzeile `Known stock: …` unter Freedom. Erst nach der Partie sichtbar (kein Spoiler). Gespeichert als `solvable` (1 = ja, 0 = nein, −1 = eventuell; ohne die Random/PIMC-Abkürzung), nachgetragen wie `aiScore`, auch im CSV. Nicht indexiert → keine neue DB-Version.
