@@ -300,7 +300,9 @@ class Statistics {
       aiBits: (typeof bgEvalResult !== 'undefined' && bgEvalResult && bgEvalResult.pimcPhaseStates)
         ? freedomBits(bgEvalResult.pimcPhaseStates) : null,
       aiPhases: (typeof bgEvalResult !== 'undefined' && bgEvalResult && bgEvalResult.pimcPhaseStates)
-        ? bgEvalResult.pimcPhaseStates.join(" ") : null
+        ? bgEvalResult.pimcPhaseStates.join(" ") : null,
+      // Loesbarkeit bei bekanntem Stock (s. startBackgroundSolve()): 1 / 0 / -1, falls schon fertig
+      solvable: (typeof bgSolveResult !== 'undefined' && bgSolveResult) ? bgSolveResult.solvable : null
     };
 
     // Fuer ein moegliches spaeteres Nachtragen des AI-Scores merken (falls
@@ -531,6 +533,38 @@ function computePercentileForScore(score, histo, n) {
   return (100.0 * (more + equal)) / n;
 }
 
+// Ampel zur Loesbarkeit der Vorlage bei bekanntem Stock (bgSolveResult, s.
+// startBackgroundSolve() in galleryjs.js): gruen = Sieg gefunden, orange =
+// keiner gefunden, rot = sicher unloesbar; grauer Ring, solange die Pruefung laeuft.
+const SOLVABLE_COLORS = { "1": [35, 176, 0], "0": [245, 150, 0], "-1": [215, 42, 42] };
+const SOLVABLE_TEXT = { "1": "solvable", "0": "no win found", "-1": "unsolvable" };
+
+// 1 / 0 / -1 oder null (Pruefung laeuft noch). Hat der Spieler, die Random-
+// Auswertung oder die KI die Vorlage geloest, ist sie ebenfalls sicher loesbar.
+function getSolvableState() {
+  const aiScore = (typeof bgEvalResult !== "undefined" && bgEvalResult) ? bgEvalResult.pimcScore : null;
+  if (resPlayer === 0 || statistics.minimum === 0 || aiScore === 0) return 1;
+  if (typeof bgSolveResult !== "undefined" && bgSolveResult) return bgSolveResult.solvable;
+  return null;
+}
+
+function drawSolvableLight(cx, cy, d) {
+  const state = getSolvableState();
+  if (state !== null) {
+    const c = SOLVABLE_COLORS[state];
+    stroke(80);
+    fill(c[0], c[1], c[2]);
+  } else if (typeof bgSolveWorker !== "undefined" && bgSolveWorker) {
+    stroke(170);
+    noFill();
+  } else {
+    return;
+  }
+  strokeWeight(1);
+  ellipse(cx, cy, d, d);
+  setFillStroke(0, 0, 0);
+}
+
 function drawScoreBox(label, score, pct, boxRight, boxTop, boxWidth, boxHeight, resultTag) {
   // Ein Kaestchen mit Label, Score-Zahl und Erfolgs-Prozentsatz - gemeinsames
   // Layout fuer "You" und "AI" (Prototyp: Vergleich mit dem PIMC-Agenten aus
@@ -662,6 +696,18 @@ function drawAiDebugStats() {
     text("Freedom: " + (capped ? ">" : "") + freedomBits(ns).toFixed(1) + " bit  [" +
       ns.map((n) => (n < 0 ? ">20k" : n)).join(" ") + "]", x, y);
   }
+  y += TWO * 14;
+
+  // Loesbarkeit bei bekanntem Stock (Ampel im Statistik-Panel)
+  const solvState = getSolvableState();
+  if (typeof bgSolveResult !== "undefined" && bgSolveResult) {
+    text("Known stock: " + SOLVABLE_TEXT[solvState] + " (" +
+      (bgSolveResult.solveMs / 1000).toFixed(1) + " s, " + bgSolveResult.solveVia + ")", x, y);
+  } else if (solvState === 1) {
+    text("Known stock: " + SOLVABLE_TEXT[1] + " (won)", x, y);
+  } else if (typeof bgSolveWorker !== "undefined" && bgSolveWorker) {
+    text("Known stock: checking ...", x, y);
+  }
 
   const devSolvsolv = (s.hsolvable > 0 ? (100 * s.hzeros / s.hsolvable) : NaN) - good_solvsolv;
   const devBest = (100 * (s.n - s.hcbetter) / s.n) - good_best;
@@ -760,15 +806,29 @@ function drawStatistics(x0, y0) {
   setStatisticsColor(resPlayer, statistics.maximum);
   textR("" + statistics.maximum, xr, y);
   setFillStroke(0, 0, 0);
-  text(getTranslation(LANG, "most freq") + ":", x, y += TWO * 20); // gekuerzt (war "most frequent") - Platz fuer engere Zahlenspalte
+  text(getTranslation(LANG, "mode") + ":", x, y += TWO * 20); // war "most freq" - Platz fuer die zweite Spalte
   setStatisticsColor(resPlayer, statistics.modus);
   textR("" + statistics.modus, xr, y);
   setFillStroke(0, 0, 0);
-  textFont(myFont, F10);
-  text("" + statistics.scores + " " + getTranslation(LANG, "different scores"), x, y += TWO * 16);
 
+  // zweite, kleine Spalte zwischen Zahlenspalte und Mini-Grafik (wie oben:
+  // links Random tapping, Mitte KI) - Freiheitsgrad der KI-Partie (s.
+  // freedomBits()), abgebrochene Phase -> ">"
+  let xc = xr + TWO * 14;
   textFont(myFont, F10);
-  textR("DF: " + degreesoffreedom, xm - 80, y);
+  let df = "...";
+  if (typeof bgEvalResult !== "undefined" && bgEvalResult && bgEvalResult.pimcPhaseStates) {
+    const ns = bgEvalResult.pimcPhaseStates;
+    df = (ns.some((n) => n < 0) ? ">" : "") + freedomBits(ns).toFixed(1) + " bit";
+  }
+  text("DF: " + df, xc, y);
+
+  y += TWO * 16;
+  text("# " + getTranslation(LANG, "scores") + ": " + statistics.scores, x, y);
+
+  let solvLabel = getTranslation(LANG, "solvable") + ":";
+  text(solvLabel, xc, y);
+  drawSolvableLight(xc + textWidth(solvLabel) + TWO * 8, y - TWO * 4, TWO * 9);
 
   textFont(myFont, F14);
   setFillStroke(0, 0, 0);

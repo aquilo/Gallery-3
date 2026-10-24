@@ -217,3 +217,44 @@ Erkenntnisse:
 In der App: Statistik-Tab zeigt unter der Rechenzeit `Freedom: x bit [N₁ … N₉]`. Gespeichert pro Partie als `aiBits` (Summe) und `aiPhases` (N je Phase, leerzeichengetrennt, −1 = über 20 000), auch im CSV-Export/-Import; wie `aiScore` nachgetragen, falls PIMC beim Speichern noch nicht fertig war. Nicht indexierte Spalten → keine neue DB-Version nötig.
 Offen: Bei N > 20 000 ruft `playOnePimcGame` `phasePlan` vor jedem Zug der Phase neu auf (zählt jedes Mal bis zur Grenze) – Merker pro Phase würde Zeit sparen.
 Rohdaten: `docs/results/freedom-2026-10-22T12-21-54.json`.
+
+## Optimum und Lösbarkeit bei bekanntem Stock – 24.10.2026
+Frage (Adi): Kennt man den Stock, ist das Spiel deterministisch – was ist pro Lage das Optimum, bzw. ist sie überhaupt lösbar?
+Zu entscheiden ist wie in Schritt 5 nur, in welcher erreichbaren Stellung jeder Phase ausgeteilt wird. Werkzeug: `docs/pimc-optimum.js`; die Verfahren selbst liegen in `js/pimcWorker.js` (Abschnitt „Lösbarkeit bei bekanntem Stock“), dieselben Funktionen nutzt die App für die Ampel.
+- **Vollständige Suche** über alle Austeil-Stellungen (Memo über Phasenanfänge): bricht schon bei Lagen ab, die PIMC gewinnt (Median ~2^45 Pfade).
+- **Strahlsuche** `solvBeam`: pro Phase die besten B Austeil-Stellungen, bewertet mit dem besten von K Zufalls-Rollouts auf dem echten Stock. Liefert eine gespielte Partie (Replay geprüft) → obere Schranke des Optimums.
+- **Siegprüfung** `solvWinCheck` (notwendige Bedingung): frühester Phasenindex je Karte, auch für künftig ausgeteilte (Karte da, Vorgänger liegt bzw. Platz frei, Karte darüber noch nicht ausgeteilt oder schon weg). Bei einem Sieg werden *alle* Karten gelegt → zusätzlich: beide Kopien eines Rangs brauchen verschiedene Vorgänger-Kopien, und es braucht so viele Plätze wie fehlende Basiskarten. Stufe „locker“ bis zum Stillstand, danach „strikt“ verschärfen (strikt direkt ab ∞ ist falsch: über beide Kopien verschränkte Ketten blieben hängen – erste Version meldete dadurch gewinnbare Lagen als unlösbar).
+- **Tiefensuche** `solvWin`: über alle Austeil-Stellungen, Memo, Äste ohne Siegchance abgeschnitten. Kann als Einzige Unlösbarkeit beweisen.
+
+Lauf `optimum-2026-10-24T11-00-35.json` (Lagen 0–99, Strahl B=200/K=8, Tiefensuche ≤ 3 Mio. Knoten, 41 min mit 7 Threads), Vergleich mit `bench-crn-phase-cap` (99 gewertete Lagen):
+
+| | Lagen |
+|---|---|
+| lösbar | **70** (65 per Strahlsuche, 5 nur per Tiefensuche, z. B. 14, 85) |
+| sicher unlösbar | 2 (32; 26 = tote Lage) |
+| offen | 28 |
+
+| Ø Score (99 Lagen) | |
+|---|---|
+| Random, Mittel | 29.7 |
+| PIMC, eine Partie | 15.2 |
+| Random, bestes von 1000 | 10.6 |
+| PIMC, bestes von 6 | 9.5 |
+| **beste bekannte Partie mit Stock-Kenntnis** | **3.1** |
+
+- PIMC gewinnt 20 % aller Partien, in den lösbaren Lagen 29 %. **37 lösbare Lagen hat PIMC in keiner von 6 Partien gewonnen** (u. a. 3, 30, 49 – die früher als „systematisch schwach“ aufgefallenen).
+- Nicht als lösbar erkannte Lagen: beste bekannte Partie Ø 10.5, PIMC Ø 22.8. Optimum dort nicht bewiesen.
+- Der Abstand PIMC ↔ Hellseher (~12 Punkte) ist nur teilweise einholbar (PIMC kennt den Stock nicht) → Obergrenze, kein Ziel.
+- Beweis der Unlösbarkeit klappt kaum: Die Siegprüfung schlägt meist erst ab Phase 6–7 an; davor gilt fast jede Stock-Karte als „könnte klappen“. Hebel wären stärkere frühe Stau-Erkennung (Abhängigkeiten über die ganze Austeilfolge) oder Zusammenlegen gleichwertiger Stellungen.
+
+### Ampel in der App
+`checkSolvable(dealOrder, { timeMs })` im eigenen Worker (`startBackgroundSolve()` in galleryjs.js), parallel zu Random + PIMC: Siegprüfung → Tiefensuche (20 % der Zeit; findet Siege schnell oder gar nicht) → Strahlsuchen B/K = 10/2, 50/4, 200/8 bis zum Zeitlimit. Grün zusätzlich, wenn Spieler, Random-Minimum oder PIMC 0 erreichen.
+
+| Zeitlimit (Node, M3, 4 parallel) | grün | orange | rot |
+|---|---|---|---|
+| 4 s | 50 (+3 über Random/PIMC) | 45 | 2 |
+| 8 s | 54 (+2) | 42 | 2 |
+| **15 s** (App) | **60 (+2)** | 36 | 2 |
+
+Zum Vergleich: alte Reihenfolge (Strahlsuche zuerst) bei 8 s nur 44 grün. Zeit bis grün (15 s): Median 2.3 s, 90 % 6.5 s. Headless Chrome reproduziert die Node-Resultate (Lagen 3, 14, 32, 0, 12).
+Anzeige: Punkt unten rechts im Statistik-Panel (grün = Sieg gefunden, orange = kein Sieg gefunden, rot = sicher unlösbar, grauer Ring = läuft), Textzeile `Known stock: …` unter Freedom. Erst nach der Partie sichtbar (kein Spoiler). Gespeichert als `solvable` (1 / 0 / −1, ohne die Random/PIMC-Abkürzung), nachgetragen wie `aiScore`, auch im CSV. Nicht indexiert → keine neue DB-Version.

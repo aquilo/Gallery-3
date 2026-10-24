@@ -140,6 +140,12 @@ function getDbSchema() {
             aiPhases: {
                 notNull: false,
                 dataType: 'string'
+            },
+            // Loesbarkeit bei bekanntem Stock: 1 = Sieg gefunden, 0 = keiner
+            // gefunden (Zeitlimit), -1 = sicher unloesbar. Nicht indexiert.
+            solvable: {
+                notNull: false,
+                dataType: 'number'
             }
         }
     }
@@ -728,7 +734,7 @@ async function handleStatisticsFileSelect(event) {
 const STAT_EXPORT_COLUMNS = [
     'datetime', 'alpha', 'player', 'result', 'less', 'equal', 'more',
     'minimum', 'median', 'mean', 'maximum', 'mode', 'scores', 'trials',
-    'nAuto', 'nMoves', 'dealOrder', 'aiScore', 'aiPercent', 'aiBits', 'aiPhases', 'sorter'
+    'nAuto', 'nMoves', 'dealOrder', 'aiScore', 'aiPercent', 'aiBits', 'aiPhases', 'solvable', 'sorter'
 ];
 
 function statsToCsv(stats) {

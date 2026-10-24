@@ -149,7 +149,51 @@ let lastSavedGame = null;
 let lastSavedGameHisto = null;
 let lastSavedGameHistoN = 0;
 
+// Loesbarkeit der Vorlage bei bekanntem Stock ("Ampel", checkSolvable() in
+// pimcWorker.js): eigener Worker, laeuft parallel zur Auswertung oben und
+// bricht nach SOLVE_TIME_MS ab. bgSolveResult.solvable: 1 = Sieg gefunden,
+// 0 = keiner gefunden, -1 = sicher unloesbar.
+// Messung (100 Lagen, Node, M3): 8 s -> 54, 15 s -> 60 von 70 loesbaren Lagen gruen.
+const SOLVE_TIME_MS = 15000;
+let bgSolveWorker = null;
+let bgSolveResult = null;  // { type:'solved', dealOrder, solvable, solveVia, solveMs }
+
+function startBackgroundSolve(dealOrder) {
+  bgSolveResult = null;
+  if (bgSolveWorker) {
+    try { bgSolveWorker.terminate(); } catch (e) { /* ignore */ }
+    bgSolveWorker = null;
+  }
+  if (typeof Worker === "undefined") return;
+  try {
+    bgSolveWorker = new Worker("js/pimcWorker.js");
+    bgSolveWorker.onmessage = function (e) {
+      if (!e.data || e.data.type !== "solved" || e.data.dealOrder !== dealOrder) return;
+      bgSolveResult = e.data;
+      console.log("[bgSolve] solvable=" + e.data.solvable + " via " + e.data.solveVia +
+        " (" + e.data.solveMs + " ms)");
+      // Nachtragen wie beim AI-Score, falls die Partie schon gespeichert ist
+      if (lastSavedGame && lastSavedGame.dealOrder === dealOrder &&
+          (lastSavedGame.solvable === null || lastSavedGame.solvable === undefined)) {
+        lastSavedGame.solvable = e.data.solvable;
+        if (typeof saveGame === "function") saveGame(lastSavedGame);
+      }
+      try { bgSolveWorker.terminate(); } catch (err) { /* ignore */ }
+      bgSolveWorker = null;
+    };
+    bgSolveWorker.onerror = function (err) {
+      My.print("Loesbarkeits-Pruefung fehlgeschlagen: " + (err && err.message));
+      bgSolveWorker = null;
+    };
+    bgSolveWorker.postMessage({ dealOrder: dealOrder, solve: { timeMs: SOLVE_TIME_MS } });
+  } catch (e) {
+    My.print("Loesbarkeits-Pruefung nicht verfuegbar: " + e.message);
+    bgSolveWorker = null;
+  }
+}
+
 function startBackgroundEvaluation(dealOrder, alphanow) {
+  startBackgroundSolve(dealOrder);
   bgEvalResult = null;
   bgEvalIndex = 0;
   if (bgEvalWorker) {
