@@ -821,14 +821,13 @@ function drawStatistics(x0, y0) {
     const ns = bgEvalResult.pimcPhaseStates;
     df = (ns.some((n) => n < 0) ? ">" : "") + freedomBits(ns).toFixed(1) + " bit";
   }
-  text("DF: " + df, xc, y);
-
-  y += TWO * 16;
-  text("# " + getTranslation(LANG, "scores") + ": " + statistics.scores, x, y);
-
   let solvLabel = getTranslation(LANG, "solvable") + ":";
   text(solvLabel, xc, y);
   drawSolvableLight(xc + textWidth(solvLabel) + TWO * 8, y - TWO * 4, TWO * 9);
+
+  y += TWO * 16;
+  text("# " + getTranslation(LANG, "scores") + ": " + statistics.scores, x, y);
+  text("DF: " + df, xc, y);
 
   textFont(myFont, F14);
   setFillStroke(0, 0, 0);
