@@ -19,8 +19,8 @@
 let isApp = false;
 let jsstoreCon;
 
-let version = "Version 3.2.2";
-let versionText = "20.10.2026, 3.2.2: Stronger AI evaluation: within each phase between two stock deals, the AI now compares all reachable positions and picks the best one to deal from (often leaving well-parked cards on the tableau); once the stock is empty, it plays the rest perfectly";
+let version = "Version 3.2.3";
+let versionText = "24.10.2026, 3.2.3: Statistics show whether the deal is solvable with a known stock (green: a win was found, orange: no win found within 15 s, red: unsolvable), and the AI's degrees of freedom in bits";
 let device = "";
 let mymsg;
 let XSF, YSF, XST, YST, XSA, YSA, XSS, YSS;
