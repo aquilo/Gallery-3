@@ -39,11 +39,15 @@ let aiReplay = {
   moves: [],
   pendingIndex: 0, // Index des naechsten, noch nicht ausgefuehrten Zugs
   dealOrder: null,
+  title: "AI replay",
 };
 
 // Klickbereich der "AI"-Box (von Statistics.js/drawScoreBox gesetzt) bzw.
 // des Schliessen-Kreuzes im Replay-Overlay (von drawAiReplayOverlay gesetzt).
+// solvableRect: "solvable: ●" (Statistics.js) -> Replay des Gewinnwegs bei
+// bekanntem Stock (bgSolveResult.solveMoves, s. checkSolvable() in pimcWorker.js).
 let aiBoxRect = null;
+let solvableRect = null;
 let aiReplayCloseRect = null;
 
 function pointInBoxRect(x, y, r) {
@@ -95,6 +99,17 @@ function aiReplayBuildRowMap(g) {
   return map;
 }
 
+// Gewinnweg bei bekanntem Stock nachspielen (Klick auf "solvable: ●")
+function startSolutionReplay() {
+  if (typeof bgSolveResult === "undefined" || !bgSolveResult ||
+      bgSolveResult.dealOrder !== window.currentDealOrder ||
+      !Array.isArray(bgSolveResult.solveMoves) || !bgSolveResult.solveMoves.length) {
+    My.print("Solution-Replay: kein Gewinnweg vorhanden.");
+    return;
+  }
+  startReplay(bgSolveResult.dealOrder, bgSolveResult.solveMoves, "Solution (known stock)");
+}
+
 function startAiReplay() {
   if (typeof bgEvalResult === "undefined" || !bgEvalResult ||
       bgEvalResult.dealOrder !== window.currentDealOrder ||
@@ -102,23 +117,28 @@ function startAiReplay() {
     My.print("AI-Replay: noch nicht bereit (Hintergrund-Auswertung nicht bereit/nicht fertig).");
     return;
   }
-  if (typeof GallerySolitaire === "undefined") {
-    My.print("AI-Replay: pimcWorker.js ist nicht als <script> eingebunden.");
-    return;
-  }
   if (bgEvalResult.pimcMovesVerified === false) {
     My.print("AI-Replay: Zugliste konnte nicht selbst verifiziert werden - kein Replay gestartet.");
     return;
   }
+  startReplay(bgEvalResult.dealOrder, bgEvalResult.pimcMoves, "AI replay");
+}
+
+function startReplay(dealOrder, moves, title) {
+  if (typeof GallerySolitaire === "undefined") {
+    My.print("AI-Replay: pimcWorker.js ist nicht als <script> eingebunden.");
+    return;
+  }
   try {
-    aiReplay.game = GallerySolitaire.fromDealOrder(bgEvalResult.dealOrder);
+    aiReplay.game = GallerySolitaire.fromDealOrder(dealOrder);
   } catch (e) {
     My.print("AI-Replay: Spiel konnte nicht aufgebaut werden (" + e.message + ")");
     return;
   }
-  aiReplay.moves = bgEvalResult.pimcMoves;
+  aiReplay.moves = moves;
   aiReplay.pendingIndex = 0;
-  aiReplay.dealOrder = bgEvalResult.dealOrder;
+  aiReplay.dealOrder = dealOrder;
+  aiReplay.title = title;
   aiReplay.active = true;
   dirty = true;
   mustDraw = true;
@@ -178,12 +198,12 @@ function aiReplayPilePosition(posStr, rowMap, g) {
 }
 
 function aiReplayDescribeMove(move) {
-  if (move.type === "deal_stock") return "Stock aufdecken";
+  if (move.type === "deal_stock") return "deal stock";
   if (move.type === "move_card" && move.card) {
     const liveSuit = AI_REPLAY_SUIT_TO_LIVE[move.card.s];
     const cardObj = aiReplayFindCard(liveSuit, move.card.r);
     const label = cardObj ? cardObj.toStr() : (move.card.r + "/" + move.card.s);
-    return label + ": " + move.from + " → " + move.to;
+    return label + ": " + move.from + " -> " + move.to;
   }
   return "";
 }
@@ -263,12 +283,25 @@ function drawAiReplayOverlay() {
     }
   }
 
-  // Stock-Rest als Zahl an der Stock-Position.
-  fill(0);
+  // Stock: wie im echten Spiel (StockPile.draw()) als gestaffelter
+  // Kartenstapel, darauf die Anzahl Restkarten. Leerer Stock: nur die Zahl.
+  const nStock = g.stock.length;
+  const dd = Math.ceil(nStock / 8);
+  let sx = stockPile.x + dd * DXSS;
+  for (let i = 0; i < dd; i++) {
+    sx -= DXSS;
+    stroke(0);
+    fill(255);
+    rect(sx, stockPile.y, TWO * 36, TWO * 51);
+    noStroke();
+    fill(255, 127, 0, 80);
+    rect(sx + TWO * 3, stockPile.y + TWO * 3, TWO * 30, TWO * 45);
+  }
   noStroke();
+  fill(nStock > 0 ? 0 : (global_nightmode ? 200 : 0));
   textAlign(CENTER, CENTER);
   textFont(myFont, F14);
-  text(g.stock.length, stockPile.xc, stockPile.yc);
+  text(nStock, stockPile.xc, stockPile.yc);
   lowestY = Math.max(lowestY, stockPile.y + CARDHEIGHT);
 
   // Hervorhebung der Karte, die im naechsten Schritt gespielt wird -
@@ -286,7 +319,7 @@ function drawAiReplayOverlay() {
     if (pos) {
       os.mynoStroke();
       os.myfill4(178, 24, 138, 100); // war 150 - "etwas weniger deckend"
-      os.myrect(pos.x, pos.y, CARDwidthNew, CARDHEIGHT);
+      os.myrect(pos.x + 1, pos.y + 1, CARDwidthNew - 1, CARDHEIGHT - 1);
     }
   }
 
@@ -295,13 +328,13 @@ function drawAiReplayOverlay() {
   let headerTop = lowestY + TWO * 12;
   let headerHeight = TWO * 34;
   fill(global_nightmode ? BG_NIGHT : 255);
-  stroke(0);
+  stroke(global_nightmode ? 90 : 0);
   rect(TWO * 10, headerTop, WIDTH0 - TWO * 20, headerHeight, 6);
   noStroke();
-  fill(0);
+  fill(global_nightmode ? 220 : 0);
   textAlign(LEFT, CENTER);
-  textFont(myFont, F12);
-  let label = "AI-Replay - Zug " + Math.min(aiReplay.pendingIndex + 1, aiReplay.moves.length) +
+  textFont(myFont, F10);
+  let label = aiReplay.title + " - move " + Math.min(aiReplay.pendingIndex + 1, aiReplay.moves.length) +
     " / " + aiReplay.moves.length;
   if (aiReplay.pendingIndex < aiReplay.moves.length) {
     label += ": " + aiReplayDescribeMove(aiReplay.moves[aiReplay.pendingIndex]);
@@ -314,16 +347,16 @@ function drawAiReplayOverlay() {
     const stuck = g.getLegalMoves().length === 0;
     const hitCap = aiReplay.moves.length >= 300;
     let why = stuck
-      ? "keine Zuege mehr moeglich (Sackgasse)"
-      : (hitCap ? "Zug-Limit (300) erreicht - evtl. waeren noch Zuege moeglich gewesen" : "");
-    label += " - fertig (Score " + g.calculateCurrentScore() + (why ? ", " + why : "") + "). Klick zum Schliessen.";
+      ? "no more moves possible"
+      : (hitCap ? "move limit (300) reached" : "");
+    label += " - done (score " + g.calculateCurrentScore() + (why ? ", " + why : "") + "). Click to close.";
   }
   text(label, TWO * 18, headerTop + headerHeight / 2);
 
   aiReplayCloseRect = { left: WIDTH0 - TWO * 34, top: headerTop, width: TWO * 24, height: headerHeight };
   textAlign(CENTER, CENTER);
   textFont(myFont, F16);
-  fill(150, 0, 0);
+  fill(global_nightmode ? color(230, 70, 70) : color(150, 0, 0));
   text("×", aiReplayCloseRect.left + TWO * 12, headerTop + headerHeight / 2);
 
   textAlign(LEFT, BASELINE);

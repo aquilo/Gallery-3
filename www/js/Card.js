@@ -85,12 +85,12 @@ class Card {
       //os.myfill4(180, 180, 180, 90);
       os.myfill4(60, 0, 0, 20);
       os.mynoStroke();
-      os.myrect(x, y, CARDwidthNew, CARDHEIGHT);
+      os.myrect(x + 1, y + 1, CARDwidthNew - 1, CARDHEIGHT - 1);
     } else if (type=== 4) { // final jammed
       //os.myfill4(180, 180, 180, 90);
       os.myfill4(0, 0, 60, 20);
       os.mynoStroke();
-      os.myrect(x, y, CARDwidthNew, CARDHEIGHT);
+      os.myrect(x + 1, y + 1, CARDwidthNew - 1, CARDHEIGHT - 1);
     } else { // normal
       // os.myimage(this.img, x, y);
     } 
@@ -114,7 +114,7 @@ class Card {
     if (global_show === 0) return;
     os.mynoStroke();
     os.myfill4(255, 127, 0, 80);
-    os.myrect(x, y, CARDwidthNew, CARDHEIGHT);
+    os.myrect(x + 1, y + 1, CARDwidthNew - 1, CARDHEIGHT - 1);
   }
 
   drawAutoMovable(x, y) {
@@ -122,7 +122,7 @@ class Card {
     if (global_sayAuto !== 1) return;
     os.mynoStroke();
     os.myfill4(0, 255, 100, 80);
-    os.myrect(x, y, CARDwidthNew, CARDHEIGHT);
+    os.myrect(x + 1, y + 1, CARDwidthNew - 1, CARDHEIGHT - 1);
   }
 
 }

@@ -1366,8 +1366,12 @@ function runFullEvaluation(dealOrder, n, alpha, pimcOpts, postProgress) {
 // Messung und Herleitung: docs/pimc-optimum.js, docs/pimc-verbesserung.md.
 // ----------------------------------------------------------------------------
 const SOLVE_MS = 8000;
-const SOLVE_SEARCH_SHARE = 0.2; // Anteil des Zeitlimits fuer die Tiefensuche (zuerst)
-const SOLVE_BEAMS = [[10, 2], [50, 4], [200, 8]]; // Strahlsuchen [B, K] nacheinander
+const SOLVE_SEARCH_SHARE = 0.2; // Anteil des Zeitlimits fuer die Tiefensuche (zuerst) ...
+const SOLVE_SEARCH_MAX_MS = 3000; // ... aber hoechstens 3 s (= 20 % von 15 s): bei laengeren
+// Limits sonst spaeterer Start der Strahlsuche, die die meisten Siege findet (Messung 45 s, pimc-ampel.js)
+// Strahlsuchen [B, K] nacheinander; die breiten (800/3200) erreicht erst eine
+// verlaengerte Pruefung (Klick auf die orange Ampel, s. retryBackgroundSolve() in galleryjs.js)
+const SOLVE_BEAMS = [[10, 2], [50, 4], [200, 8], [800, 16], [3200, 32]];
 
 // wie phaseKey, plus Stocklaenge (bei bekannter Austeilfolge bestimmen die
 // Stapelhoehen den Inhalt) -> eindeutig ueber Phasen hinweg
@@ -1410,7 +1414,7 @@ function solvDeal(g) {
 // Kopien eines Rangs brauchen verschiedene Vorgaenger-Kopien, und es braucht so
 // viele Plaetze wie fehlende Basiskarten. Ignoriert: Zuordnung ueber mehrere
 // Kettenstufen.
-function solvWinCheck(g) {
+function solvWinCheck(g, withDeadlines) {
   const INF = 99;
   const rowOf = (r) => (r % 3 === 2 ? 0 : r % 3 === 0 ? 1 : 2);
   const cards = []; // { r, s, arr, above, aboveArr }
@@ -1508,10 +1512,60 @@ function solvWinCheck(g) {
     for (let i = 0; i < N.length; i++) if (N[i] !== E[i]) { E[i] = N[i]; ch = true; }
     if (!ch) break;
   }
-  return E.every((e) => e < INF);
+  if (!E.every((e) => e < INF)) return false;
+  // Teuer (in der Tiefensuche netto weniger Siege) -> nur am Anfang der Pruefung
+  return !withDeadlines || solvDeadlinesOk(cards, rowBases(byId, rowOf), slotsFree, slotsWrong, E, sweep);
 }
 
-// true = Sieg erreichbar ab Phasenanfang g; ctx.memo ueber Phasenanfaenge
+function rowBases(byId, rowOf) {
+  const out = [[], [], []];
+  for (const [id, inst] of byId) {
+    const r = id % 14, row = rowOf(r);
+    if (r === row + 2) out[row].push(...inst);
+  }
+  return out;
+}
+
+// Spaeteste Zeitpunkte: Liegt spaeter y auf x und kommt y ohne x gar nicht ins Spiel (Sperrprobe:
+// E neu rechnen, als waere x nie gespielt), muss x vor der Austeilung von y weg. Unvertraeglich ist:
+//  - x fruehestens erst ab dieser Austeilung spielbar
+//  - in einer Reihe muessen bis Phase t mehr Basiskarten liegen, als bis dann Plaetze frei werden
+function solvDeadlinesOk(cards, bases, slotsFree, slotsWrong, E, sweep) {
+  const INF = 99;
+  const deadlineOf = (x) => {
+    if (cards[x].above < 0) return INF;
+    const keep = E.slice();
+    E.fill(INF);
+    for (let guard = 0; guard < 200; guard++) {
+      const N = sweep(false);
+      N[x] = INF;
+      let ch = false;
+      for (let i = 0; i < N.length; i++) if (N[i] < E[i]) { E[i] = N[i]; ch = true; }
+      if (!ch) break;
+    }
+    let dl = INF;
+    for (let y = cards[x].above; y >= 0; y = cards[y].above) {
+      if (E[y] >= INF) { dl = cards[y].arr; break; } // Karten darueber: erste, die x braucht
+    }
+    for (let i = 0; i < E.length; i++) E[i] = keep[i];
+    return dl;
+  };
+  const dl = cards.map((c, x) => deadlineOf(x));
+  for (let x = 0; x < cards.length; x++) if (dl[x] < INF && E[x] >= dl[x]) return false;
+  for (let row = 0; row < 3; row++) {
+    const rel = [];
+    for (let k = 0; k < slotsFree[row]; k++) rel.push(0);
+    for (const w of slotsWrong[row]) rel.push(E[w]);
+    rel.sort((a, b) => a - b);
+    const dls = bases[row].map((x) => dl[x]).filter((d) => d < INF).sort((a, b) => a - b);
+    for (let k = 0; k < dls.length; k++) if (k < rel.length && rel[k] >= dls[k]) return false;
+  }
+  return true;
+}
+
+// true = Sieg erreichbar ab Phasenanfang g; ctx.memo ueber Phasenanfaenge.
+// ctx.next (Map, optional): Phasenanfang -> naechster Phasenanfang auf dem
+// gefundenen Gewinnweg (fuer solvWinPath).
 function solvWin(g, ctx) {
   const k = solvKey(g);
   const m = ctx.memo.get(k);
@@ -1522,14 +1576,43 @@ function solvWin(g, ctx) {
     const states = solvEnumerate(g, ctx, false);
     if (states.some((st) => st.g.isWon())) res = true;
     else if (g.stock.length > 0) {
-      const kids = states.map((st) => solvDeal(st.g)).filter(solvWinCheck);
+      const kids = states.map((st) => solvDeal(st.g)).filter((h) => solvWinCheck(h));
       // mehr abgelegte Karten zuerst
       kids.sort((a, b) => a.calculateCurrentScore() - b.calculateCurrentScore());
-      res = kids.some((h) => solvWin(h, ctx));
+      const win = kids.find((h) => solvWin(h, ctx));
+      if (win) { res = true; if (ctx.next) ctx.next.set(k, win); }
     }
   }
   ctx.memo.set(k, res);
   return res;
+}
+
+// Zugfolge zum Gewinnweg, den solvWin in ctx.next hinterlassen hat
+function solvWinPath(g0, ctx) {
+  const path = [];
+  const free = { nodes: 0, maxNodes: Infinity, deadline: Infinity };
+  let g = g0;
+  while (!g.isWon()) {
+    const next = ctx.next.get(solvKey(g));
+    const states = solvEnumerate(g, free, true);
+    if (!next) {
+      path.push(...states.find((st) => st.g.isWon()).path);
+      break;
+    }
+    const nk = solvKey(next);
+    path.push(...states.find((st) => solvKey(solvDeal(st.g)) === nk).path, { type: "deal_stock" });
+    g = next;
+  }
+  return path;
+}
+// Zuege mit der bewegten Karte ergaenzen (wie pimcMoves, fuer das Replay)
+function solvAnnotate(dealOrder, moves) {
+  const g = GallerySolitaire.fromDealOrder(dealOrder);
+  return moves.map((m) => {
+    const card = m.type === "move_card" ? peekCardAt(g, m.from) : null;
+    g.executeMove(m, { undoable: false });
+    return card ? Object.assign({}, m, { card }) : Object.assign({}, m);
+  });
 }
 
 function solvRollout(g, rng) {
@@ -1581,30 +1664,42 @@ function solvBeam(g0, B, K, deadline) {
   return { score: best, path: bestPath };
 }
 
-// opts: { timeMs, beam, k, maxNodes } -> { solvable: 1 ja | 0 nein | -1 eventuell, solveMs, solveVia, solveMoves }
-// solveVia: "beam" | "search" (Sieg gefunden), "check" | "search" (unloesbar), "timeout"
+// opts: { timeMs, searchMs, beamFrom, maxNodes }
+//   -> { solvable: 1 ja | 0 nein | -1 eventuell, solveMs, solveVia, solveMoves, beamIdx }
+// beamFrom: erst ab dieser Strahlsuche (Index in SOLVE_BEAMS) - fuer eine verlaengerte Pruefung,
+// die dort weitermacht, wo die vorige abgebrochen hat (beamIdx = zuletzt laufende Strahlsuche)
+// solveMoves: bei einem Sieg die Gewinn-Zugfolge (per replayMoves geprueft, mit Karten wie pimcMoves)
+// solveVia: "beam" | "search" (Sieg gefunden), "check" | "search" (unloesbar), "timeout" | "exhausted" (eventuell)
 function checkSolvable(dealOrder, opts) {
   opts = opts || {};
   const t0 = Date.now();
   const timeMs = opts.timeMs || SOLVE_MS;
   const deadline = t0 + timeMs;
+  let beamIdx = opts.beamFrom || 0;
   const done = (solvable, solveVia, moves) =>
-    ({ solvable, solveVia, solveMs: Date.now() - t0, solveMoves: moves || null });
+    ({ solvable, solveVia, solveMs: Date.now() - t0, solveMoves: moves ? solvAnnotate(dealOrder, moves) : null, beamIdx });
   const g = GallerySolitaire.fromDealOrder(dealOrder);
-  if (!solvWinCheck(g)) return done(0, "check");
+  if (!solvWinCheck(g, true)) return done(0, "check");
   // Tiefensuche findet Siege schnell oder gar nicht -> zuerst, mit kurzem Limit
-  const ctx = { nodes: 0, maxNodes: opts.maxNodes || Infinity, deadline: t0 + timeMs * SOLVE_SEARCH_SHARE, memo: new Map() };
+  const ctx = { nodes: 0, maxNodes: opts.maxNodes || Infinity, deadline: t0 + (opts.searchMs || Math.min(timeMs * SOLVE_SEARCH_SHARE, SOLVE_SEARCH_MAX_MS)), memo: new Map(), next: new Map() };
   try {
-    return solvWin(g, ctx) ? done(1, "search") : done(0, "search");
+    if (!solvWin(g, ctx)) return done(0, "search");
+    const path = solvWinPath(g, ctx);
+    if (replayMoves(dealOrder, path) === 0) return done(1, "search", path);
+    return done(1, "search"); // sollte nicht vorkommen: Sieg bewiesen, Weg nicht nachspielbar
   } catch (e) {
     if (e !== PHASE_ABORT) throw e;
   }
   // danach Strahlsuche, erst schmal und schnell, dann breiter bis zum Zeitlimit
-  for (const [B, K] of opts.beams || SOLVE_BEAMS) {
-    if (Date.now() > deadline) break;
+  // beamIdx bleibt bei Zeitablauf auf der unterbrochenen Strahlsuche stehen
+  while (beamIdx < SOLVE_BEAMS.length && Date.now() <= deadline) {
+    const [B, K] = SOLVE_BEAMS[beamIdx];
     const bm = solvBeam(g, B, K, deadline);
     if (bm.score === 0 && replayMoves(dealOrder, bm.path) === 0) return done(1, "beam", bm.path);
+    if (Date.now() > deadline) break;
+    beamIdx++;
   }
+  if (beamIdx >= SOLVE_BEAMS.length) return done(-1, "exhausted"); // alle Strahlsuchen durch, keine weitere Pruefung sinnvoll
   return done(-1, "timeout");
 }
 

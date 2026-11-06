@@ -654,7 +654,7 @@ function drawAiDebugStats() {
   // ("Doppelbelichtung"). Daher hier explizit vorher loeschen.
   noStroke();
   fill(global_nightmode ? BG_NIGHT : BG_DAY);
-  rect(0, y - TWO * 12, widthNew, TWO * 48); // 3 Zeilen: Vergleich + AI-Rechenzeit + Freiheitsgrad
+  rect(0, y - TWO * 12, widthNew, TWO * 62); // 4 Zeilen: Vergleich + AI-Rechenzeit + Freiheitsgrad + Known stock
 
   textAlign(LEFT, BASELINE);
   textFont(myFont, F9);
@@ -701,12 +701,14 @@ function drawAiDebugStats() {
   // Loesbarkeit bei bekanntem Stock (Ampel im Statistik-Panel)
   const solvState = getSolvableState();
   if (typeof bgSolveResult !== "undefined" && bgSolveResult) {
+    const retryHint = (solvState === -1 && typeof canRetryBackgroundSolve === "function" && canRetryBackgroundSolve())
+      ? " - tap for " + Math.round(2 * bgSolveTimeMs / 1000) + " s" : "";
     text("Known stock: " + SOLVABLE_TEXT[solvState] + " (" +
-      (bgSolveResult.solveMs / 1000).toFixed(1) + " s, " + bgSolveResult.solveVia + ")", x, y);
+      (bgSolveResult.solveMs / 1000).toFixed(1) + " s, " + bgSolveResult.solveVia + ")" + retryHint, x, y);
   } else if (solvState === 1) {
     text("Known stock: " + SOLVABLE_TEXT[1] + " (won)", x, y);
   } else if (typeof bgSolveWorker !== "undefined" && bgSolveWorker) {
-    text("Known stock: checking ...", x, y);
+    text("Known stock: checking (max. " + Math.round(bgSolveTimeMs / 1000) + " s) ...", x, y);
   }
 
   const devSolvsolv = (s.hsolvable > 0 ? (100 * s.hzeros / s.hsolvable) : NaN) - good_solvsolv;
@@ -824,6 +826,15 @@ function drawStatistics(x0, y0) {
   let solvLabel = getTranslation(LANG, "solvable") + ":";
   text(solvLabel, xc, y);
   drawSolvableLight(xc + textWidth(solvLabel) + TWO * 8, y - TWO * 4, TWO * 9);
+  // Klickbereich fuer das Nachspielen des Gewinnwegs (s. startSolutionReplay() in aiReplay.js),
+  // nur wenn die Suche einen Weg geliefert hat
+  if (typeof solvableRect !== "undefined") {
+    // ... bzw. bei oranger Ampel fuer die verlaengerte Pruefung (retryBackgroundSolve())
+    const retry = getSolvableState() === -1 && typeof canRetryBackgroundSolve === "function" && canRetryBackgroundSolve();
+    solvableRect = (typeof bgSolveResult !== "undefined" && bgSolveResult && (bgSolveResult.solveMoves || retry))
+      ? { left: xc - TWO * 4, top: y - TWO * 14, width: textWidth(solvLabel) + TWO * 20, height: TWO * 18 }
+      : null;
+  }
 
   y += TWO * 16;
   text("# " + getTranslation(LANG, "scores") + ": " + statistics.scores, x, y);

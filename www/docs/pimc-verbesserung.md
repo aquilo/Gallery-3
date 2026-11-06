@@ -257,4 +257,25 @@ Lauf `optimum-2026-10-24T11-00-35.json` (Lagen 0–99, Strahl B=200/K=8, Tiefens
 | **15 s** (App) | **60 (+2)** | 36 | 2 |
 
 Zum Vergleich: alte Reihenfolge (Strahlsuche zuerst) bei 8 s nur 44 grün. Zeit bis grün (15 s): Median 2.3 s, 90 % 6.5 s. Headless Chrome reproduziert die Node-Resultate (Lagen 3, 14, 32, 0, 12).
+
+Nachmessung 4.11.2026 (`docs/pimc-ampel.js`, Lagen 0–99, 4 parallel, Ref. `bench-crn-phase-cap`): Limit auf 45 s erhöht, Tiefensuche dabei auf höchstens 3 s begrenzt (`SOLVE_SEARCH_MAX_MS`; mit 20 % = 9 s kamen Siege später: Median 3.9 s, 90 % 18.6 s, kein zusätzliches Grün).
+
+| Zeitlimit | grün | + über Random/PIMC | rot | orange | bis grün: Median / 90 % |
+|---|---|---|---|---|---|
+| 15 s | 61 | 2 | 2 | 35 | 3.1 s / 11.0 s |
+| **45 s, Tiefensuche ≤ 3 s** (App) | **63** | 1 | 2 | 34 | 3.1 s / 13.7 s |
+
+Neu grün: Lage 55 (37.7 s) und 6 (21.6 s, vorher schon über Random/PIMC). Speicher ~1.6 GB für 4 Threads, unabhängig vom Limit.
+
+Verlängerte Prüfung (5.11.2026): Bei oranger Ampel nach Zeitablauf (`timeout`) startet ein Klick auf „solvable: ●“ die Prüfung mit doppelter Zeit neu (90 s, 180 s, …; `retryBackgroundSolve()`). Die Strahlsuche macht bei der zuletzt unterbrochenen Breite weiter (`beamFrom` = `beamIdx` der vorigen Prüfung); dafür sind `SOLVE_BEAMS` um 800/16 und 3200/32 erweitert. Sind alle Strahlsuchen ohne Sieg durch, meldet die Prüfung `exhausted` und bietet keine Verlängerung mehr an. Ein Ergebnis 1/0 ersetzt ein gespeichertes −1.
+
+Späteste Zeitpunkte (6.11.2026): `solvWinCheck(g, true)` prüft zusätzlich `solvDeadlinesOk`. Liegt später y auf x und kommt y ohne x gar nicht ins Spiel (Sperrprobe: früheste Zeiten neu rechnen, als wäre x nie gespielt), muss x vor der Austeilung von y weg. Unlösbar, wenn x frühestens erst ab dann spielbar ist oder in einer Reihe bis Phase t mehr Basiskarten liegen müssen, als Plätze frei werden. Eine reine Zuordnung Basiskarten ↔ Plätze über die frühesten Zeiten bringt nichts (3600 Stellungen: 0 zusätzlich), weil sie nur „nie“ weitergibt.
+
+| 3600 Stellungen aus Zufallspartien | als unlösbar erkannt | µs je Prüfung |
+|---|---|---|
+| bisher | 1121 | 70 |
+| nur Basiskarten | 1176 | 250 |
+| alle Karten | 1335 | 1137 |
+
+Auf 387 Austeil-Stellungen gewonnener Partien schlägt keine Variante an. In jeder Stellung der Tiefensuche lohnt es sich nicht (`ampel-45s-2026-11-05T23-07-13.json`: 60 + 1 grün statt 63 + 1, Lagen 11, 14, 29, 55 verloren, 62 neu), darum nur am Anfang der Prüfung. Die Suche selbst bleibt damit unverändert. Neu rot dadurch: Lage 7 (bisher offen, beste bekannte Partie 13 Punkte). Rot widerspricht keiner der 70 bekannt lösbaren Lagen.
 Anzeige: Punkt unten rechts im Statistik-Panel (grün = Sieg gefunden, orange = kein Sieg gefunden, rot = sicher unlösbar, grauer Ring = läuft), Textzeile `Known stock: …` unter Freedom. Erst nach der Partie sichtbar (kein Spoiler). Gespeichert als `solvable` (1 = ja, 0 = nein, −1 = eventuell; ohne die Random/PIMC-Abkürzung), nachgetragen wie `aiScore`, auch im CSV. Nicht indexiert → keine neue DB-Version.

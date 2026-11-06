@@ -154,11 +154,25 @@ let lastSavedGameHistoN = 0;
 // bricht nach SOLVE_TIME_MS ab. bgSolveResult.solvable: 1 = Sieg gefunden,
 // 0 = sicher unloesbar, -1 = keiner gefunden (eventuell loesbar).
 // Messung (100 Lagen, Node, M3): 8 s -> 54, 15 s -> 60 von 70 loesbaren Lagen gruen.
-const SOLVE_TIME_MS = 15000;
+const SOLVE_TIME_MS = 45000; // war 15000
 let bgSolveWorker = null;
-let bgSolveResult = null;  // { type:'solved', dealOrder, solvable, solveVia, solveMs }
+let bgSolveResult = null;  // { type:'solved', dealOrder, solvable, solveVia, solveMs, beamIdx }
+let bgSolveTimeMs = SOLVE_TIME_MS; // Zeitlimit der laufenden/letzten Pruefung
 
-function startBackgroundSolve(dealOrder) {
+// Orange Ampel angeklickt: dieselbe Vorlage mit doppelter Zeit nochmals pruefen,
+// die Strahlsuche macht bei der zuletzt unterbrochenen Breite weiter (beamFrom).
+function canRetryBackgroundSolve() {
+  return !bgSolveWorker && !!bgSolveResult && bgSolveResult.solvable === -1 &&
+    bgSolveResult.solveVia === "timeout" && bgSolveResult.dealOrder === window.currentDealOrder;
+}
+function retryBackgroundSolve() {
+  if (!canRetryBackgroundSolve()) return;
+  const prev = bgSolveResult;
+  startBackgroundSolve(prev.dealOrder, bgSolveTimeMs * 2, prev.beamIdx);
+}
+
+function startBackgroundSolve(dealOrder, timeMs, beamFrom) {
+  bgSolveTimeMs = timeMs || SOLVE_TIME_MS;
   bgSolveResult = null;
   if (bgSolveWorker) {
     try { bgSolveWorker.terminate(); } catch (e) { /* ignore */ }
@@ -172,20 +186,23 @@ function startBackgroundSolve(dealOrder) {
       bgSolveResult = e.data;
       console.log("[bgSolve] solvable=" + e.data.solvable + " via " + e.data.solveVia +
         " (" + e.data.solveMs + " ms)");
-      // Nachtragen wie beim AI-Score, falls die Partie schon gespeichert ist
+      // Nachtragen wie beim AI-Score, falls die Partie schon gespeichert ist;
+      // eine verlaengerte Pruefung darf ein "eventuell" (-1) durch 1/0 ersetzen
       if (lastSavedGame && lastSavedGame.dealOrder === dealOrder &&
-          (lastSavedGame.solvable === null || lastSavedGame.solvable === undefined)) {
+          (lastSavedGame.solvable === null || lastSavedGame.solvable === undefined ||
+           (lastSavedGame.solvable === -1 && e.data.solvable !== -1))) {
         lastSavedGame.solvable = e.data.solvable;
         if (typeof saveGame === "function") saveGame(lastSavedGame);
       }
       try { bgSolveWorker.terminate(); } catch (err) { /* ignore */ }
       bgSolveWorker = null;
+      if (statsRevealed) { dirty = true; mustDraw = true; redraw(); }
     };
     bgSolveWorker.onerror = function (err) {
       My.print("Loesbarkeits-Pruefung fehlgeschlagen: " + (err && err.message));
       bgSolveWorker = null;
     };
-    bgSolveWorker.postMessage({ dealOrder: dealOrder, solve: { timeMs: SOLVE_TIME_MS } });
+    bgSolveWorker.postMessage({ dealOrder: dealOrder, solve: { timeMs: bgSolveTimeMs, beamFrom: beamFrom || 0 } });
   } catch (e) {
     My.print("Loesbarkeits-Pruefung nicht verfuegbar: " + e.message);
     bgSolveWorker = null;
@@ -871,6 +888,63 @@ function allJamChecks() {
   for (let i = 26; i < 34; i++) {
     allPiles[i].doJamCheck();
   }
+  markUnplayableCards();
+}
+
+// Final Jams allgemein: Welche Karten koennen ueberhaupt noch je gespielt werden? Ausgehend von
+// den richtig liegenden Karten bis zum Stillstand sammeln - eine Karte ist spielbar, wenn
+//  - alle Karten auf ihr im Tableau spielbar sind (Stock: Reihenfolge unbekannt, also frei) und
+//  - sie einen Platz findet: eine Basiskarte einen leeren oder frei werdenden Platz ihrer Reihe,
+//    sonst eine offene Kette mit passendem Ende oder einen spielbaren Vorgaenger.
+// Was uebrig bleibt, ist tot; auch Kreise fallen so auf (9 auf beiden 3, je 9 auf der 3 des
+// anderen Stapels, falsche 5 auf dem Platz, den ihre 2 braucht). Nutzt nur sichtbare Information.
+// Nicht erkannt: "eine von beiden 9 ist tot, aber offen welche" - da bleiben beide unmarkiert.
+function markUnplayableCards() {
+  if (cardMoving()) return; // waehrend der Animation stimmen die Stapel nicht
+  const key = (suit, rank) => suit * 14 + rank;
+  const open = new Map(), copies = new Map(), covers = new Map();
+  const free = [0, 0, 0], wrong = [[], [], []];
+  for (let row = 0; row < 3; row++) {
+    for (const p of foundationPile[row]) {
+      if (p.empty()) { free[row]++; continue; }
+      const top = p.peek();
+      if (p.ok) open.set(key(top.suit, top.rank), (open.get(key(top.suit, top.rank)) || 0) + 1);
+      else wrong[row].push(top);
+    }
+  }
+  const todo = cards.filter((c) => c.rank >= 2 && !c.ok);
+  for (const c of todo) {
+    const k = key(c.suit, c.rank);
+    if (!copies.has(k)) copies.set(k, []);
+    copies.get(k).push(c);
+  }
+  for (const t of tableau) {
+    for (let j = 1; j < t.nCards; j++) covers.set(t.cards[j - 1], t.cards[j]); // direkt darauf
+  }
+  const playable = new Set();
+  const hasPlace = (c) => {
+    if (c.rank <= 4) {
+      const row = CardPile.SUIT_ROW[c.rank];
+      return free[row] > 0 || wrong[row].some((w) => playable.has(w));
+    }
+    const k = key(c.suit, c.rank - 3);
+    return open.get(k) > 0 || (copies.get(k) || []).some((p) => playable.has(p));
+  };
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (const c of todo) {
+      if (playable.has(c)) continue;
+      const above = covers.get(c);
+      if ((!above || playable.has(above)) && hasPlace(c)) {
+        playable.add(c);
+        changed = true;
+      }
+    }
+  }
+  for (const c of todo) {
+    if (!playable.has(c)) c.jamFinal = c.jamChecked = true;
+  }
 }
 
 function drawProgress(part, all) {
@@ -1277,6 +1351,16 @@ function handleTap() {
   }
   if (statsRevealed && typeof aiBoxRect !== "undefined" && pointInBoxRect(x, y, aiBoxRect)) {
     startAiReplay();
+    dirty = true;
+    mustDraw = true;
+    redraw();
+    return;
+  }
+  // Klick auf "solvable: ●" -> Gewinnweg bei bekanntem Stock nachspielen,
+  // bei oranger Ampel (Zeitlimit erreicht) stattdessen mit doppelter Zeit weitersuchen
+  if (statsRevealed && typeof solvableRect !== "undefined" && pointInBoxRect(x, y, solvableRect)) {
+    if (getSolvableState() === -1) retryBackgroundSolve();
+    else startSolutionReplay();
     dirty = true;
     mustDraw = true;
     redraw();
