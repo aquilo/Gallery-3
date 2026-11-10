@@ -19,8 +19,8 @@
 let isApp = false;
 let jsstoreCon;
 
-let version = "Version 3.2.3";
-let versionText = "24.10.2026, 3.2.3: Statistics show whether the deal is solvable with a known stock (green: a win was found, orange: no win found within 15 s, red: unsolvable), and the AI's degrees of freedom in bits";
+let version = "Version 3.2.4";
+let versionText = "6.11.2026, 3.2.4: Solvability check with a known stock runs up to 45 s; tap orange to search twice as long. More unsolvable deals are detected. Cards that can never be played again are now marked. Dark mode fixes";
 let device = "";
 let mymsg;
 let XSF, YSF, XST, YST, XSA, YSA, XSS, YSS;
@@ -921,6 +921,41 @@ function markUnplayableCards() {
   for (const t of tableau) {
     for (let j = 1; j < t.nCards; j++) covers.set(t.cards[j - 1], t.cards[j]); // direkt darauf
   }
+  // Reihenfolge-Zwang: S = Karten, die sicher vor c gespielt werden muessen (alles
+  // darueber; braucht eine Gruppe gleicher Karten so viele Vorgaenger wie es noch
+  // gibt, muessen alle diese Vorgaenger samt allem darueber auch vorher kommen).
+  // Landet c selbst in S, kann c nie gespielt werden - z.B. zwei J auf einer 5,
+  // wenn die zweite J beide 8 und die zweite 8 beide 5 braucht.
+  const aboveAll = (x) => {
+    const r = [];
+    for (let a = covers.get(x); a; a = covers.get(a)) r.push(a);
+    return r;
+  };
+  const orderDead = (c) => {
+    const S = new Set(aboveAll(c));
+    if (S.size === 0) return false;
+    for (let grown = true; grown; ) {
+      grown = false;
+      const cnt = new Map();
+      for (const x of [c, ...S]) {
+        if (x.rank >= 5) { const k = key(x.suit, x.rank); cnt.set(k, (cnt.get(k) || 0) + 1); }
+      }
+      for (const [k, m] of cnt) {
+        const need = m - (open.get(k - 3) || 0);
+        const prev = copies.get(k - 3) || [];
+        if (need <= 0 || need < prev.length) continue;
+        if (need > prev.length) return true; // gar nicht genug Vorgaenger
+        for (const p of prev) {
+          for (const x of [p, ...aboveAll(p)]) {
+            if (x === c) return true;
+            if (!S.has(x)) { S.add(x); grown = true; }
+          }
+        }
+      }
+    }
+    return false;
+  };
+  const dead = new Set(todo.filter(orderDead));
   const playable = new Set();
   const hasPlace = (c) => {
     if (c.rank <= 4) {
@@ -934,7 +969,7 @@ function markUnplayableCards() {
   while (changed) {
     changed = false;
     for (const c of todo) {
-      if (playable.has(c)) continue;
+      if (playable.has(c) || dead.has(c)) continue;
       const above = covers.get(c);
       if ((!above || playable.has(above)) && hasPlace(c)) {
         playable.add(c);
