@@ -83,19 +83,6 @@
 		</image:image>
 	</url>
 	<url>
-		<loc>https://gallery.mapresso.com/about.php</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.5</priority>
-		<image:image>
-		<image:loc>https://gallery.mapresso.com/_assets/img/gallery_all.gif</image:loc>
-		<image:title> old MacOS game</image:title>
-		</image:image>
-		<image:image>
-		<image:loc>https://gallery.mapresso.com/_assets/img/screen_dashboard.png</image:loc>
-		<image:title> Java Applet Version</image:title>
-		</image:image>
-	</url>
-	<url>
 		<loc>https://gallery.mapresso.com/play/</loc>
 		<lastmod>2026-11-10</lastmod>
 		<changefreq>weekly</changefreq>
@@ -180,6 +167,24 @@
 		<image:loc>https://gallery.mapresso.com/_assets/img/eval.png</image:loc>
 		<image:title> eval</image:title>
 		</image:image>
+	</url>
+	<url>
+		<loc>https://gallery.mapresso.com/about.php</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+		<image:image>
+		<image:loc>https://gallery.mapresso.com/_assets/img/gallery_all.gif</image:loc>
+		<image:title> old MacOS game</image:title>
+		</image:image>
+		<image:image>
+		<image:loc>https://gallery.mapresso.com/_assets/img/screen_dashboard.png</image:loc>
+		<image:title> Java Applet Version</image:title>
+		</image:image>
+	</url>
+	<url>
+		<loc>https://gallery.mapresso.com/faq.php</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
 	</url>
 
 </urlset>
