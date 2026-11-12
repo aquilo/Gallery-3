@@ -1,0 +1,165 @@
+body {
+  padding-top: 50px;
+}
+
+.wide {
+  width:100%;
+  height:200px;
+  background-image:url('/_assets/img/mh_ausschnitt-min.jpg');
+  background-size:cover;
+}
+
+.wide img {
+  width:100%;
+}
+
+.logo {
+  color:#fff;
+  font-weight:800;
+  font-size:14pt;
+  padding:25px;
+  text-align:center;
+}
+
+.line {
+  padding-top:20px;
+  white-space:no-wrap;
+  overflow:hidden;
+  text-align:center;
+}
+
+.jumbotron {
+  padding: 30px;
+  margin-bottom: 30px;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: inherit;
+  background-color: #eee;
+}
+.navbar-icon {
+  float: left;
+  padding: 9px 15px;
+  font-size: 18px;
+  line-height: 20px;
+}
+
+.jumbotron h1 {
+  font-size: 45;
+}
+.summary h1 {
+  font-size: 20px;
+}
+.summary {
+  background-color: rgb(238, 238, 238);
+  padding: 15px;
+}
+.rules h1 {
+  font-size: 28px;
+}
+.rules h2 {
+  font-size: 24px;
+}
+.rules h3 {
+  font-size: 20px;
+}
+
+
+
+.sidebar-nav {
+    overflow-x: hidden
+}
+
+@media screen and (max-width: 480px) {
+    .sidebar-nav {
+        text-align: center;
+        margin-top: 1.875em
+    }
+}
+
+.sidebar-nav .section-title {
+    font-size: 0.875em
+}
+
+.sidebar-nav .nav-list {
+    margin-top: 2em
+}
+
+.sidebar-nav .nav-list:first-child {
+    margin-top: 0
+}
+
+.sidebar-nav .section-title+.nav-list {
+    margin-top: 1em
+}
+
+@media screen and (min-width: 481px) and (max-width: 960px) {
+    .sidebar-nav .category-list {
+        position: relative;
+        float: left;
+        left: 50%
+    }
+
+    .sidebar-nav .category-list .nav-item {
+        position: relative;
+        float: left;
+        right: 50%;
+        margin-left: 1.25em
+    }
+
+    .sidebar-nav .category-list .nav-item.icon-item {
+        margin-left: 2.5em
+    }
+
+    .sidebar-nav .category-list .nav-item:first-child {
+        margin-left: 0
+    }
+}
+
+@media screen and (min-width: 481px) and (max-width: 640px) {
+    .sidebar-nav .nav-link {
+        font-size: 0.75em
+    }
+}
+
+.sidebar-nav .nav-item, .contact-section .nav-item {
+    margin-bottom: 0.625em
+}
+
+.sidebar-nav .nav-link, .contact-section .nav-link {
+    display: block;
+    min-height: 1.42857em;
+    margin-bottom: 0.42857em;
+    line-height: 1.57143em
+}
+
+.sidebar-nav .icon-link, .contact-section .icon-link {
+    padding-left: 2.57143em;
+    background-repeat: no-repeat;
+    background-position: left center;
+    -webkit-background-size: 20px 20px;
+    background-size: 20px 20px
+}
+
+.contact-wrapper {
+    *zoom: 1
+}
+
+.contact-list li {
+    list-style-type: none
+    font-size: 14px;
+}
+.twitter-link {
+    background-image: url(/_assets/img/twitter-sm.png)
+}
+
+.facebook-link {
+    background-image: url(/_assets/img/facebook-sm.png)
+}
+
+.email-link {
+    background-image: url(/_assets/img/send-sm.png)
+}
+
+
+

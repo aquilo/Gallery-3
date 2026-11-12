@@ -1,0 +1,7 @@
+DirectoryIndex index.php index.html
+
+#@__HCP_END__@#
+# Anything after the comment above is left alone
+
+# Java-Applet laeuft in keinem aktuellen Browser mehr -> zur Browser-Version
+Redirect 301 /applet.php /play/

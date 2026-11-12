@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gallery Solitaire — Gelerntes Rollout-Policy</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.20.0/dist/tf.min.js"></script>
+  <style>
+    body { font-family: system-ui, -apple-system, sans-serif; max-width: 900px; margin: 0 auto; padding: 20px; background: #f7f7f7; }
+    h1 { font-size: 1.4rem; margin-bottom: 0.5rem; }
+    .panel { background: #fff; border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+    button { padding: 8px 14px; margin-right: 8px; margin-bottom: 8px; border: none; border-radius: 6px; background: #2563eb; color: #fff; cursor: pointer; }
+    button:disabled { background: #9ca3af; cursor: not-allowed; }
+    .log { white-space: pre-wrap; font-family: ui-monospace, SFMono-Regular, monospace; font-size: 0.85rem; background: #1f2937; color: #e5e7eb; padding: 12px; border-radius: 8px; max-height: 300px; overflow-y: auto; }
+    .metric { display: inline-block; margin-right: 20px; font-weight: 600; }
+    .card { display: inline-block; width: 40px; height: 56px; border: 1px solid #9ca3af; border-radius: 4px; background: #fff; margin-right: 4px; text-align: center; line-height: 56px; font-weight: 700; user-select: none; }
+    .card.red { color: #dc2626; }
+    .card.back { background: #374151; color: transparent; }
+  </style>
+</head>
+<body>
+  <h1>Gallery Solitaire — Lernendes Rollout-Policy</h1>
+  <div class="panel">
+    <p>Diese Demo trainiert ein kleines neuronales Netz per Self-Play. Das Netz bewertet legale Züge und ersetzt das reine Zufalls-Rollout in der PIMC-Simulation.</p>
+    <div>
+      <span class="metric" id="gamesMetric">Spiele: 0</span>
+      <span class="metric" id="winsMetric">Siege: 0</span>
+      <span class="metric" id="wrMetric">Winrate: 0%</span>
+    </div>
+    <div style="margin-top:12px;">
+      <button id="trainBtn">Training starten</button>
+      <button id="playBtn">1 Spiel mit KI spielen</button>
+      <button id="randomBtn">1 Spiel mit Zufalls-Rollout spielen</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Live-Log</h2>
+    <div id="log" class="log">Bereit. Klicke „Training starten“.</div>
+  </div>
+
+  <script>
+    // ============== KLEINES GALLERY-ÄHNLICHES SOLITAIRE ==============
+    const SUITS = ['♠", "♥", "♦", "♣"];
+    const RANKS = ["A","2","3","4","5","6","7","8","9","10","J","Q","K"];
+    const NUM_SUITS = 4;
+    const NUM_RANKS = 13;
+    const DECK_SIZE = NUM_SUITS * NUM_RANKS;
+
+    function newDeck() {
+      const d = [];
+      for (let s = 0; s < NUM_SUITS; s++) for (let r = 0; r < NUM_RANKS; r++) d.push({suit:s, rank:r, faceUp:false});
+      for (let i = d.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [d[i], d[j]] = [d[j], d[i]]; }
+      return d;
+    }
+
+    class Game {
+      constructor() {
+        const deck = newDeck();
+        this.tableau = [[],[],[],[],[],[],[]]; // 7 Spalten
+        this.stock = [];
+        this.waste = [];
+        this.foundations = [[],[],[],[]];
+        // 7-Spalten-Initialisierung
+        let idx = 0;
+        for (let col = 0; col < 7; col++) {
+          for (let row = 0; row <= col; row++) {
+            this.tableau[col].push(deck[idx++]);
+          }
+          this.tableau[col][this.tableau[col].length-1].faceUp = true;
+        }
+        this.stock = deck.slice(idx);
+        this.wasteTop = null; // aktuell sichtbare Stock-Karte
+        this.dealWaste();
+        this.movesMade = 0;
+        this.maxMoves = 600;
+      }
+      dealWaste() {
+        if (this.wasteTop) this.waste.push(this.wasteTop);
+        this.wasteTop = this.stock.length ? this.stock.pop() : null;
+        if (this.wasteTop) { this.wasteTop.faceUp = true; }
+      }
+      topCard(arr) { return arr.length ? arr[arr.length-1] : null; }
+      canPlaceFoundation(card, suit) {
+        const top = this.topCard(this.foundations[suit]);
+        if (!top) return card.rank === 0;
+        return card.suit === suit && card.rank === top.rank + 1;
+      }
+      legalMoves() {
+        const moves = [];
+        // Karten vom Tableau auf Foundation
+        for (let c = 0; c < 7; c++) {
+          const card = this.topCard(this.tableau[c]);
+          if (!card || !card.faceUp) continue;
+          for (let s = 0; s < 4; s++) {
+            if (this.canPlaceFoundation(card, s)) moves.push({from:"tableau", col:c, to:"foundation", suit:s});
+          }
+        }
+        // Stock/Waste auf Foundation
+        if (this.wasteTop) {
+          for (let s = 0; s < 4; s++) {
+            if (this.canPlaceFoundation(this.wasteTop, s)) moves.push({from:"waste", to:"foundation", suit:s});
+          }
+        }
+        // Tableau-Karte auf andere Tableau-Spalte
+        for (let src = 0; src < 7; src++) {
+          const card = this.topCard(this.tableau[src]);
+          if (!card || !card.faceUp) continue;
+          for (let dst = 0; dst < 7; dst++) {
+            if (src === dst) continue;
+            const top = this.topCard(this.tableau[dst]);
+            if (top && top.faceUp && top.suit === card.suit && top.rank === card.rank + 1) {
+              moves.push({from:"tableau", col:src, to:"tableau", toCol:dst});
+            }
+            if (!top) { // leere Spalte
+              moves.push({from:"tableau", col:src, to:"tableau", toCol:dst});
+            }
+          }
+        }
+        // Waste auf Tableau
+        if (this.wasteTop) {
+          for (let dst = 0; dst < 7; dst++) {
+            const top = this.topCard(this.tableau[dst]);
+            if (top && top.suit === this.wasteTop.suit && top.rank === this.wasteTop.rank + 1) {
+              moves.push({from:"waste", to:"tableau", toCol:dst});
+            }
+            if (!top) moves.push({from:"waste", to:"tableau", toCol:dst});
+          }
+        }
+        // Stock weiterschalten
+        if (this.stock.length || this.wasteTop) moves.push({from:"stock", to:"cycle"});
+        return moves;
+      }
+      applyMove(m) {
+        let movedCard = null;
+        if (m.from === "tableau" && m.to === "foundation") {
+          movedCard = this.tableau[m.col].pop();
+          this.foundations[m.suit].push(movedCard);
+          if (this.tableau[m.col].length) {
+            const c = this.topCard(this.tableau[m.col]);
+            c.faceUp = true;
+          }
+        } else if (m.from === "waste" && m.to === "foundation") {
+          movedCard = this.wasteTop; this.wasteTop = null;
+          this.foundations[m.suit].push(movedCard);
+        } else if (m.from === "tableau" && m.to === "tableau") {
+          movedCard = this.tableau[m.col].pop();
+          this.tableau[m.toCol].push(movedCard);
+          if (this.tableau[m.col].length) this.topCard(this.tableau[m.col]).faceUp = true;
+        } else if (m.from === "waste" && m.to === "tableau") {
+          movedCard = this.wasteTop; this.wasteTop = null;
+          this.tableau[m.toCol].push(movedCard);
+        } else if (m.from === "stock" && m.to === "cycle") {
+          this.dealWaste();
+        }
+        this.movesMade++;
+      }
+      isWon() { return this.foundations.every(f => f.length === NUM_RANKS); }
+      isLost() { return this.movesMade > this.maxMoves || (this.legalMoves().length === 0 && !this.stock.length && !this.wasteTop); }
+      clone() {
+        const g = new Game(); // neu initialisiert, aber wir überschreiben
+        g.tableau = this.tableau.map(col => col.map(c => ({...c})));
+        g.stock = this.stock.map(c => ({...c}));
+        g.waste = this.waste.map(c => ({...c}));
+        g.wasteTop = this.wasteTop ? {...this.wasteTop} : null;
+        g.foundations = this.foundations.map(f => f.map(c => ({...c})));
+        g.movesMade = this.movesMade;
+        return g;
+      }
+    }
+
+    // ============== FEATURE ENCODING ==============
+    function cardBit(card, len) {
+      const v = new Float32Array(len);
+      if (card) { v[card.suit] = 1; v[4 + card.rank] = 1; if(card.faceUp) v[17] = 1; }
+      return v;
+    }
+    function encodeMove(game, move) {
+      // 128 Dimensionen
+      const f = new Float32Array(128);
+      let i = 0;
+      // Foundations
+      for (let s = 0; s < 4; s++) {
+        const top = game.foundations[s].length ? game.foundations[s].length - 1 : -1;
+        f[i++] = (top + 1) / 13;
+      }
+      // Tableau tops
+      for (let c = 0; c < 7; c++) {
+        const top = game.topCard(game.tableau[c]);
+        const bits = cardBit(top, 18);
+        for (let k = 0; k < 18; k++) f[i++] = bits[k];
+      }
+      // Waste
+      const wbits = cardBit(game.wasteTop, 18);
+      for (let k = 0; k < 18; k++) f[i++] = wbits[k];
+      // Move encoding
+      f[i++] = move.from === "tableau" ? 1 : 0;
+      f[i++] = move.from === "waste" ? 1 : 0;
+      f[i++] = move.from === "stock" ? 1 : 0;
+      f[i++] = move.to === "foundation" ? 1 : 0;
+      f[i++] = move.to === "tableau" ? 1 : 0;
+      f[i++] = move.to === "cycle" ? 1 : 0;
+      if (move.col !== undefined) f[i++] = (move.col + 1) / 7;
+      else f[i++] = 0;
+      if (move.toCol !== undefined) f[i++] = (move.toCol + 1) / 7;
+      else f[i++] = 0;
+      if (move.suit !== undefined) f[i + move.suit] = 1; i += 4;
+      return f;
+    }
+
+    // ============== POLICY-NETZ ==============
+    let policyNet = null;
+    async function buildModel() {
+      const model = tf.sequential();
+      model.add(tf.layers.dense({units: 128, activation: 'relu', inputShape: [128]}));
+      model.add(tf.layers.dense({units: 64, activation: 'relu'}));
+      model.add(tf.layers.dense({units: 1, activation: 'sigmoid'}));
+      model.compile({optimizer: tf.train.adam(0.001), loss: 'meanSquaredError'});
+      return model;
+    }
+
+    // ============== ROLLOUT MIT POLICY ==============
+    async function evaluateMoves(game, moves, epsilon = 0.2) {
+      if (moves.length === 0) return [];
+      const xs = moves.map(m => encodeMove(game, m));
+      const t = tf.tensor2d(xs, [moves.length, 128]);
+      const preds = policyNet.predict(t);
+      const vals = await preds.data();
+      t.dispose(); preds.dispose();
+      // Epsilon-Greedy: etwas Zufall beibehalten
+      const scores = Array.from(vals);
+      if (Math.random() < epsilon) {
+        return scores.map(s => s + Math.random() * 0.3);
+      }
+      return scores;
+    }
+
+    function randomChoiceLegal(game, moves) {
+      // Einfache heuristische Zufallsauswahl
+      return moves[Math.floor(Math.random() * moves.length)];
+    }
+
+    // ============== SELF-PLAY & TRAINING ==============
+    async function playEpisode(usePolicy = true) {
+      const g = new Game();
+      const history = [];
+      while (!g.isWon() && !g.isLost()) {
+        const moves = g.legalMoves();
+        if (moves.length === 0) break;
+        let move;
+        if (usePolicy && policyNet) {
+          const scores = await evaluateMoves(g, moves, 0.25);
+          const max = Math.max(...scores);
+          const idx = scores.indexOf(max);
+          move = moves[idx];
+        } else {
+          move = randomChoiceLegal(g, moves);
+        }
+        history.push({state: g.clone(), move: move});
+        g.applyMove(move);
+      }
+      return {won: g.isWon(), history};
+    }
+
+    let dataset = [];
+    async function trainStep() {
+      const ep = await playEpisode(true);
+      const result = ep.won ? 1.0 : 0.0;
+      // Einfaches Monte-Carlo-Target: jedem Zug denselben Outcome zuweisen
+      for (const h of ep.history) {
+        const x = encodeMove(h.state, h.move);
+        dataset.push({x, y: result});
+      }
+      if (dataset.length > 10000) dataset = dataset.slice(-10000);
+      return ep.won;
+    }
+
+    async function trainLoop(batchSize = 32, targetGames = 500) {
+      document.getElementById("trainBtn").disabled = true;
+      if (!policyNet) policyNet = await buildModel();
+      let wins = 0, games = 0;
+      while (games < targetGames) {
+        const won = await trainStep();
+        games++; if (won) wins++;
+        if (games % 25 === 0) {
+          // Kurzes Training auf aktuellem Dataset
+          const sample = dataset.sort(() => 0.5 - Math.random()).slice(0, 1024);
+          const xs = sample.map(s => s.x);
+          const ys = sample.map(s => s.y);
+          await policyNet.fit(tf.tensor2d(xs, [sample.length, 128]), tf.tensor2d(ys, [sample.length, 1]), {epochs: 1, verbose: 0});
+          log(`Spiele: ${games}, Siege: ${wins}, WR: ${(100*wins/games).toFixed(1)}%, Dataset: ${dataset.length}`);
+        }
+      }
+      log(`Training abgeschlossen nach ${games} Spielen. Winrate: ${(100*wins/games).toFixed(1)}%`);
+      document.getElementById("trainBtn").disabled = false;
+    }
+
+    // ============== PIMC MIT GELERNTEM ROLLOUT ==============
+    async function pimcMove(game, simulations = 120) {
+      const legal = game.legalMoves();
+      if (legal.length === 0) return null;
+      const scores = new Array(legal.length).fill(0);
+      for (let m = 0; m < legal.length; m++) {
+        let reward = 0;
+        for (let s = 0; s < simulations; s++) {
+          const clone = game.clone();
+          clone.applyMove(legal[m]);
+          reward += randomRollout(clone);
+        }
+        scores[m] = reward / simulations;
+      }
+      const best = scores.indexOf(Math.max(...scores));
+      return legal[best];
+    }
+
+    function randomRollout(game) {
+      let g = game;
+      while (!g.isWon() && !g.isLost()) {
+        const moves = g.legalMoves();
+        if (moves.length === 0) break;
+        // Hier gelerntes Policy nutzen, falls vorhanden
+        g.applyMove(moves[Math.floor(Math.random() * moves.length)]);
+      }
+      return g.isWon() ? 1 : 0;
+    }
+
+    async function learnedRollout(game) {
+      let g = game;
+      while (!g.isWon() && !g.isLost()) {
+        const moves = g.legalMoves();
+        if (moves.length === 0) break;
+        if (policyNet && Math.random() > 0.1) {
+          const scores = await evaluateMoves(g, moves, 0.0);
+          const idx = scores.indexOf(Math.max(...scores));
+          g.applyMove(moves[idx]);
+        } else {
+          g.applyMove(moves[Math.floor(Math.random() * moves.length)]);
+        }
+      }
+      return g.isWon() ? 1 : 0;
+    }
+
+    async function pimcLearnedMove(game, simulations = 60) {
+      const legal = game.legalMoves();
+      if (legal.length === 0) return null;
+      const scores = [];
+      for (let m = 0; m < legal.length; m++) {
+        let reward = 0;
+        for (let s = 0; s < simulations; s++) {
+          const clone = game.clone();
+          clone.applyMove(legal[m]);
+          reward += await learnedRollout(clone);
+        }
+        scores.push(reward / simulations);
+      }
+      const best = scores.indexOf(Math.max(...scores));
+      return legal[best];
+    }
+
+    // ============== UI & LOG ==============
+    function log(msg) {
+      const el = document.getElementById("log");
+      el.textContent = msg + "\n" + el.textContent;
+    }
+
+    let totalGames = 0, totalWins = 0;
+    function updateMetrics(won) {
+      totalGames++; if (won) totalWins++;
+      document.getElementById("gamesMetric").textContent = `Spiele: ${totalGames}`;
+      document.getElementById("winsMetric").textContent = `Siege: ${totalWins}`;
+      document.getElementById("wrMetric").textContent = `Winrate: ${(100*totalWins/totalGames).toFixed(1)}%`;
+    }
+
+    document.getElementById("trainBtn").addEventListener("click", () => {
+      trainLoop(32, 500);
+    });
+
+    document.getElementById("playBtn").addEventListener("click", async () => {
+      if (!policyNet) { log("Bitte zuerst trainieren."); return; }
+      const g = new Game();
+      while (!g.isWon() && !g.isLost()) {
+        const move = await pimcLearnedMove(g, 60);
+        if (!move) break;
+        g.applyMove(move);
+      }
+      const won = g.isWon();
+      updateMetrics(won);
+      log(won ? "KI hat gewonnen (gelerntes Policy)!" : "KI hat verloren (gelerntes Policy).");
+    });
+
+    document.getElementById("randomBtn").addEventListener("click", async () => {
+      const g = new Game();
+      while (!g.isWon() && !g.isLost()) {
+        const moves = g.legalMoves();
+        if (moves.length === 0) break;
+        g.applyMove(moves[Math.floor(Math.random() * moves.length)]);
+      }
+      const won = g.isWon();
+      updateMetrics(won);
+      log(won ? "Zufall hat gewonnen!" : "Zufall hat verloren.");
+    });
+  </script>
+</body>
+</html>

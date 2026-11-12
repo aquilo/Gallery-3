@@ -28,7 +28,6 @@ node_modules/
 
 # Compiled source #
 ###################
-*.com
 *.class
 *.dll
 *.exe
@@ -99,3 +98,6 @@ ios/App/Podfile.lock
 *.xcworkspacedata
 *.lock
 _scratch/
+
+# Website (site/): Schrift der Bootstrap-Glyphicons trotz *.ttf-Regel versionieren
+!site/_assets/fonts/*.ttf

@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+	xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
+>
+<!-- created with Integrity from https://peacockmedia.software -->
+
+	<url>
+		<loc>https://gallery.mapresso.com</loc>
+		<changefreq>weekly</changefreq>
+		<priority>1.0</priority>
+		<image:image>
+		<image:loc>https://gallery.mapresso.com/_assets/icons/apple-touch-icon-57x57.png</image:loc>
+		</image:image>
+		<image:image>
+		<image:loc>https://gallery.mapresso.com/_assets/icons/apple-touch-icon-60x60.png</image:loc>
+		</image:image>
+		<image:image>
+		<image:loc>https://gallery.mapresso.com/_assets/icons/apple-touch-icon-72x72.png</image:loc>
+		</image:image>
+		<image:image>
+		<image:loc>https://gallery.mapresso.com/_assets/icons/apple-touch-icon-76x76.png</image:loc>
+		</image:image>
+		<image:image>
+		<image:loc>https://gallery.mapresso.com/_assets/icons/apple-touch-icon-114x114.png</image:loc>
+		</image:image>
+		<image:image>
+		<image:loc>https://gallery.mapresso.com/_assets/icons/apple-touch-icon-120x120.png</image:loc>
+		</image:image>
+		<image:image>
+		<image:loc>https://gallery.mapresso.com/_assets/icons/apple-touch-icon-144x144.png</image:loc>
+		</image:image>
+		<image:image>
+		<image:loc>https://gallery.mapresso.com/_assets/icons/apple-touch-icon-152x152.png</image:loc>
+		</image:image>
+		<image:image>
+		<image:loc>https://gallery.mapresso.com/_assets/icons/apple-touch-icon-180x180.png</image:loc>
+		</image:image>
+		<image:image>
+		<image:loc>https://gallery.mapresso.com/_assets/icons/favicon-32x32.png</image:loc>
+		</image:image>
+		<image:image>
+		<image:loc>https://gallery.mapresso.com/_assets/icons/android-chrome-192x192.png</image:loc>
+		</image:image>
+		<image:image>
+		<image:loc>https://gallery.mapresso.com/_assets/icons/favicon-96x96.png</image:loc>
+		</image:image>
+		<image:image>
+		<image:loc>https://gallery.mapresso.com/_assets/icons/favicon-16x16.png</image:loc>
+		</image:image>
+		<image:image>
+		<image:loc>https://gallery.mapresso.com/_assets/icons/safari-pinned-tab.svg</image:loc>
+		</image:image>
+		<image:image>
+		<image:loc>https://gallery.mapresso.com/_assets/icons/favicon.png</image:loc>
+		</image:image>
+		<image:image>
+		<image:loc>https://gallery.mapresso.com/_assets/icons/appicon-29.png</image:loc>
+		<image:title> iOS appicon</image:title>
+		</image:image>
+		<image:image>
+		<image:loc>https://gallery.mapresso.com/_assets/icons/appicon-50.png</image:loc>
+		<image:title> iOS app icon</image:title>
+		</image:image>
+		<image:image>
+		<image:loc>https://gallery.mapresso.com/_assets/img/online.png</image:loc>
+		<image:title> Appstore</image:title>
+		</image:image>
+		<image:image>
+		<image:loc>https://gallery.mapresso.com/_assets/img/no_longer_in_app_store.png</image:loc>
+		<image:title> No Longer in Appstore</image:title>
+		</image:image>
+		<image:image>
+		<image:loc>https://gallery.mapresso.com/_assets/img/screenshot1.png</image:loc>
+		<image:title> screenshot</image:title>
+		</image:image>
+		<image:image>
+		<image:loc>https://gallery.mapresso.com/_assets/img/screenshot2.png</image:loc>
+		<image:title> screenshot</image:title>
+		</image:image>
+		<image:image>
+		<image:loc>https://gallery.mapresso.com/_assets/img/screenshot3.png</image:loc>
+		<image:title> screenshot</image:title>
+		</image:image>
+	</url>
+	<url>
+		<loc>https://gallery.mapresso.com/about.php</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+		<image:image>
+		<image:loc>https://gallery.mapresso.com/_assets/img/gallery_all.gif</image:loc>
+		<image:title> old MacOS game</image:title>
+		</image:image>
+		<image:image>
+		<image:loc>https://gallery.mapresso.com/_assets/img/screen_dashboard.png</image:loc>
+		<image:title> Java Applet Version</image:title>
+		</image:image>
+	</url>
+	<url>
+		<loc>https://gallery.mapresso.com/play/</loc>
+		<lastmod>2026-11-10</lastmod>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+		<image:image>
+		<image:loc>https://gallery.mapresso.com/play/data/icons/apple-touch-icon-57x57.png</image:loc>
+		</image:image>
+		<image:image>
+		<image:loc>https://gallery.mapresso.com/play/data/icons/apple-touch-icon-60x60.png</image:loc>
+		</image:image>
+		<image:image>
+		<image:loc>https://gallery.mapresso.com/play/data/icons/apple-touch-icon-72x72.png</image:loc>
+		</image:image>
+		<image:image>
+		<image:loc>https://gallery.mapresso.com/play/data/icons/apple-touch-icon-76x76.png</image:loc>
+		</image:image>
+		<image:image>
+		<image:loc>https://gallery.mapresso.com/play/data/icons/apple-touch-icon-114x114.png</image:loc>
+		</image:image>
+		<image:image>
+		<image:loc>https://gallery.mapresso.com/play/data/icons/apple-touch-icon-120x120.png</image:loc>
+		</image:image>
+		<image:image>
+		<image:loc>https://gallery.mapresso.com/play/data/icons/apple-touch-icon-144x144.png</image:loc>
+		</image:image>
+		<image:image>
+		<image:loc>https://gallery.mapresso.com/play/data/icons/apple-touch-icon-152x152.png</image:loc>
+		</image:image>
+		<image:image>
+		<image:loc>https://gallery.mapresso.com/play/data/icons/apple-touch-icon-180x180.png</image:loc>
+		</image:image>
+		<image:image>
+		<image:loc>https://gallery.mapresso.com/play/data/img/screen.png</image:loc>
+		<image:title> game</image:title>
+		</image:image>
+		<image:image>
+		<image:loc>https://gallery.mapresso.com/play/data/img/gallery_success.png</image:loc>
+		<image:title> Winning situation</image:title>
+		</image:image>
+		<image:image>
+		<image:loc>https://gallery.mapresso.com/play/data/img/movable.png</image:loc>
+		<image:title> movable card</image:title>
+		</image:image>
+		<image:image>
+		<image:loc>https://gallery.mapresso.com/play/data/img/jam.png</image:loc>
+		<image:title> jammed cards</image:title>
+		</image:image>
+		<image:image>
+		<image:loc>https://gallery.mapresso.com/play/data/img/finaljam.png</image:loc>
+		<image:title> dead cards</image:title>
+		</image:image>
+		<image:image>
+		<image:loc>https://gallery.mapresso.com/play/data/img/danger.png</image:loc>
+		<image:title> jam probability</image:title>
+		</image:image>
+		<image:image>
+		<image:loc>https://gallery.mapresso.com/play/data/img/eval.png</image:loc>
+		<image:title> eval</image:title>
+		</image:image>
+		<image:image>
+		<image:loc>https://gallery.mapresso.com/play/data/img/trend.jpg</image:loc>
+		<image:title> eval</image:title>
+		</image:image>
+		<image:image>
+		<image:loc>https://gallery.mapresso.com/play/data/img/mittelholzer_strip.png</image:loc>
+		<image:title> Aerial View of Adula</image:title>
+		</image:image>
+	</url>
+	<url>
+		<loc>https://gallery.mapresso.com/rules.php</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+		<image:image>
+		<image:loc>https://gallery.mapresso.com/_assets/img/screen.png</image:loc>
+		<image:title> game</image:title>
+		</image:image>
+		<image:image>
+		<image:loc>https://gallery.mapresso.com/_assets/img/gallery_success.png</image:loc>
+		<image:title> Winning situation</image:title>
+		</image:image>
+		<image:image>
+		<image:loc>https://gallery.mapresso.com/_assets/img/eval.png</image:loc>
+		<image:title> eval</image:title>
+		</image:image>
+	</url>
+
+</urlset>

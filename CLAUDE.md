@@ -6,7 +6,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Gallery Solitaire — a browser-based solitaire card game (build a face-card "gallery" of Jacks, Queens, Kings across a 3×8 Foundation grid) with a CAP ("computer-aided play") assistant, a persistent per-device statistics/rating system, and light/dark appearance. Ships as a plain static web app (playable directly, e.g. via a live-server) and was historically also wrapped with Cordova for iOS (see `obsolete/`, no longer maintained).
 
-All active source lives under `www/`. `obsolete/` contains the old Cordova/Capacitor app shell and is not part of the current product — don't build on it.
+The repo folder was renamed from `gallery70` to `gallery.mapresso.com` (Nov 2026) and now holds both parts of the site:
+
+- `www/` — the game, deployed to `https://gallery.mapresso.com/play/` (`www/gallery_deploy.sh`).
+- `site/` — the surrounding PHP website, deployed to the server root of gallery.mapresso.com (`./site_deploy.sh`, `-n` = dry run). Pages `index.php`, `rules.php`, `faq.php`, `about.php` set `$pageTitle`, `$pageDescription`, `$pageCanonical` before `require head.php`, which renders title/description/canonical/Open Graph from them — give every new page its own values. `sitemap.xml` is generated with Integrity Plus; afterwards `~/bin/indexnow.sh --all gallery.mapresso.com`. `2cb7…txt` is the public IndexNow key file.
+- `site_deploy.sh` deliberately runs rsync **without `--delete`**: the server root also contains legacy folders not managed here (`play0/`, `_old/`, `jg/` = old Java applet, `applet.php`, which is 301-redirected to `/play/` in `site/.htaccess`). Never add `--delete` or touch `/play/` from it. Deploying is externally visible — confirm with the user first.
+
+All active game source lives under `www/`. `obsolete/` contains the old Cordova/Capacitor app shell and is not part of the current product — don't build on it.
 
 ## Commands
 
