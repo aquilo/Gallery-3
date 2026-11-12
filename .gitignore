@@ -101,3 +101,6 @@ _scratch/
 
 # Website (site/): Schrift der Bootstrap-Glyphicons trotz *.ttf-Regel versionieren
 !site/_assets/fonts/*.ttf
+
+# Grosse Ergebnisdateien der Auswertungen nicht versionieren
+www/docs/results/*.csv
