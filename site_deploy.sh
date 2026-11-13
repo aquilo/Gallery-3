@@ -13,16 +13,17 @@ cd "$(dirname "$0")/site"
 REMOTE="mapresso@sl16.web.hostpoint.ch"
 REMOTE_PATH="/home/mapresso/www/gallery.mapresso.com"
 
-DRY=()
-[[ "${1:-}" == "-n" ]] && DRY=(--dry-run) && echo "Trockenlauf – es wird nichts übertragen."
+# Kein leeres Array verwenden: macOS-Bash 3.2 bricht mit set -u bei "${arr[@]}" ab.
+DRY=""
+if [[ "${1:-}" == "-n" ]]; then DRY="--dry-run"; echo "Trockenlauf – es wird nichts übertragen."; fi
 
-rsync -rtvz "${DRY[@]}" \
+rsync -rtvz ${DRY:+"$DRY"} \
   --exclude '.DS_Store' \
   --exclude '*.bak*' \
   --exclude '/play/' --exclude '/play0/' --exclude '/_old/' --exclude '/jg/' \
   ./ "${REMOTE}:${REMOTE_PATH}/"
 
-[[ ${#DRY[@]} -gt 0 ]] && exit 0
+if [[ -n "$DRY" ]]; then exit 0; fi
 
 # Rechte nur für die Dateien aus site/ setzen (macOS-openrsync setzt sie nicht
 # zuverlässig, siehe www/gallery_deploy.sh). play/ usw. bleiben unberührt.

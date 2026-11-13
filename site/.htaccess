@@ -5,3 +5,9 @@ DirectoryIndex index.php index.html
 
 # Java-Applet laeuft in keinem aktuellen Browser mehr -> zur Browser-Version
 Redirect 301 /applet.php /play/
+
+# KI-Trainings-Crawler freigeben (Hostpoint blockiert sie standardmässig).
+# Bedingung von Hostpoint: Crawl-delay >= 5 in robots.txt. Bytespider bleibt gesperrt.
+BrowserMatch GPTBot !HOSTPOINT_AI_TRAINING_BLOCKLIST
+BrowserMatch ClaudeBot !HOSTPOINT_AI_TRAINING_BLOCKLIST
+BrowserMatch meta-externalagent !HOSTPOINT_AI_TRAINING_BLOCKLIST
